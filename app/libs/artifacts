@@ -1,0 +1,131 @@
+<!doctype html>
+
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="robots" content="noindex,follow" />
+    <title ng-bind="title">AppVeyor</title>
+    <link id="favicon" rel="shortcut icon" href="/assets/images/favicon-blue.ico" />
+
+    <link rel="stylesheet" href="/dist/bundle-b47a74c396.css"/>
+
+
+    <!-- AppVeyor 6.3.3.3268 -->
+</head>
+<body>
+    <div id="app-loader" class="spinner tall">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+    </div>
+
+    <!-- Top menu -->
+    <div class="fixed contain-to-grid">
+        <nav class="top-bar" data-topbar init-foundation data-options="is_hover: false">
+            <ul class="title-area" ng-cloak>
+                <li class="name">
+                    <h1 ng-if="!Session.isAuthenticated()"><a class="collapse-only">AppVeyor</a></h1>
+                    <h1 class="show-for-small-only" ng-if="!Session.isAuthenticated() || !Session.account().isEnterprisePlan"><a class="collapse-only" href="/">AppVeyor</a></h1>
+                    <h1 class="show-for-small-only" ng-if="Session.isAuthenticated() && Session.account().isEnterprisePlan"><a class="collapse-only" href="/server-license">AppVeyor</a></h1>
+                </li>
+                <li class="toggle-topbar menu-icon"><a href=""><span></span></a></li>
+            </ul>
+            <section class="top-bar-section">
+                <!-- Left Nav -->
+                <ul class="left" ng-cloak>
+                    <li class="has-dropdown" ng-if="Session.isAuthenticated() && Session.getSwitchAccounts().length > 0" ng-cloak>
+                        <a class="no-collapse selected-account" title="You are working with this account">
+                            {{Session.account().name}}
+                        </a>
+                        <ul class="dropdown">
+                            <li ng-repeat="account in Session.getSwitchAccounts()">
+                                <a class="switch-account" ng-click="Session.switchAccount(account.name)">{{account.name}}</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li ng-if="Session.isAuthenticated() && Session.getSwitchAccounts().length == 0">
+                        <a ng-if="!Session.account().isEnterprisePlan" class="selected-account" href="{{Session.getAccountBaseUrl()}}/projects">{{Session.account().name}}</a>
+                        <a ng-if="Session.account().isEnterprisePlan" class="selected-account" href="{{Session.getAccountBaseUrl()}}/server-license">{{Session.account().name}}</a>
+                    </li>
+                    <li ng-if="Session.isAuthenticated() && Session.account().isEnterprisePlan"><a href="{{Session.getAccountBaseUrl()}}/server-license">License</a></li>
+                    <li ng-if="Session.isAuthenticated() && !Session.account().isEnterprisePlan"><a href="{{Session.getAccountBaseUrl()}}/projects">Projects</a></li>
+                    <li ng-if="Session.isAuthenticated() && !Session.account().isEnterprisePlan"><a href="{{Session.getAccountBaseUrl()}}/environments">Environments</a></li>
+                    <li ng-if="Session.isAuthenticated() && !Session.account().isEnterprisePlan && !Session.hasPermission('ConfigureSystemSettings')"><a href="{{Session.getAccountBaseUrl() ? Session.getAccountBaseUrl() + '/build-clouds' : '/build-clouds'}}">BYOC</a></li>
+                    <li ng-if="Session.isAuthenticated()"><a href="{{Session.getAccountBaseUrl() ? Session.getAccountBaseUrl() + '/settings' : '/account'}}">Account</a></li>
+                    <li class="has-dropdown" ng-if="Session.isAuthenticated() && Session.hasPermission('ConfigureSystemSettings')" ng-cloak>
+                        <a class="no-collapse">
+                            System
+                        </a>
+                        <ul class="dropdown">
+                            <li><a href="/system/accounts">Accounts</a></li>
+                            <li ng-if="!SystemSettings.onPremise"><a href="/newsletters">Newsletters</a></li>
+                            <li><a href="{{Session.getAccountBaseUrl() ? Session.getAccountBaseUrl() + '/build-clouds' : '/build-clouds'}}">Build environment</a></li>
+                            <li><a href="/system/settings">System settings</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Right Nav -->
+                <ul class="right" ng-cloak>
+
+                    <li><a href="/login" ng-if="!Session.isAuthenticated()" ng-cloak>Sign in</a></li>
+                    
+                        <li class="has-dropdown" ng-if="Session.isAuthenticated()" ng-cloak>
+                            <a class="no-collapse">
+                                Support
+                            </a>
+                            <ul class="dropdown">
+                                <li ng-if="!Session.account().isEnterprisePlan"><a href="https://www.appveyor.com/docs/" target="_blank">Documentation</a></li>
+                                <li ng-if="Session.account().isEnterprisePlan"><a href="https://www.appveyor.com/docs/server/" target="_blank">Documentation</a></li>
+                                <li><a href="https://help.appveyor.com/" target="_blank">Submit ticket</a></li>
+                                <li><a href="mailto:support@appveyor.com">Email us</a></li>
+                                <li><a href="https://www.appveyor.com/updates/" target="_blank">Platform updates</a></li>
+                                <li><a href="https://status.appveyor.com/" target="_blank">System status</a></li>
+                            </ul>
+                        </li>
+                    <li class="has-dropdown" ng-if="Session.isAuthenticated()" ng-cloak>
+                        <a class="active-user no-collapse" title="Signed in as">
+                            <img src="https://www.gravatar.com/avatar/{{Session.user().gravatarHash}}?d=https%3a%2f%2fci.appveyor.com%2fassets%2fimages%2fuser.png&s=40" width="20" height="20" />
+                            {{Session.user().fullName}}
+                        </a>
+                        <ul class="dropdown">
+                            <li>
+                                <label>{{Session.user().email}}</label>
+                            </li>
+                            <li><a href="/profile">My profile</a></li>
+                            <li class="divider"></li>
+                            <li><a ng-click="Session.logout()">Sign out</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+        </nav>
+    </div>
+
+    <!-- Busy indicator -->
+    <div class="busy-header" ng-if="Page.busy()" ng-cloak></div>
+
+    <ng-include src="'/app/views/include/home-trial-period-expires.html'" ng-if="Session.trialExpires() !== null" ng-cloak></ng-include>
+
+    <ng-include src="'/app/views/include/home-unpaid-account.html'" ng-if="Session.account().unpaid" ng-cloak></ng-include>
+
+    <ng-include src="'/app/views/include/home-unverified-account.html'" ng-if="Session.account().unverified" ng-cloak></ng-include>
+
+    <div ng-view></div>
+
+    <script src="/dist/app-20a5bd156f.min.js"></script>
+
+
+        <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+    <script src="/signalr/hubs"></script>
+    <script>
+        var analyticsTrackingId = "";
+        var recaptchaPublicKey = "6LfsXhgUAAAAAJzEJ9ZpnKQlkkPD-kiErGOWaRol";
+    </script>
+        <script>
+        Stripe.setPublishableKey("pk_live_ocExFvIl1PhmY5lbVMtWyZlJ");
+        </script>
+</body>
+</html>

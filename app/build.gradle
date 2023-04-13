@@ -1,0 +1,99 @@
+plugins {
+    id 'com.android.application'
+	id 'org.jetbrains.kotlin.android'
+	// id 'net.ltgt.errorprone'
+}
+
+android {
+	namespace "com.thatmg393.esmanager"
+	
+    compileSdk 33
+    buildToolsVersion "33.0.3"
+
+    defaultConfig {
+        applicationId "com.thatmg393.esmanager"
+        minSdk 26
+        targetSdk 33
+        versionCode 010000
+        versionName "v1.0-preview"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    
+    compileOptions {
+		sourceCompatibility JavaVersion.VERSION_11
+		targetCompatibility JavaVersion.VERSION_11
+	}
+	
+	kotlinOptions {
+        jvmTarget = 11
+    }
+	
+	buildFeatures {
+        viewBinding false
+    }
+}
+
+dependencies {
+	def LSP_VERSION = "0.20.1"
+	
+	implementation 'androidx.appcompat:appcompat:1.7.0-alpha02'
+	implementation 'androidx.core:core-splashscreen:1.0.0'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.security:security-crypto:1.1.0-alpha05'
+	
+	// UI
+	implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha09'
+	implementation 'androidx.viewpager2:viewpager2:1.1.0-beta01'
+	implementation 'com.google.android.material:material:1.9.0-beta01'
+	
+	// Code Editor
+	implementation platform('io.github.Rosemoe.sora-editor:bom:0.21.1')
+	implementation 'io.github.Rosemoe.sora-editor:editor'
+	implementation 'io.github.Rosemoe.sora-editor:editor-lsp'
+	implementation 'io.github.Rosemoe.sora-editor:language-textmate'
+	
+	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:$LSP_VERSION"
+	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:$LSP_VERSION"
+	
+	// IO / Network
+	implementation 'com.anggrayudi:storage:1.5.4'
+	implementation 'commons-io:commons-io:2.11.0'
+	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+	
+	// Collections
+	implementation 'org.apache.commons:commons-collections4:4.4'
+	
+	// debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+	// errorprone("com.google.errorprone:error_prone_core:2.18.1")
+	
+	implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+/*
+task updateLibs(type: Download) {
+	src 'https://ci.appveyor.com/project/EmmyLua/emmylua-languageserver/build/artifacts'
+	dest "$rootProject.projectDir/app/libs"
+	overwrite true
+}
+
+tasks.whenTaskAdded { task ->
+	if (task.name == 'preDebugBuild') {
+		task.dependsOn updateLibs
+	}
+	
+	if (task.name == 'compileDebugJavaWithJavac') {
+		// Error Prone must be available in the annotation processor path
+		// options.annotationProcessorPath = configurations.errorprone
+		// Enable Error Prone
+		options.errorprone.enabled = true
+		// It can then be configured for the task
+		options.errorprone.disableWarningsInGeneratedCode = true
+	}
+}
+*/

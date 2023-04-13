@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Built application files
 *.apk
 *.aar
@@ -83,3 +84,11 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+=======
+.androidide/
+.git/
+.gradle/
+.idea/
+app/build/
+local.properties
+>>>>>>> de067a7 (Initial Code Commit)
