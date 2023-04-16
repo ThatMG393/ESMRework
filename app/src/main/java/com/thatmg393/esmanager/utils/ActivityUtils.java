@@ -48,11 +48,17 @@ public class ActivityUtils {
 	}
 	
 	public void bindService(final Intent serviceIntent, final ServiceConnection serviceCallback) {
-		context.bindService(serviceIntent, serviceCallback, Context.BIND_AUTO_CREATE);
+		try {
+			context.bindService(serviceIntent, serviceCallback, Context.BIND_AUTO_CREATE);
+		} catch (IllegalArgumentException ignore) { }
 	}
 	
 	public void unbindService(final ServiceConnection serviceCallback) {
-		context.unbindService(serviceCallback);
+		try {
+			context.unbindService(serviceCallback);
+		} catch (IllegalArgumentException ignore) {
+			ignore.printStackTrace(System.err);
+		}
 	}
 	
 	public void runOnUIThread(Runnable toBeRun) {

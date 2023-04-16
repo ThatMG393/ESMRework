@@ -11,8 +11,7 @@ import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.Logger;
-
-import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
+import com.thatmg393.esmanager.utils.ThreadPlus;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 
@@ -21,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 
 public class LuaLSPService extends BaseLSPService {
     private final Logger LOG = new Logger("ESM/LSPManager.LSPService");
@@ -30,7 +28,7 @@ public class LuaLSPService extends BaseLSPService {
 	private boolean isServerThreadAlive;
     private volatile boolean isServerRunning;
 	
-	private Thread serverThread;
+	private ThreadPlus serverThread;
 	
 // Server variables {
 	private ServerSocket serverSocket;
@@ -55,7 +53,7 @@ public class LuaLSPService extends BaseLSPService {
 
     @Override
     public void onCreate() {
-        serverThread = new Thread(() -> {
+        serverThread = new ThreadPlus(() -> {
 			isServerThreadAlive = true;
 			
 			try {
@@ -81,7 +79,7 @@ public class LuaLSPService extends BaseLSPService {
 	@Override
 	public void stopLSPServer() {
 		LOG.i("Gracefully shutting down the Lua LSP Server");
-		if (isServerThreadAlive) serverThread.interrupt();
+		if (isServerThreadAlive) serverThread.stop();
 	}
 
     @Override
@@ -89,20 +87,19 @@ public class LuaLSPService extends BaseLSPService {
 		LOG.d("Get server connections...");
 		serverClientSocket = serverSocket.accept();
 		
-		while (!Thread.currentThread().isInterrupted()) {
-			if (!isServerRunning()) {
+		while (serverThread.isRunning()) {
+			// if (!isServerRunning()) {
 				serverIS = serverClientSocket.getInputStream();
 				serverOS = serverClientSocket.getOutputStream();
 				
 				Launcher serverLauncher = Launcher.createLauncher(luaServer, LuaLanguageClient.class, serverIS, serverOS);
 				
 				luaServer.connect((LuaLanguageClient) serverLauncher.getRemoteProxy());
-				
-				serverLauncher.startListening().get(Long.MAX_VALUE, TimeUnit.SECONDS);
+				serverLauncher.startListening();
 				isServerRunning = true;
 				
 				LOG.d("Server is up and running!");
-			}
+			// }
 		}
 		
 		fullyCloseServer();

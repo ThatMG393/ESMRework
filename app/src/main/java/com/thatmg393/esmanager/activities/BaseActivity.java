@@ -1,14 +1,18 @@
 package com.thatmg393.esmanager.activities;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.itsaky.utils.logsender.LogSender;
 import com.thatmg393.esmanager.GlobalConstants;
+import com.thatmg393.esmanager.managers.DRPCManager;
+import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.FileUtils;
+import com.thatmg393.esmanager.utils.StorageUtils;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,7 +27,13 @@ public class BaseActivity extends AppCompatActivity {
 		init();
     }
 	
-    private static void setUEH() {
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		unsetUEH();
+	}
+	
+    private static final void setUEH() {
 		if (thrUEH != null) { Log.w("BaseActivity", "Attempt to initialize 'Thread.UncaughtExceptionHandler' even though it's already initialized!"); return; }
 		
         thrUEH = Thread.getDefaultUncaughtExceptionHandler();
@@ -46,9 +56,13 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 	
+	private static final void unsetUEH() {
+		Thread.setDefaultUncaughtExceptionHandler(thrUEH);
+	}
+	
 	// Always override this for a lot initiaizing stuff
 	// If initializing little things make sure "setUEH()" is present!
-	// Always call "super.init()"!
+	// Always call "super.init()" when extending this method!
 	public void init() {
 		LogSender.startLogging(getApplication());
 		setUEH();

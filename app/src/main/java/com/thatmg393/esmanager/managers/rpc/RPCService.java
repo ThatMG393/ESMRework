@@ -22,8 +22,10 @@ import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.interfaces.IRPCListener;
 import com.thatmg393.esmanager.managers.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.DaemonThread;
 import com.thatmg393.esmanager.utils.SharedPreference;
+import com.thatmg393.esmanager.utils.ThreadPlus;
+
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,25 +34,26 @@ import java.io.FilenameFilter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Queue;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
+@SuppressWarnings("deprecation")
 public class RPCService extends Service {
 	private static final String CHANNEL_ID = "DRPCService";
 	private final RPCBinder binder = new RPCBinder();
 	
-	private DaemonThread websocketThread;
-	public RPCSocketClient rpcWebsocketClient;
+	private ThreadPlus websocketThread;
+	private RPCSocketClient rpcWebsocketClient;
 	
 	private NotificationCompat.Builder notificationBuilder;
 	
 	@Override
 	public IBinder onBind(Intent smth) {
+		startRPC();
 		return binder;
 	}
 	
 	@Override
 	public boolean onUnbind(Intent smth) {
-		if (websocketThread.isRunning()) websocketThread.stop();
+		websocketThread.kill();
 		getNotificationManager().cancel(1);
 		
 		return true;
@@ -65,20 +68,22 @@ public class RPCService extends Service {
 			if (rpcWebsocketClient == null) rpcWebsocketClient = new RPCSocketClient(this);
 		} catch (URISyntaxException ignore) { }
 		
-		this.websocketThread = new DaemonThread(() -> {
+		this.websocketThread = new ThreadPlus(() -> {
 			try {
-				if (!rpcWebsocketClient.isConnected) rpcWebsocketClient.connectBlocking();
+				if (!rpcWebsocketClient.isOpen()) rpcWebsocketClient.connectBlocking();
 			} catch (InterruptedException ignore) { }
 		}) {
 			@Override
 			public void stop() {
 				super.stop();
-				rpcWebsocketClient.close(1);
+				rpcWebsocketClient.close();
 			}
 		};
 		
+		websocketThread.stop();
+		
 		this.notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-				.setContentTitle("Starting RPC")
+				.setContentTitle("Starting RPC...")
 				.setSmallIcon(R.mipmap.ic_launcher_round)
 				.setWhen(System.currentTimeMillis())
 				.setOngoing(true)
@@ -91,10 +96,6 @@ public class RPCService extends Service {
 	}
 	
 	public void startRPC() {
-		discordLogin();
-	}
-	
-	private void discordLogin() {
 		if (SharedPreference.getInstance().getString("lol69420") != null) {
 			websocketThread.start();
 			return;
@@ -102,7 +103,6 @@ public class RPCService extends Service {
 		
 		View layout = LayoutInflater.from(getApplicationContext()).inflate(R.layout.rpc_login_dialog, null, false);
 		AlertDialog loginDialog = new MaterialAlertDialogBuilder(ActivityUtils.getInstance().getMainActivityInstance())
-										// .setView(R.layout.rpc_login_dialog)
 										.setView( layout )
 										.setNegativeButton("Later", new DialogInterface.OnClickListener() {
 											@Override
@@ -144,14 +144,13 @@ public class RPCService extends Service {
 		webLoginView.loadUrl("https://discord.com/login");
 	}
 	
-	private Queue<String> contentFIFO = new CircularFifoQueue<>(7);
+	private Queue<String> contentFIFO = new CircularFifoQueue<>(10);
 	public void updateNotificationContent(String content) {
 		contentFIFO.add(content);
 		
 		StringBuilder tmpSb = new StringBuilder();
 		contentFIFO.forEach((value) -> {
-			tmpSb.append(value);
-			tmpSb.append(System.getProperty("line.separator"));
+			tmpSb.append(value + System.getProperty("line.separator"));
 		});
 		
 		notificationBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(tmpSb.toString()));
@@ -180,6 +179,7 @@ public class RPCService extends Service {
 			f = fArr[0];
 			
 			BufferedReader br = new BufferedReader(new FileReader(f));
+			
 			String line;
 			while ((line = br.readLine()) != null) {
 				if (line.contains("token")) break;
@@ -199,6 +199,10 @@ public class RPCService extends Service {
 	}
 	public void callbackShutdown() {
 		rpcListeners.forEach(IRPCListener::shutdown);
+	}
+	
+	public RPCSocketClient getRPCSocketClient() {
+		return rpcWebsocketClient;
 	}
 	
 	public class RPCBinder extends Binder {

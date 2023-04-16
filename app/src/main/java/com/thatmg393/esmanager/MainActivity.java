@@ -1,10 +1,12 @@
 package com.thatmg393.esmanager;
 
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 import com.itsaky.utils.logsender.LogSender;
 import com.thatmg393.esmanager.activities.BaseActivity;
@@ -24,6 +26,7 @@ public class MainActivity extends BaseActivity {
 		
 		PermissionUtils.askForUsageStatsPermission(getApplicationContext());
 		
+		/*
 		ProcessListener.getInstance().startService();
 		ProcessListener.getInstance().startListening("com.facebook.katana", new IOnProcessListener() {
 			@Override
@@ -46,6 +49,7 @@ public class MainActivity extends BaseActivity {
 				System.out.println("Stopped!");
 			}
 		});
+		*/
 		
 		MaterialButton startPA = findViewById(R.id.launch_pa);
 		startPA.setOnClickListener(new View.OnClickListener() {
@@ -56,10 +60,19 @@ public class MainActivity extends BaseActivity {
 		});
 		
 		MaterialButton startRPC = findViewById(R.id.launch_rpc);
-		startRPC.setOnClickListener(new View.OnClickListener() {
+		PermissionUtils.requestDrawOverlayPermission(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), new PermissionUtils.PermissionResult() {
 			@Override
-			public void onClick(View theView) {
-				DRPCManager.getInstance().startDiscordRPC();
+			public void onReturn(PermissionUtils.Status returnValue) {
+				if (returnValue == PermissionUtils.Status.GRANTED) {
+					startRPC.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View theView) {
+							DRPCManager.getInstance().startDiscordRPC();
+						}
+					});
+				} else {
+					Toast.makeText(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), "Cannot start RPC, please grant 'Appear on top' on Settings", Toast.LENGTH_SHORT).show();
+				}
 			}
 		});
 		
@@ -95,23 +108,19 @@ public class MainActivity extends BaseActivity {
 			}
 		});
 		*/
-		
-		PermissionUtils.checkDrawOverlayPermission(getApplicationContext());
 	}
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		Log.i("BaseActivity", "Close before stop");
 		
 		LSPManager.getInstance().dispose();
 		DRPCManager.getInstance().dispose();
 		
 		StorageUtils.dispose();
-		LogSender.dispose();
+		ActivityUtils.dispose();
 		
-		// SharedPreference.getInstance().dispose();
-		
-		// this.unsrt
-		Log.e("MainThread", "*Dies*");
+		Log.i("BaseActivity", "Done!");
 	}
 }

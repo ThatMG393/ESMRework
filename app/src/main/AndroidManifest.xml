@@ -43,13 +43,9 @@
             </intent-filter>
 			
         </activity>
-		
 		<activity android:name=".ProjectActivity" />
 		
-		<service android:name=".managers.rpc.RPCService" />
-		
-		<service android:name=".managers.lsp.LuaLSPService" />
-		
+		<service android:name=".managers.rpc.RPCService" android:stopWithTask="true"/>
+		<service android:name=".managers.lsp.LuaLSPService" android:stopWithTask="true"/>
     </application>
-
 </manifest>

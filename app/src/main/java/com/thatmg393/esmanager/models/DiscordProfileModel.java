@@ -32,6 +32,9 @@ public class DiscordProfileModel {
 		this.email = (String) tmpMap.get("email");
 		
 		this.avatarUrl = "https://cdn.discord.com/avatars" + this.id + "/" + tmpMap.get("avatar") + ".png";
+		
+		this.status = (String) ((Map) ((List) ((Map) dataMap.get("d")).get("sessions")).get(0)).get("status");
+		System.out.println(RPCSocketClient.GSON.toJson( ((Map) dataMap.get("d")).get("sessions") ));
 	}
 
 	public void setNewStatus(String status) {

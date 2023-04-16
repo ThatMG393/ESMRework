@@ -71,4 +71,8 @@ public class SharedPreference {
 	public final String getString(String key) {
 		return getStringFallback(key, null);
 	}
+	
+	public static void dispose() {
+		INSTANCE = null;
+	}
 }

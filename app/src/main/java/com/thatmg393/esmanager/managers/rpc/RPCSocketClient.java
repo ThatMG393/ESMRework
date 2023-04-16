@@ -6,14 +6,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.thatmg393.esmanager.GlobalConstants;
-import com.thatmg393.esmanager.managers.DRPCManager;
 import com.thatmg393.esmanager.models.DiscordProfileModel;
-import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.DaemonThread;
 import com.thatmg393.esmanager.utils.FileUtils;
 import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.utils.SharedPreference;
 
+import com.thatmg393.esmanager.utils.ThreadPlus;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -28,18 +26,20 @@ public class RPCSocketClient extends WebSocketClient {
 	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
 
 	private final RPCService serviceInstance;
-	private final DaemonThread heartbeatThread;
+	private final ThreadPlus heartbeatThread;
 	
 	private int heartbeatInterval, sequence;
 	
 	public volatile DiscordProfileModel discordProfile;
+	
+	public boolean isConnecting;
 	public boolean isConnected;
 
 	public RPCSocketClient(RPCService serviceInstance) throws URISyntaxException {
 		super(new URI("wss://gateway.discord.gg/?encoding=json&v=10"));
 		
 		this.serviceInstance = serviceInstance;
-		this.heartbeatThread = new DaemonThread(() -> {
+		this.heartbeatThread = new ThreadPlus(() -> {
 			if (isConnected) {
 				try {
 					if (heartbeatInterval < 10000) throw new RuntimeException("Invalid Heartbeat Interval!");
@@ -52,6 +52,8 @@ public class RPCSocketClient extends WebSocketClient {
 				} catch (InterruptedException ignore) { }
 			}
 		});
+		
+		// serviceInstance.updateNotificationTitle("Connecting to Discord API...");
 	}
 
 	@Override
@@ -59,8 +61,6 @@ public class RPCSocketClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String message) {
-		if (Thread.currentThread().isInterrupted()) close(1);
-		
 		ArrayMap<String, Object> messageMap = GSON.fromJson(
 			message, new TypeToken<ArrayMap<String, Object>>() { }.getType()
 		);
@@ -78,21 +78,23 @@ public class RPCSocketClient extends WebSocketClient {
 				Map dataMap = (Map) messageMap.get("d");
 				
 				heartbeatInterval = ((Double) dataMap.get("heartbeat_interval")).intValue();
-				
-				if (heartbeatThread.isRunning()) heartbeatThread.stop();
+				heartbeatThread.stop();
 				heartbeatThread.start();
 				
 				sendIdentify();
-				
 				break;
 			case 1: // Heartbeat Request
-				if (heartbeatThread.isRunning()) heartbeatThread.stop();
+				heartbeatThread.stop();
 				
 				send("{\"op\":1, \"d\":" + ( sequence == 0 ? "null" : Integer.toString(sequence) ) + "}");
-				
 				break;
 			case 11: // Heartbeat ACK
-				if (!heartbeatThread.isRunning()) heartbeatThread.start();
+				heartbeatThread.start();
+				break;
+			case 9:  // Invalid Session
+				heartbeatThread.kill();
+				serviceInstance.callbackShutdown();
+				close();
 				break;
 		}
 	}
@@ -101,26 +103,24 @@ public class RPCSocketClient extends WebSocketClient {
 		String state = (String) dataMap.get("t");
 		
 		switch (state) {
-			case "READY": // Hello
+			case "READY": // Connected to the GATEWAY
 				discordProfile = new DiscordProfileModel(dataMap);
 				
-				LOG.d("Connected to the discord account!");
+				LOG.d("Connected to the Discord API Gateway!");
 				serviceInstance.updateNotificationTitle("Connected to " + discordProfile.getFullUsername());
 				serviceInstance.callbackOnConnected();
 				
+				isConnecting = false;
 				isConnected = true;
-				
 				break;
-			case "SESSIONS_REPLACE": // Status change like dnd -> idle
-				Map tmpMap2 = (Map) ((List)dataMap.get("d")).get(0);
-				String currentStatus = (String) tmpMap2.get("status");
+			case "SESSIONS_REPLACE": // Status change like, dnd -> idle
+				String currentStatus = (String) ((Map) ((List) dataMap.get("d")).get(0)).get("status");
 				
-				LOG.d("Changed status to " + currentStatus);
-				serviceInstance.updateNotificationContent("Changed status to " + currentStatus);
-				serviceInstance.callbackShutdown();
-				
-				discordProfile.setNewStatus(currentStatus);
-				
+				if (discordProfile.getStatus() != currentStatus) {
+					LOG.d("Changed status to " + currentStatus);
+					discordProfile.setNewStatus(currentStatus);
+					serviceInstance.updateNotificationContent("Changed status to " + currentStatus);
+				}
 				break;
 		}
 	}
@@ -141,17 +141,32 @@ public class RPCSocketClient extends WebSocketClient {
 		_close();
 	}
 	
+	@Override
+	public boolean isOpen() {
+		return super.isOpen() && (isConnected || isConnecting);
+	}
+	
+	@Override
+	public boolean connectBlocking() throws InterruptedException {
+		isConnecting = true;
+		return super.connectBlocking();
+	}
+	
 	private void _close() {
 		LOG.d("Closing RPCSocketClient");
-		if (heartbeatThread.isRunning()) heartbeatThread.stop();
+		
 		isConnected = false;
+		heartbeatThread.kill();
+		serviceInstance.callbackShutdown();
 	}
 	
 	private void sendIdentify() {
-		ArrayMap<String, Object> prop = new ArrayMap<>();
-		prop.put("$os", "linux");
-		prop.put("$browser", "Discord Android");
-		prop.put("$device", "unknown");
+		LOG.d("Sending 'Identify' payload");
+		
+		ArrayMap<String, String> prop = new ArrayMap<>();
+		prop.put("os", "linux");
+		prop.put("browser", "Discord Android");
+		prop.put("device", "android");
 
 		ArrayMap<String, Object> data = new ArrayMap<>();
 		data.put("token", SharedPreference.getInstance().getString("lol69420"));
@@ -167,46 +182,50 @@ public class RPCSocketClient extends WebSocketClient {
 	}
 	
 	public void sendPresence() {
+		LOG.d("Sending Rich Presence");
+		
 		long current = System.currentTimeMillis();
-
-		ArrayMap<String, Object> presence = new ArrayMap<>();
 		
 		ArrayMap<String, Object> activity = new ArrayMap<>();
-		activity.put("name", "Test Name");
-  	  activity.put("state", "Test State");
-		activity.put("details", "Test Details");
-		activity.put("type", 0);
+		activity.put("name", "What?");
+		activity.put("state", "Sheeshable");
+		activity.put("details", "I don't know");
+		activity.put("type", 5);
 		activity.put("application_id", "956735773716123659");
 		
 		// Images
-		ArrayMap<String, Object> assets = new ArrayMap<>();
+		ArrayMap<String, String> assets = new ArrayMap<>();
 		assets.put("large_image", processImageLink("https://media.discordapp.net/attachments/729671788187091024/1095905788763066388/Screenshot_2023-04-13-10-56-28-989_com.roblox.client.jpg"));
 		assets.put("small_image", processImageLink("https://media.discordapp.net/attachments/729671788187091024/1095905788763066388/Screenshot_2023-04-13-10-56-28-989_com.roblox.client.jpg"));
 		activity.put("assets", assets);
 
 		// Buttons
-		ArrayMap<String, Object> button = new ArrayMap<>();
+		ArrayMap<String, String> button = new ArrayMap<>();
 		button.put("label", "Test button 1");
-		button.put("url", "https://github.com");
+		button.put("url", "https://github.com/ThatMG393/ESMRework");
 		
-		activity.put("buttons", button);
-
-		ArrayMap<String, Object> timestamps = new ArrayMap<>();
+		ArrayMap<String, String> button2 = new ArrayMap<>();
+		button2.put("label", "Test button 2");
+		button2.put("url", "https://github.com/ThatMG393/ESMRework");
+		
+		// activity.put("buttons", new Object[] { button, button2 });
+		
+		ArrayMap<String, Long> timestamps = new ArrayMap<>();
 		timestamps.put("start", current);
 		activity.put("timestamps", timestamps);
-
-		presence.put("activities", new Object[] {activity});
-		presence.put("afk", true);
+	
+		ArrayMap<String, Object> presence = new ArrayMap<>();
+		presence.put("activities", new Object[] { activity });
+		presence.put("afk", false);
 		presence.put("since", current);
-		presence.put("status", "dnd");
-
+		presence.put("status", (discordProfile.getStatus() == null ? "dnd" : discordProfile.getStatus()) );
+		
 		ArrayMap<String, Object> arr = new ArrayMap<>();
 		arr.put("op", 3);
 		arr.put("d", presence);
 		
-		String t = GSON.toJson(arr);
-		LOG.d(t);
-		send(t);
+		LOG.d(GSON.toJson(arr));
+		send(GSON.toJson(arr));
 	}
 	
 	private String processImageLink(String link) {
@@ -222,6 +241,7 @@ public class RPCSocketClient extends WebSocketClient {
 			// https://cdn.discordapp.com/whatever.png_or_gif
 			return link.replace("cdn.discordapp.com/", "../../") + "#";
 		}
+		
 		return link;
 	}
 }

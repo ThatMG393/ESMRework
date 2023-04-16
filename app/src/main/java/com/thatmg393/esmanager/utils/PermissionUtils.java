@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.provider.Settings;
 
+import android.util.ArrayMap;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.annotation.RequiresApi;
@@ -70,16 +71,28 @@ public class PermissionUtils {
 		}
 	}
 	
-	public static void checkDrawOverlayPermission(Context context) {
-		if (!Settings.canDrawOverlays(context)) {
+	public static boolean checkDrawOverlayPermission(Context context) {
+		return Settings.canDrawOverlays(context);
+	}
+	
+	public static void requestDrawOverlayPermission(Context context, PermissionResult pmr) {
+		if (!checkDrawOverlayPermission(context)) {
 			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
 					Uri.parse("package:" + context.getPackageName()));
 					
 					
 			ActivityUtils.getInstance().createNewARLI(new ActivityResultCallback<ActivityResult>() {
 				@Override
-				public void onActivityResult(ActivityResult result) { /* Stub */ }
+				public void onActivityResult(ActivityResult result) {
+					if (checkDrawOverlayPermission(context)) {
+						pmr.onReturn(Status.GRANTED);
+					} else {
+						pmr.onReturn(Status.DENIED);
+					}
+				}
 			}).launch(intent);
+		} else {
+			pmr.onReturn(Status.GRANTED);
 		}
 	}
 	
@@ -97,16 +110,20 @@ public class PermissionUtils {
 		return false;
 	}
 	
-	public static boolean[] checkForPermissions(Activity activity, String[] permissions, int requestCode) {
+	public static ArrayMap<String, Boolean> checkForPermissions(Activity activity, String[] permissions, int requestCode) {
 		if (permissions == null) return null;
 
-		boolean[] isPermissionAllowed = new boolean[permissions.length];
+		ArrayMap<String, Boolean> isPermissionAllowed = new ArrayMap<>();
 		if (permissions.length > 1) {
-			for (int idx = 0; idx < isPermissionAllowed.length; idx++) {
-				isPermissionAllowed[idx] = checkForPermission(activity, permissions[idx], requestCode);
+			for (int idx = 0; idx < permissions.length; idx++) {
+				isPermissionAllowed.put(permissions[idx], checkForPermission(activity, permissions[idx], requestCode));
 			}
 		}
 		
 		return isPermissionAllowed;
+	}
+	
+	public static interface PermissionResult {
+		public void onReturn(Status returnValue);
 	}
 }

@@ -30,8 +30,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 		projectPath = GlobalConstants.ESM_ROOT_FOLDER + "/Roblox AFS Script";
+		super.onCreate(savedInstanceState);
     }
 	
 	@Override
@@ -62,6 +62,13 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorTabLayout.addTab(editorTabLayout.newTab().setText(FilenameUtils.getName(filePath)));
 	}
 	
+	public void removeTab(int position) {
+		if (editorTabLayout.getTabCount() >= 1 && position < editorTabLayout.getTabCount()) {
+			editorTabLayout.removeTabAt(position);
+			editorViewPagerAdapter.removeFragment(position);
+		}
+	}
+	
 	@Override
     public void onTabSelected(TabLayout.Tab tab) {
         editorViewPager.setCurrentItem(tab.getPosition());
@@ -78,8 +85,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			lFrag.add(ptef);
 		}
 		
-		public void removeFragment(ProjectTabEditorFragment fragObj) {
-			lFrag.remove(fragObj);
+		public void removeFragment(int position) {
+			lFrag.remove(position);
 		}
 		
     	@Override
@@ -118,6 +125,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	
 	private void _destroy() {
 		editorViewPagerAdapter.lFrag.clear();
+		editorViewPager.removeAllViews();
 		LspEditorManager.closeAllManager();
 		LSPManager.getInstance().stopLSPServices();
 	}

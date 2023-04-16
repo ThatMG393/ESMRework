@@ -62,11 +62,7 @@ public class LSPManager {
 	}
 	
 	public void stopLSPServices() {
-		try {
-			languageServerRegistry.values().forEach(LanguageServerModel::stopLSPService);
-		} catch (IllegalArgumentException ignore) {
-			ignore.printStackTrace(System.err);
-		}
+		languageServerRegistry.values().forEach(LanguageServerModel::stopLSPService);
 	}
 	
 	public void registerNewLSPServer(String language, LanguageServerModel lspModel) {
