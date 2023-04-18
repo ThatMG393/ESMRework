@@ -3,6 +3,7 @@ package com.thatmg393.esmanager.utils;
 import io.github.rosemoe.sora.text.Content;
 import io.github.rosemoe.sora.text.ContentCreator;
 
+import io.github.rosemoe.sora.text.ContentIO;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,6 +44,16 @@ public class FileUtils {
 		} catch (IOException e) {
    		 e.printStackTrace();
    	 }
+	}
+	
+	public static boolean writeToFileUsingContent(Content text, String path) {
+		try {
+			ContentIO.writeTo(text, new FileOutputStream(path), true);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	public static void appendToFile(String path, String contents) {

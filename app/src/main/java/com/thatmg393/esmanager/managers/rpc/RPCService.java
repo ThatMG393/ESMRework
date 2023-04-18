@@ -38,6 +38,8 @@ import java.util.Queue;
 @SuppressWarnings("deprecation")
 public class RPCService extends Service {
 	private static final String CHANNEL_ID = "DRPCService";
+	private static final int NOTIFICATION_ID = 1;
+	
 	private final RPCBinder binder = new RPCBinder();
 	
 	private ThreadPlus websocketThread;
@@ -54,8 +56,9 @@ public class RPCService extends Service {
 	@Override
 	public boolean onUnbind(Intent smth) {
 		websocketThread.kill();
-		getNotificationManager().cancel(1);
+		getNotificationManager().cancel(NOTIFICATION_ID);
 		
+		stopSelf();
 		return true;
 	}
 	
@@ -90,9 +93,9 @@ public class RPCService extends Service {
 				.setAutoCancel(false)
 				.setAllowSystemGeneratedContextualActions(false);
 				
-		Notification serviceNotification = notificationBuilder.build();		
-				
-		((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).notify(1, notificationBuilder.build());
+		Notification serviceNotification = notificationBuilder.build();
+		
+		getNotificationManager().notify(NOTIFICATION_ID, notificationBuilder.build());
 	}
 	
 	public void startRPC() {
@@ -154,12 +157,12 @@ public class RPCService extends Service {
 		});
 		
 		notificationBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(tmpSb.toString()));
-		getNotificationManager().notify(1, notificationBuilder.build());
+		getNotificationManager().notify(NOTIFICATION_ID, notificationBuilder.build());
 	}
 	
 	public void updateNotificationTitle(String text) {
 		notificationBuilder.setContentTitle(text);
-		getNotificationManager().notify(1, notificationBuilder.build());
+		getNotificationManager().notify(NOTIFICATION_ID, notificationBuilder.build());
 	}
 	
 	private NotificationManager getNotificationManager() {

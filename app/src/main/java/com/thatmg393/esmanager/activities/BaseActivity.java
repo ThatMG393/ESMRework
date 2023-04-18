@@ -5,7 +5,6 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.itsaky.utils.logsender.LogSender;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.managers.DRPCManager;
 import com.thatmg393.esmanager.managers.LSPManager;
@@ -20,20 +19,27 @@ import java.io.Writer;
 
 public class BaseActivity extends AppCompatActivity {
 	private static Thread.UncaughtExceptionHandler thrUEH;
+	private boolean changeConfig;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		init();
+		
+		if (!changeConfig) {
+			init();
+		} else { changeConfig = false; }
     }
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		unsetUEH();
+		
+		if (!isChangingConfigurations()) {
+			unsetUEH();
+		} else { changeConfig = true; }
 	}
 	
-    private static final void setUEH() {
+    private final void setUEH() {
 		if (thrUEH != null) { Log.w("BaseActivity", "Attempt to initialize 'Thread.UncaughtExceptionHandler' even though it's already initialized!"); return; }
 		
         thrUEH = Thread.getDefaultUncaughtExceptionHandler();
@@ -42,6 +48,12 @@ public class BaseActivity extends AppCompatActivity {
             public void uncaughtException(Thread curThr, Throwable ex) {
                 Log.e("BaseActivity", curThr + " made an exception! " + fullStacktrace(ex));
 				FileUtils.appendToFile(GlobalConstants.ESM_ROOT_FOLDER + "/err.txt", fullStacktrace(ex));
+				
+				if (curThr.getState() == Thread.State.BLOCKED) {
+					destroy();
+					finish();
+				}
+				
 				/*
                 PendingIntent pdInt = PendingIntent.getActivity(getApplicationContext(), 69, caInt, PendingIntent.FLAG_CANCEL_CURRENT);
                 AlarmManager aMan = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -56,7 +68,7 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 	
-	private static final void unsetUEH() {
+	private final void unsetUEH() {
 		Thread.setDefaultUncaughtExceptionHandler(thrUEH);
 	}
 	
@@ -64,8 +76,15 @@ public class BaseActivity extends AppCompatActivity {
 	// If initializing little things make sure "setUEH()" is present!
 	// Always call "super.init()" when extending this method!
 	public void init() {
-		LogSender.startLogging(getApplication());
 		setUEH();
+	}
+	
+	public void destroy() {
+		LSPManager.getInstance().dispose();
+		DRPCManager.getInstance().dispose();
+		
+		StorageUtils.dispose();
+		ActivityUtils.dispose();
 	}
 	
 	private static final String fullStacktrace(Throwable err) {
@@ -73,10 +92,13 @@ public class BaseActivity extends AppCompatActivity {
 		final PrintWriter printWriter = new PrintWriter(result);
         
 		try {
+			int loopTimes = 0;
+			
 			Throwable cause = err;
-			while (cause != null) {
+			while (cause != null && loopTimes <= 15) {
 				cause.printStackTrace(printWriter);
 				cause = cause.getCause();
+				loopTimes++;
 			}
         
 			printWriter.close();

@@ -28,9 +28,9 @@ class LSPUtilsKt {
 		@JvmStatic var instance: LSPUtilsKt = LSPUtilsKt()
 	}
 	
-	public final fun generateServerDefinition(language: String, eventListener: EventHandler.EventListener): CustomLanguageServerDefinition {
+	public final fun generateServerDefinition(language: String, port: Int, eventListener: EventHandler.EventListener): CustomLanguageServerDefinition {
 		val customLSDefinition = object : CustomLanguageServerDefinition(".$language", 
-			{ SocketStreamConnectionProvider { LSPManager.getInstance().languageServerRegistry.get(language)?.getLspPort() } }) {
+			{ SocketStreamConnectionProvider { port } }) {
 				override fun getEventListener(): EventHandler.EventListener {
 					return eventListener
 				}
@@ -43,6 +43,7 @@ class LSPUtilsKt {
 		val esm_root = GlobalConstants.ESM_ROOT_FOLDER
 		
 		try {
+			println("Will connect to the LSP")
 			withContext(Dispatchers.IO) {
 				lspEditor.connectWithTimeout()
 				lspEditor.requestManager?.didChangeWorkspaceFolders(

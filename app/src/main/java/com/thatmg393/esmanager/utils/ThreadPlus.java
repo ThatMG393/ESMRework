@@ -14,6 +14,8 @@ public class ThreadPlus implements Runnable {
 	private volatile boolean isRunning;
 	private volatile boolean isDead;
 	
+	private boolean loopThread = true;
+	
 	private final Thread thread;
 	private final Runnable runnable;
 	
@@ -23,12 +25,22 @@ public class ThreadPlus implements Runnable {
 		
 		thread.setDaemon(true);
 	}
+	
+	public ThreadPlus(@NonNull Runnable runnable, boolean loopThread) {
+		this.runnable = runnable;
+		this.thread = new Thread(this);
+		this.loopThread = loopThread;
+		
+		thread.setDaemon(true);
+	}
 
 	@Override
 	public void run() {
-		isDead = false;
 		while (!thread.isInterrupted()) {
-			if (isRunning && !isDead) {
+			if (isRunning() && !loopThread) {
+				runnable.run();
+				stop();
+			} else if (isRunning() && loopThread) {
 				runnable.run();
 			}
 		}
@@ -39,11 +51,11 @@ public class ThreadPlus implements Runnable {
 	/** Starts the current {@link java.lang.Thread}
 	 */
 	public synchronized void start() {
-		if (isRunning || isDead) return;
+		if (isRunning()) return;
 		
 		try {
-			isRunning = true;
 			thread.start();
+			isRunning = true;
 		} catch (IllegalThreadStateException itse) {
 			LOG.e("Thread is already running or dead!");
 			LOG.i("The thread state is " + thread.getState().name());
@@ -53,7 +65,7 @@ public class ThreadPlus implements Runnable {
 	/** Stops the current {@link java.lang.Thread}
 	 */
 	public synchronized void stop() {
-		if (!isRunning || isDead) return;
+		if (!isRunning()) return;
 		isRunning = false;
 	}
 	
@@ -70,7 +82,7 @@ public class ThreadPlus implements Runnable {
 	 * @return is the thread running
 	 */
 	public synchronized boolean isRunning() {
-		return this.isRunning;
+		return this.isRunning && !this.isDead;
 	}
 	
 	/** Gets the currently created {@link java.lang.Thread}

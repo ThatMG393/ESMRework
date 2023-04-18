@@ -4,8 +4,11 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import androidx.annotation.MainThread;
+
 import com.tang.vscode.LuaLanguageClient;
 import com.tang.vscode.LuaLanguageServer;
+import com.thatmg393.esmanager.interfaces.ILanguageServerCallback;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
@@ -18,21 +21,23 @@ import org.eclipse.lsp4j.jsonrpc.Launcher;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.Channels;
+import java.util.ArrayList;
 
 public class LuaLSPService extends BaseLSPService {
     private final Logger LOG = new Logger("ESM/LSPManager.LSPService");
     private final LuaLSPBinder binder = new LuaLSPBinder();
 	
-	private boolean isServerThreadAlive;
     private volatile boolean isServerRunning;
 	
 	private ThreadPlus serverThread;
 	
 // Server variables {
-	private ServerSocket serverSocket;
-	private Socket serverClientSocket;
+	private AsynchronousServerSocketChannel serverSocket;
+	private AsynchronousSocketChannel serverClientSocket;
 	
 	private InputStream serverIS;
 	private OutputStream serverOS;
@@ -41,21 +46,22 @@ public class LuaLSPService extends BaseLSPService {
 // }
 	
     @Override
-    public IBinder onBind(Intent smth) { return binder; }
+    public IBinder onBind(Intent smth) {
+		startLSPServer();
+		return binder;
+	}
 
     @Override
     public boolean onUnbind(Intent smth) {
         stopLSPServer();
-		
         stopSelf();
+		
         return true;
     }
 
     @Override
     public void onCreate() {
         serverThread = new ThreadPlus(() -> {
-			isServerThreadAlive = true;
-			
 			try {
 				initializeServer();
 				startServer();
@@ -65,44 +71,50 @@ public class LuaLSPService extends BaseLSPService {
 					Toast.makeText(getApplicationContext(), "LSP failed!", Toast.LENGTH_SHORT).show();
 				});
 			}
-				
-			isServerThreadAlive = false;
-		});
+			
+			fullyCloseServer();
+		}) {
+			@Override
+			public void stop() {
+				fullyCloseServer();
+				super.stop();
+			}
+		};
     }
 	
 	@Override
     public void startLSPServer() {
         LOG.i("Starting Lua LSP Server");
-        if (!isServerThreadAlive) serverThread.start();
+        if (!serverThread.isRunning()) serverThread.start();
     }
 	
 	@Override
 	public void stopLSPServer() {
 		LOG.i("Gracefully shutting down the Lua LSP Server");
-		if (isServerThreadAlive) serverThread.stop();
+		if (serverThread.isRunning()) serverThread.stop();
 	}
 
     @Override
     protected void startServer() throws Exception {
-		LOG.d("Get server connections...");
-		serverClientSocket = serverSocket.accept();
+		callbackOnStart();
+		
+		LOG.d("Wait for someone to connect");
+		serverClientSocket = serverSocket.accept().get();
+		LOG.d("Somebody connected!");
 		
 		while (serverThread.isRunning()) {
-			// if (!isServerRunning()) {
-				serverIS = serverClientSocket.getInputStream();
-				serverOS = serverClientSocket.getOutputStream();
+			if (!isServerRunning()) {
+				serverIS = Channels.newInputStream(serverClientSocket);
+				serverOS = Channels.newOutputStream(serverClientSocket);
 				
 				Launcher serverLauncher = Launcher.createLauncher(luaServer, LuaLanguageClient.class, serverIS, serverOS);
 				
 				luaServer.connect((LuaLanguageClient) serverLauncher.getRemoteProxy());
 				serverLauncher.startListening();
-				isServerRunning = true;
 				
-				LOG.d("Server is up and running!");
-			// }
+				isServerRunning = true;
+			}
 		}
-		
-		fullyCloseServer();
     }
 	
 	private void fullyCloseServer() {
@@ -118,6 +130,7 @@ public class LuaLSPService extends BaseLSPService {
 		} catch (IOException ignore) { }
 		
 		isServerRunning = false;
+		callbackOnShutdown();
 	}
 	
 	private synchronized void initializeServer() throws Exception {
@@ -126,10 +139,8 @@ public class LuaLSPService extends BaseLSPService {
 		if (serverSocket == null) {
 			LOG.d("Binding serverSocket to 'localhost:" + serverPort + "'");
 			
-			// serverSocket = AsynchronousServerSocketChannel.open();
-			// serverSocket.bind(new InetSocketAddress("localhost", serverPort));
-			
-			serverSocket = new ServerSocket(serverPort);
+			serverSocket = AsynchronousServerSocketChannel.open();
+			serverSocket.bind(new InetSocketAddress("localhost", serverPort));
 		}
 	}
 	
@@ -142,6 +153,28 @@ public class LuaLSPService extends BaseLSPService {
 	
 	@Override
     public boolean isServerRunning() {
-        return isServerRunning;
+        return isServerRunning && serverThread.isRunning();
     }
+	
+	private ArrayList<ILanguageServerCallback> listeners = new ArrayList<>();
+	@Override
+	public void addServerListener(ILanguageServerCallback ilsc) {
+		listeners.add(ilsc);
+		
+		if (isServerRunning) {
+			ilsc.onStart();
+		} else {
+			ilsc.onShutdown();
+		}
+	}
+	
+	@MainThread
+	private void callbackOnStart() {
+		listeners.forEach(ILanguageServerCallback::onStart);
+	}
+	
+	@MainThread
+	private void callbackOnShutdown() {
+		listeners.forEach(ILanguageServerCallback::onShutdown);
+	}
 }

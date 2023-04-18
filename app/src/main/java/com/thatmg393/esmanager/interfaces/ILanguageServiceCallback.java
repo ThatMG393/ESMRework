@@ -1,4 +1,5 @@
 package com.thatmg393.esmanager.interfaces.impl;
+import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.Logger;
 
 public interface ILanguageServiceCallback {
@@ -7,6 +8,8 @@ public interface ILanguageServiceCallback {
 	public default void onReady() {
 		LOG.i("Language service started!");
 	}
+	
+	public default void onReady(BaseLSPService serviceInstance) { }
 	
 	public default void onShutdown() {
 		LOG.e("Language service SHUTDOWN!");

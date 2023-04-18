@@ -11,17 +11,17 @@ import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.EditorUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;
 
-import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition;
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
-import java.util.ArrayList;
+
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.services.LanguageServer;
+
+import java.util.ArrayList;
 
 public class LanguageServerModel implements ServiceConnection {
 	private static final Logger LOG = new Logger("ESM/LanguageServerModel");
@@ -40,7 +40,7 @@ public class LanguageServerModel implements ServiceConnection {
 		this.lspServiceIntent = new Intent(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), serviceClass);
         this.lspPort = lspPort;
 		
-		this.serverDefinition = LSPUtils.generateServerDefinition("." + serverLanguage, new EventHandler.EventListener() {
+		this.serverDefinition = LSPUtils.generateServerDefinition("." + serverLanguage, lspPort, new EventHandler.EventListener() {
 			@Override
 			public void initialize(LanguageServer server, InitializeResult result) {
 				LOG_LSP.d("LSP has been started and initialized!");
@@ -89,11 +89,9 @@ public class LanguageServerModel implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName cn, IBinder binder) {
 		SERVICE_INSTANCE = ((BaseLSPBinder)binder).getInstance();
-		
-		SERVICE_INSTANCE.startLSPServer();
 		callbackOnReady();
 	}
-
+	
     @Override
     public void onServiceDisconnected(ComponentName cn) {
 		callbackOnShutdown();
@@ -112,7 +110,10 @@ public class LanguageServerModel implements ServiceConnection {
 	}
 	
 	public void callbackOnReady() {
-		lspCallbackArr.forEach(ILanguageServiceCallback::onReady);
+		lspCallbackArr.forEach((callback) -> {
+			callback.onReady();
+			callback.onReady(SERVICE_INSTANCE);
+		});
 	}
 	public void callbackOnShutdown() {
 		lspCallbackArr.forEach(ILanguageServiceCallback::onShutdown);

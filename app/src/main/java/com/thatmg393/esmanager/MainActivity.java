@@ -1,16 +1,12 @@
 package com.thatmg393.esmanager;
 
-import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-
 import android.widget.Toast;
+
 import com.google.android.material.button.MaterialButton;
-import com.itsaky.utils.logsender.LogSender;
 import com.thatmg393.esmanager.activities.BaseActivity;
-import com.thatmg393.esmanager.interfaces.IOnProcessListener;
 import com.thatmg393.esmanager.managers.DRPCManager;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
@@ -111,16 +107,11 @@ public class MainActivity extends BaseActivity {
 	}
 	
 	@Override
-	protected void onDestroy() {
+	public void onDestroy() {
 		super.onDestroy();
-		Log.i("BaseActivity", "Close before stop");
 		
-		LSPManager.getInstance().dispose();
-		DRPCManager.getInstance().dispose();
-		
-		StorageUtils.dispose();
-		ActivityUtils.dispose();
-		
-		Log.i("BaseActivity", "Done!");
+		if (!isChangingConfigurations()) {
+			destroy();
+		}
 	}
 }
