@@ -14,11 +14,25 @@ public class EditorUtils {
 	}
 	
 	public static TextMateLanguage createLanguage(String language) {
-		return EditorUtilsKt.getInstance().createNewLanguage(language);
+		try {
+			return EditorUtilsKt.getInstance().createNewLanguage(language);
+		} catch (Exception e) {
+			LOG.w(language + " is not supported!");
+			e.printStackTrace(System.err);
+		}
+		
+		return null;
 	}
 	
 	public static void initializeEditor(CodeEditor editor, String language) {
-		editor.setEditorLanguage(createLanguage(language));
+		TextMateLanguage tml = createLanguage(language);
+		if (tml != null) editor.setEditorLanguage(tml);
+		
+		ensureDarculaTheme(editor);
+	}
+	
+	public static void initializeEditor(CodeEditor editor, TextMateLanguage language) {
+		if (language != null) editor.setEditorLanguage(language);
 		ensureDarculaTheme(editor);
 	}
 	

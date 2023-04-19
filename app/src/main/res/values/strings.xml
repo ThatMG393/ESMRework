@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">ESManager</string>
 	<string name="leak_canary_display_activity_label">ESMLeaks</string>
+	
+	<string name="nav_drawer_open">Open Navigation Drawer</string>
+	<string name="nav_drawer_close">Open Navigation Drawer</string>
 </resources>

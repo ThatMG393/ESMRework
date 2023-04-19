@@ -1,6 +1,7 @@
 package com.thatmg393.esmanager;
 
 import android.os.Bundle;
+import android.util.ArrayMap;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -8,19 +9,23 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.internal.NavigationMenu;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.thatmg393.esmanager.activities.BaseActivity;
+import com.thatmg393.esmanager.fragments.projectfragments.ProjectFileTreeViewFragment;
 import com.thatmg393.esmanager.fragments.projectfragments.ProjectTabEditorFragment;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.utils.FileUtils;
-
-import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 
 import io.github.rosemoe.sora.widget.SymbolInputView;
 import org.apache.commons.io.FilenameUtils;
@@ -32,17 +37,33 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	private static String projectPath = null;
 	public static String getProjectPath() { return projectPath; }
 	
+	private DrawerLayout editorDrawerLayout;
+	private Toolbar projectToolbar;
 	private TabLayout editorTabLayout;
 	private ViewPager2 editorViewPager;
+	private NavigationView editorFileDrawer;
+	
 	private ProjectEditorViewPager editorViewPagerAdapter;
+	private ProjectFileTreeViewFragment editorFileTreeViewFragment = new ProjectFileTreeViewFragment();
 	
 	private Menu optionMenu;
+	
+	private ArrayMap<String, Boolean> openedFilesPath = new ArrayMap<>();
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		projectPath = GlobalConstants.ESM_ROOT_FOLDER + "/Roblox AFS Script";
 		super.onCreate(savedInstanceState);
-		setSupportActionBar((Toolbar) findViewById(R.id.project_toolbar));
+		toggleViews(true);
+		
+		SymbolInputView symbolInput = findViewById(R.id.project_symbol_input);
+		symbolInput.addSymbols(
+			new String[] {
+				"->", "{", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
+			}, new String[] {
+				"\t", "{ }", "}", "()", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
+			}
+		);
     }
 	
 	@Override
@@ -50,6 +71,19 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		super.init();
 		setContentView(R.layout.activity_project);
 		LSPManager.getInstance().startLSPForAll();
+		
+		projectToolbar = findViewById(R.id.project_toolbar);
+		setSupportActionBar(projectToolbar);
+		
+		editorDrawerLayout = findViewById(R.id.project_drawer_layout);
+		ActionBarDrawerToggle drawerToggler = new ActionBarDrawerToggle(this, editorDrawerLayout, projectToolbar, R.string.nav_drawer_open, R.string.nav_drawer_close);
+		editorDrawerLayout.addDrawerListener(drawerToggler);
+		drawerToggler.syncState();
+		
+		editorFileDrawer = findViewById(R.id.project_file_drawer);
+		getSupportFragmentManager().beginTransaction()
+			.replace(R.id.project_file_drawer_fragment, editorFileTreeViewFragment)
+			.commit();
 		
 		editorViewPagerAdapter = new ProjectEditorViewPager(getSupportFragmentManager(), getLifecycle());
 		
@@ -60,32 +94,41 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorTabLayout = findViewById(R.id.project_editors_tab);
 		editorTabLayout.addOnTabSelectedListener(this);
 		
-		SymbolInputView symbolInput = findViewById(R.id.project_symbol_input);
-		symbolInput.addSymbols(
-			new String[] {
-				""
-			}, new String[] {
-				""
-			}
-		);
-		
-		newEditorView(projectPath + "/MGUI.lua");
-		newEditorView(projectPath + "/ThreadLib.lua");
+		editorFileTreeViewFragment.addListener((path) -> { newEditorView(path); });
 	}
 	
-	public final void newEditorView(String filePath) {
-		toggleViews(false);
+	public final void newEditorView(final String filePath) {
+		if (openedFilesPath.get(filePath) != null && openedFilesPath.get(filePath)) {
+			int position = 0;
+			for (int index = 0; index < editorViewPagerAdapter.lFrag.size(); index++) {
+				if (editorViewPagerAdapter.lFrag.get(index).currentFilePath == filePath) {
+					position = index;
+				}
+			}
+			
+			if (editorTabLayout.getSelectedTabPosition() != position) {
+				editorTabLayout.getTabAt(position).select();
+				editorViewPager.setCurrentItem(position);
+			}
+			return;
+		}
 		
 		ProjectTabEditorFragment codeEditorFragment = new ProjectTabEditorFragment();
 		codeEditorFragment.initializeEditor(getApplicationContext(), filePath);
 		
 		editorViewPagerAdapter.addFragment(codeEditorFragment);
 		editorTabLayout.addTab(editorTabLayout.newTab().setText(FilenameUtils.getName(filePath)));
+		editorViewPager.setCurrentItem(editorTabLayout.getTabCount());
+		
+		openedFilesPath.put(filePath, true);
+		toggleViews(false);
 	}
 	
 	public void removeEditorView(int position) {
 		if (editorTabLayout.getTabCount() == 0) return;
-		else if (editorTabLayout.getTabCount() == 1) {
+
+		openedFilesPath.put(editorViewPagerAdapter.lFrag.get(position).currentFilePath, false);
+		if (editorTabLayout.getTabCount() == 1) {
 			editorTabLayout.removeTabAt(position);
 			editorViewPagerAdapter.removeFragment(position);
 			
@@ -132,6 +175,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		switch (menuItem.getItemId()) {
 			case R.id.project_save_file:
+				if (editorTabLayout.getTabCount() == 0) return true;
+				
 				ProjectTabEditorFragment tmpPtef = editorViewPagerAdapter.createFragment(editorTabLayout.getSelectedTabPosition());
 				if (FileUtils.writeToFileUsingContent(tmpPtef.editor.getText(), tmpPtef.currentFilePath)) {
 					Toast.makeText(getApplicationContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
@@ -140,6 +185,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 				}
 				return true;
 			case R.id.project_save_all_file:
+				if (editorTabLayout.getTabCount() == 0) return true;
+				
 				editorViewPagerAdapter.lFrag.forEach((fragment) -> {
 					if (!FileUtils.writeToFileUsingContent(fragment.editor.getText(), fragment.currentFilePath)) {
 						Toast.makeText(getApplicationContext(), "Failed to save " + fragment.currentFilePath, Toast.LENGTH_SHORT).show();
@@ -154,6 +201,67 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		
 		return false;
 	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		_destroy();
+	}
+	
+	@Override
+	public void onBackPressed() {
+		if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) {
+			editorDrawerLayout.closeDrawer(GravityCompat.END);
+		} /* else if () {
+			
+		} */ else { 
+			_destroy();
+			super.onBackPressed();
+		}
+	}
+	
+	private void _destroy() {
+		if (isChangingConfigurations()) return;
+		
+		try {
+			getSupportFragmentManager().beginTransaction()
+				.remove(editorFileTreeViewFragment)
+				.commit();
+		} catch (RuntimeException ignore) { }
+		
+		editorViewPagerAdapter.removeAllFragments();
+		LSPManager.getInstance().stopLSPServices();
+	}
+	
+	private void toggleViews(boolean noFragmentLeft) {
+		if (noFragmentLeft) {
+			findViewById(R.id.project_no_editor_layout).setVisibility(View.VISIBLE);
+			findViewById(R.id.project_symbol_input_container).setVisibility(View.GONE);
+			
+			editorTabLayout.setVisibility(View.GONE);
+			editorViewPager.setVisibility(View.GONE);
+			
+			if (optionMenu != null) {
+				optionMenu.findItem(R.id.project_save_file).setEnabled(false);
+				optionMenu.findItem(R.id.project_save_all_file).setEnabled(false);
+			}
+		} else {
+			findViewById(R.id.project_no_editor_layout).setVisibility(View.GONE);
+			findViewById(R.id.project_symbol_input_container).setVisibility(View.VISIBLE);
+			
+			editorTabLayout.setVisibility(View.VISIBLE);
+			editorViewPager.setVisibility(View.VISIBLE);
+			
+			if (optionMenu != null) {
+				optionMenu.findItem(R.id.project_save_file).setEnabled(true);
+				optionMenu.findItem(R.id.project_save_all_file).setEnabled(true);
+			}
+		}
+	}
+	
+	@Override
+    public void onTabUnselected(TabLayout.Tab tab) { }
+	
 	
 	private class ProjectEditorViewPager extends FragmentStateAdapter {
 		private List<ProjectTabEditorFragment> lFrag = new ArrayList<>();
@@ -195,50 +303,5 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
     	public int getItemCount() {
        	 return lFrag.size();
     	}
-	}
-	
-	@Override
-    public void onTabUnselected(TabLayout.Tab tab) { }
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		_destroy();
-	}
-	
-	@Override
-	public void onBackPressed() {
-		super.onBackPressed();
-		_destroy();
-	}
-	
-	private void _destroy() {
-		if (isChangingConfigurations()) return;
-		editorViewPagerAdapter.removeAllFragments();
-		LSPManager.getInstance().stopLSPServices();
-	}
-	
-	private void toggleViews(boolean noFragmentLeft) {
-		if (noFragmentLeft) {
-			editorTabLayout.setVisibility(View.GONE);
-			editorViewPager.setVisibility(View.GONE);
-			
-			findViewById(R.id.project_no_editor_layout).setVisibility(View.GONE);
-			
-			if (optionMenu != null) {
-				optionMenu.findItem(R.id.project_save_file).setEnabled(false);
-				optionMenu.findItem(R.id.project_save_all_file).setEnabled(false);
-			}
-		} else {
-			editorTabLayout.setVisibility(View.VISIBLE);
-			editorViewPager.setVisibility(View.VISIBLE);
-			
-			findViewById(R.id.project_no_editor_layout).setVisibility(View.VISIBLE);
-			
-			if (optionMenu != null) {
-				optionMenu.findItem(R.id.project_save_file).setEnabled(true);
-				optionMenu.findItem(R.id.project_save_all_file).setEnabled(true);
-			}
-		}
 	}
 }

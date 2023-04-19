@@ -19,7 +19,6 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		PermissionUtils.askForUsageStatsPermission(getApplicationContext());
 		
 		/*

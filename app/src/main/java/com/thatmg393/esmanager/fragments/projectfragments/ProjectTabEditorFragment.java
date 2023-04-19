@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 
-import com.thatmg393.esmanager.ProjectActivity;
 import com.thatmg393.esmanager.interfaces.ILanguageServerCallback;
 import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.LSPManager;
@@ -18,10 +17,8 @@ import com.thatmg393.esmanager.utils.EditorUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;
 
-import io.github.rosemoe.sora.lang.Language;
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.lsp.editor.LspEditor;
-import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
-import io.github.rosemoe.sora.lsp.utils.URIUtils;
 import io.github.rosemoe.sora.widget.CodeEditor;
 
 import org.apache.commons.io.FilenameUtils;
@@ -32,7 +29,7 @@ public class ProjectTabEditorFragment extends Fragment {
 	public CodeEditor editor;
 	public LspEditor lspEditor;
 	
-	public Language editorLanguage;
+	public TextMateLanguage editorLanguage;
 	
 	public String currentFilePath;
 	public String fileExtension;
@@ -53,8 +50,7 @@ public class ProjectTabEditorFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 		
-		EditorUtils.initializeEditor(editor, fileExtension);
-		EditorUtils.openFile(editor, currentFilePath);
+		EditorUtils.initializeEditor(editor, editorLanguage);
 		
 		LanguageServerModel lsm = LSPManager.getInstance().languageServerRegistry.get(fileExtension);
 		if (lsm != null) {
@@ -70,6 +66,8 @@ public class ProjectTabEditorFragment extends Fragment {
 				}
 			});
 		}
+		
+		EditorUtils.openFile(editor, currentFilePath);
     }
 	
 	@Override
@@ -81,13 +79,8 @@ public class ProjectTabEditorFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		System.out.println("DESTORYED TAVDBEJWOOFJGMFK!!!!^#^$&$&&#");
 		
-		try {
-			if (lspEditor != null) lspEditor.close();
-			if (editor != null) editor.release();
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
+		if (lspEditor != null) lspEditor.close();
+		if (editor != null) editor.release();
 	}
 }
