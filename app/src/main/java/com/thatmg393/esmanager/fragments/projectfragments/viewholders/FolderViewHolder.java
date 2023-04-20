@@ -35,6 +35,6 @@ public class FolderViewHolder extends TreeViewHolder {
     }
 	
 	private void setDrawableRight(@DrawableRes int drawable) {
-		tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, drawable, 0);
+		tv.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
 	}
 }

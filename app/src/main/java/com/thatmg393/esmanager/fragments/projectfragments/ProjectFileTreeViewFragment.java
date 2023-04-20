@@ -40,19 +40,19 @@ public class ProjectFileTreeViewFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 		initialize();
 		
-		TreeNode tmpNode = crawlStorageFiles(new File(ProjectActivity.getProjectPath()));
-		if (tmpNode == null) {
+		File parentPath = new File(ProjectActivity.getProjectPath());
+		if (!parentPath.exists()) {
 			rv.setVisibility(View.GONE);
 			requireView().findViewById(R.id.project_treeview_no_files_layout).setVisibility(View.VISIBLE);
 		} else {
+			TreeNode tmpNode = crawlStorageFiles(parentPath);
+			
 			tnList.add(tmpNode);
 			tvAdapter.updateTreeNodes(tnList);
 		}
 	}
 	
 	public TreeNode crawlStorageFiles(File parentPath) {
-		if (!parentPath.exists()) return null;
-	
     	if (parentPath.isDirectory())  {
         	TreeNode node = new TreeNode(parentPath, R.layout.project_folder_tree_view);
         	for (File file : parentPath.listFiles()) {

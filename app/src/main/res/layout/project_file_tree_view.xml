@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView
 	 xmlns:android="http://schemas.android.com/apk/res/android"
-	 android:layout_height="32dp"
+	 android:layout_height="42dp"
 	 android:layout_width="wrap_content"
-	 android:drawablePadding="8dp"
-	 android:drawableRight="@mipmap/ic_launcher_round"
+	 android:drawablePadding="6dp"
 	 android:gravity="center_vertical"
-	 android:textSize="14sp"
+	 android:padding="4dp"
+	 android:textSize="18sp"
+	 android:drawableRight="@mipmap/ic_launcher_round"
 	 android:id="@+id/project_treeview_file_name"
 	 android:textStyle="bold" />

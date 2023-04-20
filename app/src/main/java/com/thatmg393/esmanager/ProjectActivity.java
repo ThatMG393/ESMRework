@@ -18,7 +18,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.material.internal.NavigationMenu;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.thatmg393.esmanager.activities.BaseActivity;
@@ -28,6 +27,7 @@ import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.utils.FileUtils;
 
 import io.github.rosemoe.sora.widget.SymbolInputView;
+
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.ArrayList;
@@ -47,8 +47,6 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	private ProjectFileTreeViewFragment editorFileTreeViewFragment = new ProjectFileTreeViewFragment();
 	
 	private Menu optionMenu;
-	
-	private ArrayMap<String, Boolean> openedFilesPath = new ArrayMap<>();
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,50 +92,19 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorTabLayout = findViewById(R.id.project_editors_tab);
 		editorTabLayout.addOnTabSelectedListener(this);
 		
-		editorFileTreeViewFragment.addListener((path) -> { newEditorView(path); });
+		editorFileTreeViewFragment.addListener((path) -> {
+			newEditorView(path);
+			if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) editorDrawerLayout.closeDrawer(GravityCompat.END);
+		});
 	}
 	
 	public final void newEditorView(final String filePath) {
-		if (openedFilesPath.get(filePath) != null && openedFilesPath.get(filePath)) {
-			int position = 0;
-			for (int index = 0; index < editorViewPagerAdapter.lFrag.size(); index++) {
-				if (editorViewPagerAdapter.lFrag.get(index).currentFilePath == filePath) {
-					position = index;
-				}
-			}
-			
-			if (editorTabLayout.getSelectedTabPosition() != position) {
-				editorTabLayout.getTabAt(position).select();
-				editorViewPager.setCurrentItem(position);
-			}
-			return;
-		}
-		
-		ProjectTabEditorFragment codeEditorFragment = new ProjectTabEditorFragment();
-		codeEditorFragment.initializeEditor(getApplicationContext(), filePath);
-		
-		editorViewPagerAdapter.addFragment(codeEditorFragment);
-		editorTabLayout.addTab(editorTabLayout.newTab().setText(FilenameUtils.getName(filePath)));
-		editorViewPager.setCurrentItem(editorTabLayout.getTabCount());
-		
-		openedFilesPath.put(filePath, true);
+		editorViewPagerAdapter.addFragment(filePath);
 		toggleViews(false);
 	}
 	
-	public void removeEditorView(int position) {
-		if (editorTabLayout.getTabCount() == 0) return;
-
-		openedFilesPath.put(editorViewPagerAdapter.lFrag.get(position).currentFilePath, false);
-		if (editorTabLayout.getTabCount() == 1) {
-			editorTabLayout.removeTabAt(position);
-			editorViewPagerAdapter.removeFragment(position);
-			
-			toggleViews(true);
-		} else if (editorTabLayout.getTabCount() > 1) {
-			editorTabLayout.removeTabAt(position);
-			editorViewPagerAdapter.removeFragment(position);
-			editorViewPager.setCurrentItem(position);
-		}
+	public final void removeEditorView(int position) {
+		editorViewPagerAdapter.removeFragment(position);
 	}
 	
 	@Override
@@ -262,28 +229,61 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
     public void onTabUnselected(TabLayout.Tab tab) { }
 	
-	
 	private class ProjectEditorViewPager extends FragmentStateAdapter {
+		private ArrayMap<String, ProjectTabEditorFragment> openedFragments = new ArrayMap<>();
+		
 		private List<ProjectTabEditorFragment> lFrag = new ArrayList<>();
 		public ProjectEditorViewPager(FragmentManager fManager, Lifecycle curLifecyle) {
         	super(fManager, curLifecyle);
     	}
 		
-		public void addFragment(ProjectTabEditorFragment ptef) {
-			lFrag.add(ptef);
+		public void addFragment(String filePath) {
+			if (openedFragments.get(filePath) != null) {
+				int fragmentTabPosition = openedFragments.get(filePath).positionOnTab;
+				if (fragmentTabPosition == editorTabLayout.getSelectedTabPosition()) return;
+				
+				editorTabLayout.getTabAt(fragmentTabPosition).select();
+				editorViewPager.setCurrentItem(fragmentTabPosition);
+				
+				return;
+			}
+			
+			ProjectTabEditorFragment codeEditorFragment = new ProjectTabEditorFragment();
+			codeEditorFragment.initializeEditor(getApplicationContext(), filePath);
+			
+			editorTabLayout.addTab(editorTabLayout.newTab().setText(FilenameUtils.getName(filePath)));
+			codeEditorFragment.positionOnTab = editorTabLayout.getTabCount() - 1;
+			editorViewPager.setCurrentItem(codeEditorFragment.positionOnTab);
+			
+			openedFragments.put(filePath, codeEditorFragment);
 		}
 		public void removeFragment(int position) {
-			getSupportFragmentManager().beginTransaction().remove(lFrag.get(position)).commit();
-			lFrag.remove(position);
-		}
-		
-		public void removeAllFragments() {
-			if (lFrag.size() == 0) return;
+			if (editorTabLayout.getTabCount() == 0) return;
 			
-			lFrag.forEach((fragment) -> {
-				getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+			ProjectTabEditorFragment tmp = openedFragments.valueAt(position);
+			if (tmp != null) {
+				getSupportFragmentManager().beginTransaction().remove(tmp).commit();
+			}
+			
+			if (editorTabLayout.getTabCount() == 1) {
+				editorTabLayout.removeTabAt(position);
+				toggleViews(true);
+			} else if (editorTabLayout.getTabCount() > 1) {
+				editorTabLayout.removeTabAt(position);
+				editorViewPager.setCurrentItem(position);
+				toggleViews(false);
+			}
+			
+			openedFragments.setValueAt(position, null);
+		}
+		public void removeAllFragments() {
+			if (openedFragments.size() == 0) return;
+			
+			openedFragments.forEach((key, value) -> {
+				if (value == null) return;
+				getSupportFragmentManager().beginTransaction().remove(value).commit();
 			});
-			lFrag.clear();
+			openedFragments.clear();
 			editorViewPager.removeAllViews();
 		}
 		

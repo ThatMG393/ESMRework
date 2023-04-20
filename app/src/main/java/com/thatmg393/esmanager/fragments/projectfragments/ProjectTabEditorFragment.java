@@ -34,6 +34,8 @@ public class ProjectTabEditorFragment extends Fragment {
 	public String currentFilePath;
 	public String fileExtension;
 	
+	public int positionOnTab;
+	
 	public void initializeEditor(final Context context, final String pathToFile) {
 		editor = new CodeEditor(context);
 		fileExtension = FilenameUtils.getExtension(pathToFile);
