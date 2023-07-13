@@ -41,7 +41,12 @@ public class EditorUtils {
 	}
 	
 	public static TextMateLanguage createTMLanguage(String language) {
-		return TextMateLanguage.create("source." + language, true);
+		try {
+			return TextMateLanguage.create("source." + language, true);
+		} catch (Exception e) {
+			LOG.w(language + " is not supported!");
+		}
+		return null;
 	}
 	
 	public static void loadTMThemes() {

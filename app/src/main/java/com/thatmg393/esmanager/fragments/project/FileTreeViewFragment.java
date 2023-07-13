@@ -58,7 +58,7 @@ public class FileTreeViewFragment extends Fragment {
 	
 	public synchronized void refreshOrPopulateTreeView() {
 		if (isRefreshing) return;
-		System.out.println(nodes.size());
+		
 			if (nodes.size() > 0) {
 				nodes.clear();
 				treeAdapter.updateTreeNodes(nodes);

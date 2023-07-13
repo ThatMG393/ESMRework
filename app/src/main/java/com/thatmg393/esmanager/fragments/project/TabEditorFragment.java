@@ -12,12 +12,14 @@ import androidx.fragment.app.Fragment;
 
 import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.utils.EditorUtils;
 import com.thatmg393.esmanager.utils.FileUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.utils.SharedPreference;
 
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry;
 import io.github.rosemoe.sora.lsp.utils.URIUtils;
 import io.github.rosemoe.sora.widget.CodeEditor;
@@ -61,24 +63,31 @@ public class TabEditorFragment extends Fragment {
 	public void initEditor(Context context) {
 		editor = new CodeEditor(context);
 		
+		EditorUtils.loadFileToEditor(editor, currentFilePath);
 		EditorUtils.ensureTMTheme(editor);
 		
-		editor.setEditorLanguage(EditorUtils.createTMLanguage(fileExtension));
+		TextMateLanguage tmLang = EditorUtils.createTMLanguage(fileExtension);
+		if (tmLang != null) {
+			editor.setEditorLanguage(tmLang);
+		}
+		
 		ThemeRegistry.getInstance().setTheme(SharedPreference.getInstance().getStringFallback("editor_code_theme", "darcula"));
 		
-		EditorUtils.loadFileToEditor(editor, currentFilePath);
-		LSPManager.getInstance().getLanguageServer(fileExtension).addListener(new ILanguageServiceCallback() {
-			@Override
-			public void onReady() {
-				LSPUtils.connectToLsp(
-					LSPUtils.createNewLspEditor(
-						URIUtils.fileToURI(new File(currentFilePath)).toString(),
-						LSPManager.getInstance().getLanguageServer(fileExtension).getServerDefinition(),
-						editor
-					)
-				);
-			}
-		});
+		LanguageServerModel langServer = LSPManager.getInstance().getLanguageServer(fileExtension);
+		if (langServer != null) {
+			langServer.addListener(new ILanguageServiceCallback() {
+				@Override
+				public void onReady() {
+					LSPUtils.connectToLsp(
+						LSPUtils.createNewLspEditor(
+							URIUtils.fileToURI(new File(currentFilePath)).toString(),
+							LSPManager.getInstance().getLanguageServer(fileExtension).getServerDefinition(),
+							editor
+						)
+					);
+				}
+			});
+		}
 	}
 	
 	public boolean saveContent() {
