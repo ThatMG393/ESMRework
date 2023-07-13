@@ -13,7 +13,7 @@ import android.os.IBinder;
 
 import androidx.annotation.NonNull;
 
-import com.thatmg393.esmanager.MainActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import com.thatmg393.esmanager.interfaces.IOnProcessListener;
 
 import java.util.HashMap;
@@ -25,22 +25,22 @@ public class ProcessListener implements ServiceConnection {
 	public static synchronized ProcessListener getInstance() {
 		if (INSTANCE == null) {
 			throw new RuntimeException(
-					"Initialize first, use 'ProcessListener#initializeInstance(MainActivity)'");
+					"Initialize first, use 'ProcessListener#initializeInstance(AppCompatActivity)'");
 		}
 
 		return INSTANCE;
 	}
 
-	public static synchronized ProcessListener initializeInstance(@NonNull MainActivity context) {
+	public static synchronized ProcessListener initializeInstance(@NonNull AppCompatActivity context) {
 		if (INSTANCE == null) INSTANCE = new ProcessListener(context);
 
 		return INSTANCE;
 	}
 
-	private final MainActivity context;
+	private final AppCompatActivity context;
 	private final Intent listenerServiceIntent;
 
-	private ProcessListener(MainActivity context) {
+	private ProcessListener(AppCompatActivity context) {
 		if (INSTANCE != null) {
 			throw new RuntimeException("Please use 'ProcessListener#getInstance()'!");
 		}

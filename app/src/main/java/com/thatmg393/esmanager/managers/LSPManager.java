@@ -1,8 +1,9 @@
 package com.thatmg393.esmanager.managers;
 
 import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
-import com.thatmg393.esmanager.managers.lsp.LuaLSPService;
+import com.thatmg393.esmanager.managers.lsp.lua.LuaLSPService;
 import com.thatmg393.esmanager.models.LanguageServerModel;
+import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.Logger;
 
@@ -18,7 +19,7 @@ public class LSPManager {
     private static volatile LSPManager INSTANCE;
 
     public static synchronized LSPManager getInstance() {
-        if (INSTANCE == null) { throw new RuntimeException("Initialize first, use 'LSPManager#initializeInstance(MainActivity)'"); }
+        if (INSTANCE == null) { throw new RuntimeException("Initialize first, use 'LSPManager#initializeInstance()'"); }
         return INSTANCE;
     }
 
@@ -27,13 +28,47 @@ public class LSPManager {
         return INSTANCE;
     }
 	
-	public HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<String, LanguageServerModel>();
+	private HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<String, LanguageServerModel>();
+	private ProjectModel currentProject;
 	
     private LSPManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'LSPManager#getInstance()'!");
+    }
+	
+	public void startLSPForAllLanguage() {
+		for (String language : languageServerRegistry.keySet()) {
+			startLSPForLanguage(language);
+		}
+	}
+
+    public void startLSPForLanguage(String language) {
+		LOG.d("Starting LSP for language: " + language);
 		
-		// Register a language server
-		/*
+		LanguageServerModel lsm = languageServerRegistry.get(language);
+		if (lsm != null) lsm.startLSP();
+		else LOG.d("No LSP for language: " + language);
+	}
+	
+	public void stopLSPServices() {
+		languageServerRegistry.values().forEach(LanguageServerModel::stopLSP);
+	}
+	
+	public void registerNewLSPServer(String language, LanguageServerModel lspModel) {
+		languageServerRegistry.put(language, lspModel);
+	}
+	
+	public LanguageServerModel getLanguageServer(String language) {
+		return languageServerRegistry.get(language);
+	}
+	
+	public void dispose() {
+		stopLSPServices(); // Sanity
+		languageServerRegistry.clear();
+		INSTANCE = null;
+	}
+	
+	public void registerLangServers() {
+		/* Register a language server
 		registerNewLSPServer("languagename", 
 			LanguageLSPService.class,
 			NetworkUtils.generateRandomPort()
@@ -47,35 +82,13 @@ public class LSPManager {
 				NetworkUtils.generateRandomPort()
 			)
 		);
-    }
-	
-	public void startLSPForAll() {
-		for (String language : languageServerRegistry.keySet()) {
-			startLSPForLanguage(language);
-		}
-	}
-
-    public void startLSPForLanguage(String language) {
-		LOG.d("Starting LSP for language: " + language);
-		
-		languageServerRegistry.get(language).startLSPService();
 	}
 	
-	public void stopLSPServices() {
-		languageServerRegistry.values().forEach(LanguageServerModel::stopLSPService);
+	public void setCurrentProject(ProjectModel newProject) {
+		this.currentProject = newProject;
 	}
 	
-	public void registerNewLSPServer(String language, LanguageServerModel lspModel) {
-		languageServerRegistry.put(language, lspModel);
-	}
-	
-	public void dispose() {
-		stopLSPServices(); // Sanity
-		languageServerRegistry.clear();
-		INSTANCE = null;
-	}
-	
-	public void addListener(String language, ILanguageServiceCallback lspCallback) {
-		languageServerRegistry.get(language).addListener(lspCallback);
+	public ProjectModel getCurrentProject() {
+		return this.currentProject;
 	}
 }

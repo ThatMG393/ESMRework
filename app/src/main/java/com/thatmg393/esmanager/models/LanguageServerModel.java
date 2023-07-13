@@ -7,16 +7,22 @@ import android.os.IBinder;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.Nullable;
 import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
+import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;
 
+import io.github.rosemoe.sora.lsp.client.connection.SocketStreamConnectionProvider;
+import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition;
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
 
+import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.LanguageServerWrapper;
+import io.github.rosemoe.sora.lsp.utils.LspUtils;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -27,68 +33,66 @@ public class LanguageServerModel implements ServiceConnection {
 	private static final Logger LOG = new Logger("ESM/LanguageServerModel");
 	private static final Logger LOG_LSP = new Logger("ESM/LuaLanguageServer");
 	
-	private final Intent lspServiceIntent;
-	private final int lspPort;
+	private final String serverName;
+	private final LanguageServerWrapper serverWrapper;
 	
-	private final CustomLanguageServerDefinition serverDefinition;
+	@Nullable
+	private Intent serverServiceIntent = null;
+	
+	private int serverPort = -1;
 	
     public LanguageServerModel(
-		@NonNull String serverLanguage,
-		@NonNull Class<? extends BaseLSPService> serviceClass,
-		@NonNull int lspPort
+		@NonNull String serverName,
+		@NonNull Class<? extends BaseLSPService> serverServiceClass,
+		@NonNull int serverPort
 	) {
-		this.lspServiceIntent = new Intent(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), serviceClass);
-        this.lspPort = lspPort;
-		
-		this.serverDefinition = LSPUtils.generateServerDefinition("." + serverLanguage, lspPort, new EventHandler.EventListener() {
-			@Override
-			public void initialize(LanguageServer server, InitializeResult result) {
-				LOG_LSP.d("LSP has been started and initialized!");
-			}
-			
-			@Override
-			public void onHandlerException(Exception e) {
-				LOG_LSP.w("An internal exception occured!");
-				e.printStackTrace(System.err);
-			}
-			
-			@Override
-			public void onShowMessage(MessageParams messageParams) { 
-				LOG_LSP.i(messageParams.getMessage());
-			}
-			
-			@Override
-			public void onLogMessage(MessageParams messageParams) {
-				LOG_LSP.i(messageParams.getMessage());
-			}
-		});
+		this.serverName = serverName;
+		this.serverServiceIntent = new Intent(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), serverServiceClass);
+        this.serverPort = serverPort;
+		this.serverWrapper = LSPUtils.createNewServerWrapper(
+			serverName,
+			new SocketStreamConnectionProvider(() -> serverPort),
+			LSPManager.getInstance().getCurrentProject().projectPath
+		);
     }
-
-    public Intent getLspServiceIntent() {
-        return this.lspServiceIntent;
-    }
-
+	
+	public LanguageServerModel(
+		@NonNull String serverName,
+		@NonNull StreamConnectionProvider serverConnectionProvider
+	) {
+		this.serverName = serverName;
+		this.serverWrapper = LSPUtils.createNewServerWrapper(
+			serverName,
+			serverConnectionProvider,
+			LSPManager.getInstance().getCurrentProject().projectPath
+		);
+	}
+	
     public int getLspPort() {
-        return this.lspPort;
+        return this.serverPort;
     }
 	
 	public CustomLanguageServerDefinition getServerDefinition() {
-		return this.serverDefinition;
+		return (CustomLanguageServerDefinition)this.serverWrapper.getServerDefinition();
 	}
 	
     // Start of implementation
-	public void startLSPService() {
-		ActivityUtils.getInstance().bindService(lspServiceIntent, this);
+	public void startLSP() {
+		if (serverServiceIntent != null) {
+			ActivityUtils.getInstance().bindService(serverServiceIntent, this);
+		}
 	}
 	
-	public void stopLSPService() {
-		ActivityUtils.getInstance().unbindService(this);
+	public void stopLSP() {
+		if (serverServiceIntent != null) {
+			ActivityUtils.getInstance().unbindService(this);
+		}
 	}
 	
 	private BaseLSPService SERVICE_INSTANCE;
     @Override
     public void onServiceConnected(ComponentName cn, IBinder binder) {
-		SERVICE_INSTANCE = ((BaseLSPBinder)binder).getInstance();
+		SERVICE_INSTANCE = ((BaseLSPBinder) binder).getInstance();
 		callbackOnReady();
 	}
 	
@@ -97,23 +101,21 @@ public class LanguageServerModel implements ServiceConnection {
 		callbackOnShutdown();
 	}
 	
-	public boolean isServerRunning() {
+	public boolean isServiceRunning() {
 		if (SERVICE_INSTANCE == null) { return false; }
-		return SERVICE_INSTANCE.isServerRunning();
+		return true;
 	}
 	
 	private ArrayList<ILanguageServiceCallback> lspCallbackArr = new ArrayList<>();
 	public void addListener(ILanguageServiceCallback lspCallback) {
 		lspCallbackArr.add(lspCallback);
-		
-		if (isServerRunning()) { lspCallback.onReady(); }
+		if (isServiceRunning() || serverServiceIntent == null) {
+			lspCallback.onReady();
+		}
 	}
 	
 	public void callbackOnReady() {
-		lspCallbackArr.forEach((callback) -> {
-			callback.onReady();
-			callback.onReady(SERVICE_INSTANCE);
-		});
+		lspCallbackArr.forEach(ILanguageServiceCallback::onReady);
 	}
 	public void callbackOnShutdown() {
 		lspCallbackArr.forEach(ILanguageServiceCallback::onShutdown);

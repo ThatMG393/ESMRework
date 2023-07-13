@@ -77,11 +77,9 @@ public class PermissionUtils {
 	
 	public static void requestDrawOverlayPermission(Context context, PermissionResult pmr) {
 		if (!checkDrawOverlayPermission(context)) {
-			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-					Uri.parse("package:" + context.getPackageName()));
-					
-					
-			ActivityUtils.getInstance().createNewARLI(new ActivityResultCallback<ActivityResult>() {
+			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
+			
+			ActivityUtils.getInstance().registerForActivityResult(new ActivityResultCallback<ActivityResult>() {
 				@Override
 				public void onActivityResult(ActivityResult result) {
 					if (checkDrawOverlayPermission(context)) {

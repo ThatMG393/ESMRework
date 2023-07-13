@@ -34,7 +34,7 @@ public class DRPCManager implements ServiceConnection {
     private DRPCManager() {
         if (INSTANCE != null) throw new RuntimeException("Please use 'DRPCManager#getInstance()'!");
 
-        this.rpcIntent = new Intent(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), RPCService.class);
+        this.rpcIntent = new Intent(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), RPCService.class);
     }
 
     public void startDiscordRPC() {

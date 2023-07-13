@@ -13,7 +13,6 @@ import com.anggrayudi.storage.file.StorageId;
 import com.anggrayudi.storage.file.StorageType;
 import com.anggrayudi.storage.permission.ActivityPermissionRequest;
 import com.thatmg393.esmanager.GlobalConstants;
-import com.thatmg393.esmanager.MainActivity;
 import com.thatmg393.esmanager.interfaces.IOnAllowFolderAccess;
 
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +36,7 @@ public class StorageUtils {
 	private StorageUtils() {
 		if (INSTANCE != null) { throw new RuntimeException("Please use 'StorageUtils#getInstance()'!"); }
 		
-		SSH = new SimpleStorageHelper(ActivityUtils.getInstance().getMainActivityInstance());
+		SSH = new SimpleStorageHelper(ActivityUtils.getInstance().getRegisteredActivity());
 	}
 	
 	private static final int REQUEST_FOLDER_ACCESS = 0;
@@ -47,7 +46,7 @@ public class StorageUtils {
 	
 	public void askForDirectoryAccess(@NotNull String path, @NotNull int requestCode, @NotNull IOnAllowFolderAccess ioafa) {
 		SSH.setOnStorageAccessGranted((rCode, root) -> {
-			String absolutePath = DocumentFileUtils.getAbsolutePath(root, ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext());
+			String absolutePath = DocumentFileUtils.getAbsolutePath(root, ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext());
 			ioafa.onAllowFolderAccess(rCode, absolutePath);
 				
 			// Toast.makeText(context, "Access granted for folder: " + absolutePath, Toast.LENGTH_LONG).show();
@@ -55,8 +54,8 @@ public class StorageUtils {
 		});
 		
 		FileFullPath fullPath = null;
-		if (SDK_INT >= 30) { fullPath = new FileFullPath(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), StorageType.EXTERNAL, path); }
-		else if (SDK_INT <= 29) { fullPath = new FileFullPath(ActivityUtils.getInstance().getMainActivityInstance().getApplicationContext(), StorageId.PRIMARY, path); }
+		if (SDK_INT >= 30) { fullPath = new FileFullPath(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), StorageType.EXTERNAL, path); }
+		else if (SDK_INT <= 29) { fullPath = new FileFullPath(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), StorageId.PRIMARY, path); }
 		
 		SSH.requestStorageAccess(
 			requestCode,
@@ -72,7 +71,7 @@ public class StorageUtils {
 	}
 	
 	public boolean isStoragePermissionGranted() {
-		return PermissionUtils.checkForPermission(ActivityUtils.getInstance().getMainActivityInstance(), Manifest.permission.WRITE_EXTERNAL_STORAGE, GlobalConstants.RequestCodes.REQUEST_WRITE_ACCESS);
+		return PermissionUtils.checkForPermission(ActivityUtils.getInstance().getRegisteredActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE, GlobalConstants.RequestCodes.REQUEST_WRITE_ACCESS);
 	}
 	
 	public enum Status {

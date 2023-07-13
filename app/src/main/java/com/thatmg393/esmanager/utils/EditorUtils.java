@@ -1,44 +1,79 @@
 package com.thatmg393.esmanager.utils;
 
-import com.thatmg393.esmanager.utils.kt.EditorUtilsKt;
-import com.thatmg393.esmanager.utils.kt.SuspendFunctionCallback;
+import android.net.Uri;
+import com.anggrayudi.storage.file.DocumentFileCompat;
+import com.anggrayudi.storage.file.DocumentFileType;
 
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme;
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
+import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
+import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry;
+import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel;
+import io.github.rosemoe.sora.text.Content;
+import io.github.rosemoe.sora.text.ContentIO;
 import io.github.rosemoe.sora.widget.CodeEditor;
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
+
+import java.io.FileInputStream;
+import org.eclipse.tm4e.core.registry.IThemeSource;
+
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public class EditorUtils {
 	private static final Logger LOG = new Logger("ESM/EditorUtils");
 	
-	public static void ensureDarculaTheme(CodeEditor editor) {
-		EditorUtilsKt.getInstance().ensureDarculaTheme(editor.getContext(), editor);
-	}
-	
-	public static TextMateLanguage createLanguage(String language) {
-		try {
-			return EditorUtilsKt.getInstance().createNewLanguage(language);
-		} catch (Exception e) {
-			LOG.w(language + " is not supported!");
-			e.printStackTrace(System.err);
+	public static final String[] tmThemes = {
+		"darcula",
+		"quietlight"
+	};
+
+	public static void ensureTMTheme(CodeEditor editor) {
+		EditorColorScheme colorScheme = editor.getColorScheme();
+		if (!(colorScheme instanceof TextMateColorScheme)) {
+			try {
+				colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			editor.setColorScheme(colorScheme);
 		}
-		
-		return null;
 	}
 	
-	public static void initializeEditor(CodeEditor editor, String language) {
-		TextMateLanguage tml = createLanguage(language);
-		if (tml != null) editor.setEditorLanguage(tml);
-		
-		ensureDarculaTheme(editor);
+	public static TextMateLanguage createTMLanguage(String language) {
+		return TextMateLanguage.create("source." + language, true);
 	}
 	
-	public static void initializeEditor(CodeEditor editor, TextMateLanguage language) {
-		if (language != null) editor.setEditorLanguage(language);
-		ensureDarculaTheme(editor);
+	public static void loadTMThemes() {
+		ThemeRegistry themeRegistry = ThemeRegistry.getInstance();
+		for(String theme : tmThemes) {
+			try {
+				String themePath = "tm/themes/" + theme + ".json";
+				themeRegistry.loadTheme(
+					new ThemeModel(
+						IThemeSource.fromInputStream(
+							FileProviderRegistry.getInstance().tryGetInputStream(themePath),
+							themePath, null
+						), theme
+					)
+				);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
-	public static void openFile(CodeEditor editor, String path) {
-		EditorUtilsKt.getInstance().openFileNDisplay(editor, FileUtils.openFile(path),
-			SuspendFunctionCallback.Companion.call((result, err) -> { })
-		);
+	public static void loadFileToEditor(CodeEditor editor, String path) {
+		CompletableFuture.runAsync(() -> {
+			try {
+				Content text = ContentIO.createFrom(
+					new FileInputStream(path)
+				);
+				
+				ActivityUtils.getInstance().runOnUIThread(() -> editor.setText(text));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 }

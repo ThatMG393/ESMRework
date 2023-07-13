@@ -1,5 +1,8 @@
 package com.thatmg393.esmanager.utils;
 
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -7,17 +10,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.Looper;
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.os.HandlerCompat;
-
-import com.thatmg393.esmanager.MainActivity;
 
 public class ActivityUtils {
 	private static volatile ActivityUtils INSTANCE;
@@ -28,41 +28,43 @@ public class ActivityUtils {
 		return INSTANCE;
 	}
 	
-	public synchronized static ActivityUtils initializeInstance(@NonNull MainActivity context) {
-		if (INSTANCE == null) INSTANCE = new ActivityUtils(context);
+	public synchronized static ActivityUtils initializeInstance(@NonNull AppCompatActivity activity) {
+		if (INSTANCE == null) INSTANCE = new ActivityUtils(activity);
 		
 		return INSTANCE;
 	}
 	
-	private final MainActivity context;
-	private ActivityUtils(MainActivity context) {
+	private final AppCompatActivity activity;
+	private ActivityUtils(AppCompatActivity activity) {
 		if (INSTANCE != null) { throw new RuntimeException("Please use 'ActivityUtils#getInstance()'!"); }
 		
-		this.context = context;
+		this.activity = activity;
 	}
 	
 	private Handler mainThread = HandlerCompat.createAsync(Looper.getMainLooper());
 	
-	public ActivityResultLauncher<Intent> createNewARLI(@NonNull ActivityResultCallback<ActivityResult> arc) {
-		return context.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), arc);
+	public ActivityResultLauncher<Intent> registerForActivityResult(@NonNull ActivityResultCallback<ActivityResult> arc) {
+		return activity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), arc);
 	}
 	
 	public void bindService(final Intent serviceIntent, final ServiceConnection serviceCallback) {
 		try {
-			context.bindService(serviceIntent, serviceCallback, Context.BIND_AUTO_CREATE);
-		} catch (IllegalArgumentException ignore) { }
+			activity.bindService(serviceIntent, serviceCallback, Context.BIND_AUTO_CREATE);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace(System.err);
+		}
 	}
 	
 	public void unbindService(final ServiceConnection serviceCallback) {
 		try {
-			context.unbindService(serviceCallback);
-		} catch (IllegalArgumentException ignore) {
-			ignore.printStackTrace(System.err);
+			activity.unbindService(serviceCallback);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace(System.err);
 		}
 	}
 	
 	public void runOnUIThread(Runnable toBeRun) {
-		mainThread.post(toBeRun);
+		mainThread.postAtFrontOfQueue(toBeRun);
 	}
 	
 	public void createNotificationChannel(String channelID, String channelName, int notificationImportance) {
@@ -73,13 +75,15 @@ public class ActivityUtils {
 					notificationImportance
 			);
 
-			NotificationManager manager = context.getSystemService(NotificationManager.class);
+			NotificationManager manager = activity.getSystemService(NotificationManager.class);
 			manager.createNotificationChannel(serviceChannel);
+		} else {
+			
 		}
 	}
-	
-	public MainActivity getMainActivityInstance() {
-		return context;
+
+    public AppCompatActivity getRegisteredActivity() {
+		return activity;
 	}
 	
 	public static void dispose() {

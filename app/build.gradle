@@ -1,7 +1,5 @@
 plugins {
     id 'com.android.application'
-	id 'org.jetbrains.kotlin.android'
-	// id 'net.ltgt.errorprone'
 }
 
 android {
@@ -30,14 +28,6 @@ android {
 		sourceCompatibility JavaVersion.VERSION_11
 		targetCompatibility JavaVersion.VERSION_11
 	}
-	
-	kotlinOptions {
-        jvmTarget = 11
-    }
-	
-	buildFeatures {
-        viewBinding false
-    }
 }
 
 dependencies {
@@ -72,7 +62,6 @@ dependencies {
 	implementation 'org.apache.commons:commons-collections4:4.4'
 	
 	// debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
-	// errorprone("com.google.errorprone:error_prone_core:2.18.1")
 	
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 }

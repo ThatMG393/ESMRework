@@ -1,42 +1,87 @@
 package com.thatmg393.esmanager.utils;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
-import com.thatmg393.esmanager.ProjectActivity;
-import com.thatmg393.esmanager.utils.kt.LSPUtilsKt;
-import com.thatmg393.esmanager.utils.kt.SuspendFunctionCallback;
+import androidx.annotation.NonNull;
 
+import com.thatmg393.esmanager.managers.LSPManager;
+
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
+import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition;
+import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.LanguageServerDefinition;
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
+import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.LanguageServerWrapper;
 import io.github.rosemoe.sora.lsp.editor.LspEditor;
 import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
-import io.github.rosemoe.sora.lsp.utils.URIUtils;
 import io.github.rosemoe.sora.widget.CodeEditor;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
 
 public class LSPUtils {
 	private static final Logger LOG = new Logger("ESM/LSPUtils");
 	
-	public static CustomLanguageServerDefinition generateServerDefinition(String fileExt, int port, EventHandler.EventListener eventListener) {
-		return LSPUtilsKt.getInstance().generateServerDefinition(fileExt, port, eventListener);
-	}
-	
-	public static void connectLSPToEditor(LspEditor lEditor) {
-		LSPUtilsKt.getInstance().connectLSPToEditor(lEditor,
-			SuspendFunctionCallback.Companion.call((result, err) -> { })
+	public static LanguageServerWrapper createNewServerWrapper(
+		@NonNull String language,
+		@NonNull StreamConnectionProvider connectionProvider,
+		@NonNull String projectPath
+	) {
+		return new LanguageServerWrapper(
+			new CustomLanguageServerDefinition(
+				"." + language, new CustomLanguageServerDefinition.ConnectProvider() {
+					@Override
+					public StreamConnectionProvider createConnectionProvider(String workingDir) {
+						return connectionProvider;
+					}
+				}
+			) {
+				@Override
+				public EventHandler.EventListener getEventListener() {
+					return EventHandler.EventListener.DEFAULT;
+				}
+			}, projectPath
 		);
 	}
 	
-	public static LspEditor newLspEditorForFile(CodeEditor editor, String filePath, CustomLanguageServerDefinition clsd) {
-		LspEditor lspEditor = LspEditorManager.getOrCreateEditorManager(ProjectActivity.getProjectPath())
+	public static void connectToLsp(
+		@NonNull LspEditor lspEditor
+	) {
+		Handler mainThread = new Handler(Looper.getMainLooper());
+		CompletableFuture.runAsync(() -> {
+			try {
+				lspEditor.getEditor().setEditable(false);
+				lspEditor.connectWithTimeout();
+				lspEditor.getEditor().setEditable(true);
+					
+				mainThread.postAtFrontOfQueue(() -> {
+					Toast.makeText(
+						lspEditor.getEditor().getContext(),
+						"connected to lsp!",
+						Toast.LENGTH_SHORT
+					).show();
+				});
+			} catch(TimeoutException | InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	public static LspEditor createNewLspEditor(
+		@NonNull String fileUri,
+		@NonNull LanguageServerDefinition serverDefinition,
+		@NonNull CodeEditor editor
+	) {
+		LspEditor lspEditor = LspEditorManager.getOrCreateEditorManager(LSPManager.getInstance().getCurrentProject().projectPath)
 			.createEditor(
-				URIUtils.fileToURI(filePath).toString(),
-				clsd
+				fileUri,
+				serverDefinition
 			);
-			
-		lspEditor.setWrapperLanguage(editor.getEditorLanguage());
+					
+		lspEditor.setWrapperLanguage((TextMateLanguage)editor.getEditorLanguage());
 		lspEditor.setEditor(editor);
-		
-		connectLSPToEditor(lspEditor);
 		
 		return lspEditor;
 	}

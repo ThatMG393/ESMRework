@@ -105,7 +105,7 @@ public class RPCService extends Service {
 		}
 		
 		View layout = LayoutInflater.from(getApplicationContext()).inflate(R.layout.rpc_login_dialog, null, false);
-		AlertDialog loginDialog = new MaterialAlertDialogBuilder(ActivityUtils.getInstance().getMainActivityInstance())
+		AlertDialog loginDialog = new MaterialAlertDialogBuilder(ActivityUtils.getInstance().getRegisteredActivity())
 										.setView( layout )
 										.setNegativeButton("Later", new DialogInterface.OnClickListener() {
 											@Override

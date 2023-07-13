@@ -9,8 +9,6 @@ public interface ILanguageServiceCallback {
 		LOG.i("Language service started!");
 	}
 	
-	public default void onReady(BaseLSPService serviceInstance) { }
-	
 	public default void onShutdown() {
 		LOG.e("Language service SHUTDOWN!");
 	}

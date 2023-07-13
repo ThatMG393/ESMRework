@@ -47,13 +47,9 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(Thread curThr, Throwable ex) {
                 Log.e("BaseActivity", curThr + " made an exception! " + fullStacktrace(ex));
-				FileUtils.appendToFile(GlobalConstants.ESM_ROOT_FOLDER + "/err.txt", fullStacktrace(ex));
+				FileUtils.appendToFile(GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/err.txt", fullStacktrace(ex));
 				
-				if (curThr.getState() == Thread.State.BLOCKED) {
-					destroy();
-					finish();
-				}
-				
+				System.out.println(curThr.getState().name());
 				/*
                 PendingIntent pdInt = PendingIntent.getActivity(getApplicationContext(), 69, caInt, PendingIntent.FLAG_CANCEL_CURRENT);
                 AlarmManager aMan = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
