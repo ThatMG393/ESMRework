@@ -31,11 +31,9 @@ public class LSPUtils {
 	) {
 		return new LanguageServerWrapper(
 			new CustomLanguageServerDefinition(
-				"." + language, new CustomLanguageServerDefinition.ConnectProvider() {
-					@Override
-					public StreamConnectionProvider createConnectionProvider(String workingDir) {
-						return connectionProvider;
-					}
+				"." + language,
+				(workingDir) -> {
+					return connectionProvider;
 				}
 			) {
 				@Override
@@ -49,13 +47,11 @@ public class LSPUtils {
 	public static void connectToLsp(
 		@NonNull LspEditor lspEditor
 	) {
-		Handler mainThread = new Handler(Looper.getMainLooper());
 		CompletableFuture.runAsync(() -> {
 			try {
-				lspEditor.getEditor().setEditable(false);
 				lspEditor.connectWithTimeout();
-				lspEditor.getEditor().setEditable(true);
-					
+				
+				/*
 				mainThread.postAtFrontOfQueue(() -> {
 					Toast.makeText(
 						lspEditor.getEditor().getContext(),
@@ -63,11 +59,15 @@ public class LSPUtils {
 						Toast.LENGTH_SHORT
 					).show();
 				});
+				*/
 			} catch(TimeoutException | InterruptedException e) {
-				e.printStackTrace();
+				e.printStackTrace(System.err);
+				ActivityUtils.getInstance().runOnUIThread(
+					() -> Toast.makeText(lspEditor.getEditor().getContext(), "Failed to connect to LSP!\nNo completions will be provided!", Toast.LENGTH_SHORT).show()
+				);
 			}
 		});
-	}
+	} 
 	
 	public static LspEditor createNewLspEditor(
 		@NonNull String fileUri,

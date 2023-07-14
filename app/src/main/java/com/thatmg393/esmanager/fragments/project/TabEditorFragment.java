@@ -57,12 +57,24 @@ public class TabEditorFragment extends Fragment {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		if (editor != null) editor.release();
+		try {
+			if (editor != null) editor.release();
+		} catch (Exception e) {
+			LOG.e("Failed to free (" + currentFilePath + ") editor!");
+			e.printStackTrace(System.err);
+		}
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getName() + " for " + currentFilePath;
+	}
+	
 	
 	public void initEditor(Context context) {
 		editor = new CodeEditor(context);
 		
+		ThemeRegistry.getInstance().setTheme(SharedPreference.getInstance().getStringFallback("editor_code_theme", "darcula"));
 		EditorUtils.loadFileToEditor(editor, currentFilePath);
 		EditorUtils.ensureTMTheme(editor);
 		
@@ -70,8 +82,6 @@ public class TabEditorFragment extends Fragment {
 		if (tmLang != null) {
 			editor.setEditorLanguage(tmLang);
 		}
-		
-		ThemeRegistry.getInstance().setTheme(SharedPreference.getInstance().getStringFallback("editor_code_theme", "darcula"));
 		
 		LanguageServerModel langServer = LSPManager.getInstance().getLanguageServer(fileExtension);
 		if (langServer != null) {

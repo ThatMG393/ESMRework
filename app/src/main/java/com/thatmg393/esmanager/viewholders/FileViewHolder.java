@@ -28,13 +28,13 @@ public class FileViewHolder extends TreeViewHolder {
 		tv.setText(nodeName.getName());
 		
         switch (FilenameUtils.getExtension(nodeName.getAbsolutePath())) {
-			case "lua": // TODO: Import icons
-			case "json":
+			case "lua": 
+			case "json": 
 			case "wav":
 			case "png":
-			case "jpg":
-			case "obj": setDrawableRight(R.drawable.ic_edit_black); break;
-			default: setDrawableRight(R.drawable.ic_file_black); break;
+			case "jpg": 
+			case "obj": setDrawableRight(R.drawable.ic_info); break;
+			default: setDrawableRight(R.drawable.ic_file); break;
 		}
     }
 	

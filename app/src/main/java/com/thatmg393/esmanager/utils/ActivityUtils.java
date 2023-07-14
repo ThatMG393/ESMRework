@@ -11,11 +11,15 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.Looper;
 
+import android.view.View;
+import android.widget.PopupMenu;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.os.HandlerCompat;
 
@@ -80,6 +84,15 @@ public class ActivityUtils {
 		} else {
 			
 		}
+	}
+	
+	public PopupMenu showPopupMenuAt(@NonNull View anchor, @MenuRes int menuRes, @Nullable PopupMenu.OnMenuItemClickListener listener) {
+		PopupMenu popupMenu = new PopupMenu(activity.getApplicationContext(), anchor);
+		popupMenu.inflate(menuRes);
+		popupMenu.setOnMenuItemClickListener(listener);
+		popupMenu.show();
+		
+		return popupMenu;
 	}
 
     public AppCompatActivity getRegisteredActivity() {

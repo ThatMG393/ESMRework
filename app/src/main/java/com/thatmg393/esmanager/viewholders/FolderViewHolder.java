@@ -26,11 +26,11 @@ public class FolderViewHolder extends TreeViewHolder {
 		tv.setText(nodeName.getName());
 		
         switch (nodeName.getName()) {
-			case "audio":  // TODO: Import icons
-			case "meshes":
-			case "scripts":
-			case "textures": setDrawableRight(R.drawable.ic_info_black); break;
-			default: setDrawableRight(R.drawable.ic_folder_black); break;
+			case "audio":  
+			case "meshes": 
+			case "scripts": 
+			case "textures": setDrawableRight(R.drawable.ic_info); break;
+			default: setDrawableRight(R.drawable.ic_folder); break;
 		}
     }
 	

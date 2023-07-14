@@ -1,9 +1,8 @@
 package com.thatmg393.esmanager.utils;
 
 import io.github.rosemoe.sora.text.Content;
-import io.github.rosemoe.sora.text.ContentCreator;
-
 import io.github.rosemoe.sora.text.ContentIO;
+
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,8 +28,7 @@ public class FileUtils {
 	
 	public static Content openFileAsContent(InputStream is) {
 		try {
-			// return ContentIO.createFrom(is);
-			return ContentCreator.fromStream(is);
+			return ContentIO.createFrom(is);
 		} catch (IOException ioe) {
 			ioe.printStackTrace(System.err);
 			return null;

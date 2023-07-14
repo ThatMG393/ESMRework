@@ -22,6 +22,7 @@ import com.thatmg393.esmanager.fragments.project.FileTreeViewFragment;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.models.ProjectModel;
+import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.EditorUtils;
 
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
@@ -77,7 +78,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorDrawerLayout.addDrawerListener(drawerToggler);
 		drawerToggler.syncState();
 		
-		editorFileTreeViewFragment = new FileTreeViewFragment(LSPManager.getInstance().getCurrentProject().projectPath);
+		editorFileTreeViewFragment = new FileTreeViewFragment();
 		editorFileDrawer = findViewById(R.id.project_file_drawer);
 		getSupportFragmentManager().beginTransaction()
 			.replace(R.id.project_file_drawer_fragment, editorFileTreeViewFragment)
@@ -93,7 +94,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorViewPager.setAdapter(editorTabAdapter);
 		
 		editorFileTreeViewFragment.addTreeNodeListener((path) -> {
-			editorTabAdapter.newTab(new TabEditorFragment(getApplicationContext(), path), FilenameUtils.getName(path));
+			editorTabAdapter.newTab(path);
 			if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) editorDrawerLayout.closeDrawer(GravityCompat.END);
 		});
 		
@@ -110,19 +111,17 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	
 	@Override
     public void onTabReselected(TabLayout.Tab tab) {
-		PopupMenu popupMenu = new PopupMenu(getApplicationContext(), ((ViewGroup) editorTabLayout.getChildAt(0)).getChildAt(tab.getPosition()));
-		popupMenu.inflate(R.menu.editor_tab_menu);
-		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem menuItem) {
+		ActivityUtils.getInstance().showPopupMenuAt(
+			((ViewGroup) editorTabLayout.getChildAt(0)).getChildAt(tab.getPosition()),
+			R.menu.editor_tab_menu,
+			(menuItem) -> {
 				if (menuItem.getItemId() == R.id.editor_close_tab) {
 					editorTabAdapter.removeTab(tab.getPosition());
 					return true;
 				}
 				return false;
 			}
-		});
-		popupMenu.show();
+		);
 	}
 	
 	@Override

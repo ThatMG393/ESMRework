@@ -2,7 +2,6 @@ package com.thatmg393.esmanager.utils;
 
 import android.util.Log;
 
-
 public class Logger {
 	private final String logTag;
 	

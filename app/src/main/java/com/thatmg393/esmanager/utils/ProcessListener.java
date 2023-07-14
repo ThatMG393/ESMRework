@@ -24,8 +24,7 @@ public class ProcessListener implements ServiceConnection {
 
 	public static synchronized ProcessListener getInstance() {
 		if (INSTANCE == null) {
-			throw new RuntimeException(
-					"Initialize first, use 'ProcessListener#initializeInstance(AppCompatActivity)'");
+			throw new RuntimeException("Initialize first, use 'ProcessListener#initializeInstance(AppCompatActivity)'");
 		}
 
 		return INSTANCE;
@@ -72,6 +71,18 @@ public class ProcessListener implements ServiceConnection {
 		context.stopService(listenerServiceIntent);
 	}
 
+	private ProcessListenerService listenerService;
+
+	@Override
+	public void onServiceConnected(ComponentName cn, IBinder binder) {
+		listenerService = ((ProcessListenerService.ProcessListenerBinder) binder).getInstance();
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName cn) {
+		listenerService = null;
+	}
+	
 	private class ProcessListenerService extends Service {
 		private final HashMap<String, ProcessListenerThread> threads = new HashMap<String, ProcessListenerThread>();
 		private final ProcessListenerBinder plBinder = new ProcessListenerBinder();
@@ -145,17 +156,5 @@ public class ProcessListener implements ServiceConnection {
 				return ProcessListenerService.this;
 			}
 		}
-	}
-
-	private ProcessListenerService listenerService;
-
-	@Override
-	public void onServiceConnected(ComponentName cn, IBinder binder) {
-		listenerService = ((ProcessListenerService.ProcessListenerBinder) binder).getInstance();
-	}
-
-	@Override
-	public void onServiceDisconnected(ComponentName cn) {
-		listenerService = null;
 	}
 }

@@ -6,16 +6,21 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
+
 import com.google.android.material.tabs.TabLayout;
-import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
-import io.github.rosemoe.sora.widget.SymbolInputView;
-import java.util.ArrayList;
 import com.thatmg393.esmanager.R;
+import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
+
+import io.github.rosemoe.sora.widget.SymbolInputView;
+
+import java.util.ArrayList;
+import org.apache.commons.io.FilenameUtils;
 
 public class TabEditorAdapter extends FragmentStateAdapter {
 	public ArrayList<TabEditorFragment> fragments = new ArrayList<TabEditorFragment>();
@@ -38,24 +43,37 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		animateViewsIfNeeded();
 	}
 	
-	public void newTab(TabEditorFragment fragment, String name) {
+	public void newTab(String path) {
+		if (checkTabAlreadyInList(path)) return;
+		
+		TabEditorFragment fragment = new TabEditorFragment(tabLayout.getContext(), path);
+		
 		fragments.add(fragment);
 		notifyDataSetChanged();
 		
 		TabLayout.Tab tab = tabLayout.newTab();
-		tab.setText(name);
-		
+		tab.setText(FilenameUtils.getName(path));
 		tabLayout.addTab(tab);
 		
 		animateViewsIfNeeded();
 	}
 	
 	public void removeTab(int position) {
+		if (position < 0 || position > fragments.size()) return;
+		
 		fragments.remove(position);
 		tabLayout.removeTabAt(position);
 		
 		notifyDataSetChanged();
 		animateViewsIfNeeded();
+	}
+	
+	
+	public boolean checkTabAlreadyInList(String s) {
+		for (TabEditorFragment fragment : fragments) {
+			if (fragment.currentFilePath.equals(s)) return true;
+		}
+		return false;
 	}
 	
 	public void animateViewsIfNeeded() {

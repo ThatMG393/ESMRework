@@ -1,6 +1,7 @@
 package com.thatmg393.esmanager.utils;
 
 import android.net.Uri;
+import android.widget.Toast;
 import com.anggrayudi.storage.file.DocumentFileCompat;
 import com.anggrayudi.storage.file.DocumentFileType;
 
@@ -75,9 +76,19 @@ public class EditorUtils {
 					new FileInputStream(path)
 				);
 				
-				ActivityUtils.getInstance().runOnUIThread(() -> editor.setText(text));
+				ActivityUtils.getInstance().runOnUIThread(() -> {
+					try {
+						editor.setText(text);
+					} catch (Exception e) {
+						LOG.e("Failed to set editor text!");
+						e.printStackTrace(System.err);
+								
+						Toast.makeText(editor.getContext(), "Failed to load file contents!", Toast.LENGTH_SHORT).show();
+						editor.setEditable(false);
+					}
+				});
 			} catch (IOException e) {
-				e.printStackTrace();
+				e.printStackTrace(System.err);
 			}
 		});
 	}

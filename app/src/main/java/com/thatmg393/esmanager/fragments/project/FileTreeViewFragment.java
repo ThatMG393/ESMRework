@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +17,8 @@ import com.amrdeveloper.treeview.TreeNode;
 import com.amrdeveloper.treeview.TreeViewAdapter;
 import com.amrdeveloper.treeview.TreeViewHolderFactory;
 import com.thatmg393.esmanager.R;
+import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.viewholders.FileViewHolder;
 import com.thatmg393.esmanager.viewholders.FolderViewHolder;
 
@@ -34,10 +37,10 @@ public class FileTreeViewFragment extends Fragment {
 	
 	private boolean isRefreshing;
 	
-	public FileTreeViewFragment(String path) {
-		this.parentPath = new File(path);
+	public FileTreeViewFragment() {
+		this.parentPath = new File(LSPManager.getInstance().getCurrentProject().projectPath);
 	}
-
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		init();
@@ -107,13 +110,38 @@ public class FileTreeViewFragment extends Fragment {
 		};
 		
 		treeAdapter = new TreeViewAdapter(treeFactory);
-		treeAdapter.setTreeNodeClickListener(new TreeViewAdapter.OnTreeNodeClickListener() {
-			@Override
-			public void onTreeNodeClick(TreeNode node, View treeView) {
-				if (node.getLayoutId() == R.layout.project_file_tree_view) {
-					callOnNodeClickListeners((String) node.getValue());
-				}
+		treeAdapter.setTreeNodeClickListener((node, treeView) -> {
+			if (node.getLayoutId() == R.layout.project_file_tree_view) {
+				callOnNodeClickListeners((String) node.getValue());
 			}
+		});
+		treeAdapter.setTreeNodeLongClickListener((node, treeView) -> {
+			if (node.getLayoutId() == R.layout.project_file_tree_view) {
+				ActivityUtils.getInstance().showPopupMenuAt(
+					treeView,
+					R.menu.editor_tab_menu,
+					(menuItem) -> {
+						if (menuItem.getItemId() == R.id.editor_close_tab) {
+							Toast.makeText(requireContext(), "File Context Menu!", Toast.LENGTH_SHORT).show();
+							return true;
+						}
+						return false;
+					}
+				);
+			} else {
+				ActivityUtils.getInstance().showPopupMenuAt(
+					treeView,
+					R.menu.editor_tab_menu,
+					(menuItem) -> {
+						if (menuItem.getItemId() == R.id.editor_close_tab) {
+							Toast.makeText(requireContext(), "File Context Menu!", Toast.LENGTH_SHORT).show();
+							return true;
+						}
+						return false;
+					}
+				);
+			}
+			return true;
 		});
 		
 		recyclerView = new RecyclerView(getContext());
@@ -135,7 +163,7 @@ public class FileTreeViewFragment extends Fragment {
 				ViewGroup.LayoutParams.MATCH_PARENT
 			)
 		);
-		
+		recyclerScrollView.setPadding(8, 8, 8, 8);
 		recyclerScrollView.addView(recyclerView);
 	}
 	
