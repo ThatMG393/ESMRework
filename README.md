@@ -7,11 +7,11 @@ ESManager Rework
 Testing out the Project feature:
 - Clone/Download this [TestProject](https://github.com/ThatMG393/AFS-RBLX-Exploit).
 - Extract it to `/storage/emulated/0/Android/data/com.thatmg393.esmanager/files`.
+- Click the `ProjectActivity` button in the main menu
 
 Notes:
 - Make sure that the `lua` files are not in the `files` directory.
 - Make sure that the directory name of the `lua` files should be called `Roblox AFS Script`.
-- Click the `ProjectActivity` button in the main menj
 
 ## RPC
 Testing the RPC feature:
