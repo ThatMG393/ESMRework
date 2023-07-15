@@ -11,6 +11,7 @@ Testing out the Project feature:
 Notes:
 - Make sure that the `lua` files are not in the `files` directory.
 - Make sure that the directory name of the `lua` files should be called `Roblox AFS Script`.
+- Click the `ProjectActivity` button in the main menj
 
 ## RPC
 Testing the RPC feature:
