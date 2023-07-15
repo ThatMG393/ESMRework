@@ -8,7 +8,7 @@ import android.os.IBinder;
 import androidx.annotation.NonNull;
 
 import androidx.annotation.Nullable;
-import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
+import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;

@@ -5,6 +5,8 @@ import android.widget.Toast;
 import com.anggrayudi.storage.file.DocumentFileCompat;
 import com.anggrayudi.storage.file.DocumentFileType;
 
+import com.google.android.material.tabs.TabLayout;
+import com.thatmg393.esmanager.adapters.TabEditorAdapter;
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme;
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;

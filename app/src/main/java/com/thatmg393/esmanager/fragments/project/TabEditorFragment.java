@@ -1,16 +1,17 @@
 package com.thatmg393.esmanager.fragments.project;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
-import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
+import com.google.android.material.tabs.TabLayout;
+import com.thatmg393.esmanager.activities.ProjectActivity;
+import com.thatmg393.esmanager.adapters.TabEditorAdapter;
+import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.utils.EditorUtils;
@@ -19,7 +20,7 @@ import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.utils.SharedPreference;
 
-import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
+import io.github.rosemoe.sora.lang.Language;
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry;
 import io.github.rosemoe.sora.lsp.utils.URIUtils;
 import io.github.rosemoe.sora.widget.CodeEditor;
@@ -32,14 +33,13 @@ public class TabEditorFragment extends Fragment {
 	private static final Logger LOG = new Logger("ESM/ProjectTabEditorFragment");
 	
 	private CodeEditor editor;
-	public final String currentFilePath;
-	private final String fileExtension;
+	private String currentFilePath;
+	private String fileExtension;
 	
-	public TabEditorFragment(final Context context, final String pathToFile) {
+	public TabEditorFragment() { }
+	public TabEditorFragment(final String pathToFile) {
 		this.fileExtension = FilenameUtils.getExtension(pathToFile);
 		this.currentFilePath = pathToFile;
-		
-		initEditor(context);
 	}
 	
 	@Override
@@ -54,38 +54,23 @@ public class TabEditorFragment extends Fragment {
 	}
 	
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		
-		try {
-			if (editor != null) editor.release();
-		} catch (Exception e) {
-			LOG.e("Failed to free (" + currentFilePath + ") editor!");
-			e.printStackTrace(System.err);
-		}
-	}
-	
-	@Override
 	public String toString() {
 		return this.getClass().getName() + " for " + currentFilePath;
 	}
-	
 	
 	public void initEditor(Context context) {
 		editor = new CodeEditor(context);
 		
 		ThemeRegistry.getInstance().setTheme(SharedPreference.getInstance().getStringFallback("editor_code_theme", "darcula"));
-		EditorUtils.loadFileToEditor(editor, currentFilePath);
 		EditorUtils.ensureTMTheme(editor);
 		
-		TextMateLanguage tmLang = EditorUtils.createTMLanguage(fileExtension);
-		if (tmLang != null) {
-			editor.setEditorLanguage(tmLang);
-		}
+		Language editorLang = EditorUtils.createTMLanguage(fileExtension);
+		if (editorLang != null) editor.setEditorLanguage(editorLang);
 		
-		LanguageServerModel langServer = LSPManager.getInstance().getLanguageServer(fileExtension);
-		if (langServer != null) {
-			langServer.addListener(new ILanguageServiceCallback() {
+		EditorUtils.loadFileToEditor(editor, currentFilePath);
+		LanguageServerModel lsModel = LSPManager.getInstance().getLanguageServer(fileExtension);
+		if (lsModel != null) {
+			lsModel.addListener(new ILanguageServiceCallback() {
 				@Override
 				public void onReady() {
 					LSPUtils.connectToLsp(
@@ -102,5 +87,9 @@ public class TabEditorFragment extends Fragment {
 	
 	public boolean saveContent() {
 		return FileUtils.writeToFileUsingContent(editor.getText(), currentFilePath);
+	}
+	
+	public String getCurrentFilePath() {
+		return this.currentFilePath;
 	}
 }

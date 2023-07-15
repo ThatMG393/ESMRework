@@ -1,6 +1,6 @@
 package com.thatmg393.esmanager.managers;
 
-import com.thatmg393.esmanager.interfaces.impl.ILanguageServiceCallback;
+import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.lsp.lua.LuaLSPService;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.models.ProjectModel;

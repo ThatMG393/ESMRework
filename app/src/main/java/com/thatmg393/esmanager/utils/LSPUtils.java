@@ -50,16 +50,6 @@ public class LSPUtils {
 		CompletableFuture.runAsync(() -> {
 			try {
 				lspEditor.connectWithTimeout();
-				
-				/*
-				mainThread.postAtFrontOfQueue(() -> {
-					Toast.makeText(
-						lspEditor.getEditor().getContext(),
-						"connected to lsp!",
-						Toast.LENGTH_SHORT
-					).show();
-				});
-				*/
 			} catch(TimeoutException | InterruptedException e) {
 				e.printStackTrace(System.err);
 				ActivityUtils.getInstance().runOnUIThread(

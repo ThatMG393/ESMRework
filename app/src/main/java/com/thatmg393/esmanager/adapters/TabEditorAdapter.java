@@ -20,13 +20,14 @@ import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 import io.github.rosemoe.sora.widget.SymbolInputView;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import org.apache.commons.io.FilenameUtils;
 
 public class TabEditorAdapter extends FragmentStateAdapter {
-	public ArrayList<TabEditorFragment> fragments = new ArrayList<TabEditorFragment>();
+	public ArrayList<TabEditorFragment> fragments = new ArrayList<>();
 	
 	private RelativeLayout noEditorContainer;
-	private TabLayout tabLayout;
+	public final TabLayout tabLayout;
 	private ViewPager2 viewPager;
 	private LinearLayout symInputContainer;
 	
@@ -44,36 +45,45 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	}
 	
 	public void newTab(String path) {
-		if (checkTabAlreadyInList(path)) return;
-		
-		TabEditorFragment fragment = new TabEditorFragment(tabLayout.getContext(), path);
-		
+		TabEditorFragment fragment = new TabEditorFragment(path);
 		fragments.add(fragment);
-		notifyDataSetChanged();
 		
 		TabLayout.Tab tab = tabLayout.newTab();
 		tab.setText(FilenameUtils.getName(path));
 		tabLayout.addTab(tab);
 		
+		fragment.initEditor(tabLayout.getContext());
+		
+		notifyDataSetChanged();
+		callOnNewTab(tab, fragment);
 		animateViewsIfNeeded();
 	}
 	
 	public void removeTab(int position) {
-		if (position < 0 || position > fragments.size()) return;
-		
 		fragments.remove(position);
 		tabLayout.removeTabAt(position);
 		
 		notifyDataSetChanged();
+		callOnRemoveTab(position);
 		animateViewsIfNeeded();
 	}
 	
-	
 	public boolean checkTabAlreadyInList(String s) {
-		for (TabEditorFragment fragment : fragments) {
-			if (fragment.currentFilePath.equals(s)) return true;
+		for (int idx = 0; idx < fragments.size(); ++idx) {
+			if (fragments.get(idx).getCurrentFilePath().equals(s)) {
+				return true;
+			}
 		}
 		return false;
+	}
+	
+	public int getIndexOfFragment(String path) {
+		for (int idx = 0; idx < fragments.size(); ++idx) {
+			if (fragments.get(idx).getCurrentFilePath().equals(path)) {
+				return idx;
+			}
+		}
+		return 0;
 	}
 	
 	public void animateViewsIfNeeded() {
@@ -83,7 +93,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		 && noEditorContainer.getVisibility() == View.GONE) {
 			tabLayout.animate()
 				.translationY(-tabLayout.getHeight())
-				.setDuration(200)
+				.setDuration(300)
 				.setInterpolator(new AccelerateDecelerateInterpolator())
 				.setListener(new AnimatorListenerAdapter() {
 					@Override
@@ -95,7 +105,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 			
 			viewPager.animate()
 				.translationX(-viewPager.getWidth())
-				.setDuration(130)
+				.setDuration(200)
 				.setInterpolator(new AccelerateDecelerateInterpolator())
 				.setListener(new AnimatorListenerAdapter() {
 					@Override
@@ -109,7 +119,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 			noEditorContainer.setVisibility(View.VISIBLE);
 			noEditorContainer.animate()
 				.translationY(0)
-				.setDuration(180)
+				.setDuration(140)
 				.setInterpolator(new AccelerateDecelerateInterpolator())
 				.setListener(null);
 		} else if (tabLayout.getTabCount() > 0
@@ -118,7 +128,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 				&& noEditorContainer.getVisibility() == View.VISIBLE) {
 			noEditorContainer.animate()
 				.translationY(noEditorContainer.getHeight())
-				.setDuration(180)
+				.setDuration(140)
 				.setInterpolator(new AccelerateDecelerateInterpolator())
 				.setListener(new AnimatorListenerAdapter() {
 					@Override
@@ -131,7 +141,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 			viewPager.setVisibility(View.VISIBLE);
 			viewPager.animate()
 				.translationX(0)
-				.setDuration(100)
+				.setDuration(200)
 				.setInterpolator(new AccelerateDecelerateInterpolator())
 				.setListener(null);
 			symInputContainer.setVisibility(View.VISIBLE);
@@ -157,5 +167,25 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	
 	public ArrayList<TabEditorFragment> getFragmentList() {
 		return this.fragments;
+	}
+	
+	private final ArrayList<OnTabUpdateListener> tabUpdateListener = new ArrayList<>();
+	public void addOnTabUpdateListener(OnTabUpdateListener listener) {
+		tabUpdateListener.add(listener);
+	}
+	public void removeOnTabUpdateListener(OnTabUpdateListener listener) {
+		tabUpdateListener.remove(listener);
+	}
+	
+	private void callOnNewTab(TabLayout.Tab tab, TabEditorFragment fragment) {
+		tabUpdateListener.forEach((listener) -> listener.onNewTab(tab, fragment));
+	}
+	private void callOnRemoveTab(int position) {
+		tabUpdateListener.forEach((listener) -> listener.onRemoveTab(position));
+	}
+	
+	public static interface OnTabUpdateListener {
+		public default void onNewTab(TabLayout.Tab tab, TabEditorFragment fragment) { }
+		public default void onRemoveTab(int position) { }
 	}
 }

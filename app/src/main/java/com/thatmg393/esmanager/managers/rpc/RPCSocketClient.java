@@ -183,6 +183,7 @@ public class RPCSocketClient extends WebSocketClient {
 	
 	public void sendPresence() {
 		LOG.d("Sending Rich Presence");
+		serviceInstance.updateNotificationContent("Sending Rich Presence");
 		
 		long current = System.currentTimeMillis();
 		
@@ -224,7 +225,6 @@ public class RPCSocketClient extends WebSocketClient {
 		arr.put("op", 3);
 		arr.put("d", presence);
 		
-		LOG.d(GSON.toJson(arr));
 		send(GSON.toJson(arr));
 	}
 	

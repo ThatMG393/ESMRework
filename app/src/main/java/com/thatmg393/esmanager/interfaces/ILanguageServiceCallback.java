@@ -1,5 +1,5 @@
-package com.thatmg393.esmanager.interfaces.impl;
-import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
+package com.thatmg393.esmanager.interfaces;
+
 import com.thatmg393.esmanager.utils.Logger;
 
 public interface ILanguageServiceCallback {

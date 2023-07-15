@@ -24,13 +24,13 @@ import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.EditorUtils;
-
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver;
 import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 import io.github.rosemoe.sora.widget.SymbolInputView;
 
+import java.util.Objects;
 import org.apache.commons.io.FilenameUtils;
 
 public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
@@ -93,8 +93,32 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorTabAdapter = new TabEditorAdapter(getLifecycle(), getSupportFragmentManager(), findViewById(android.R.id.content));
 		editorViewPager.setAdapter(editorTabAdapter);
 		
+		editorTabAdapter.addOnTabUpdateListener(new TabEditorAdapter.OnTabUpdateListener() {
+			@Override
+			public void onNewTab(TabLayout.Tab tab, TabEditorFragment fragment) {
+				/* if (!((editorTabLayout.getSelectedTabPosition() - 1) == tab.getPosition())) {
+					tab.select();
+				} */
+			}
+				
+			@Override
+			public void onRemoveTab(int position) {
+				System.out.println("Remove tab at " + position);
+				if (position == 0 && editorTabAdapter.getItemCount() > 0) {
+					editorViewPager.setCurrentItem(0);
+				}
+			}
+		});
 		editorFileTreeViewFragment.addTreeNodeListener((path) -> {
-			editorTabAdapter.newTab(path);
+			if (!editorTabAdapter.checkTabAlreadyInList(path)) {
+				editorTabAdapter.newTab(path);
+			} else {
+				int fragIdx = editorTabAdapter.getIndexOfFragment(path);
+				if ((editorTabLayout.getSelectedTabPosition() - 1) != fragIdx) {
+					Objects.requireNonNull(editorTabLayout.getTabAt(fragIdx)).select();
+				}
+			}
+			
 			if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) editorDrawerLayout.closeDrawer(GravityCompat.END);
 		});
 		
@@ -127,6 +151,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
     public void onTabSelected(TabLayout.Tab tab) {
         editorViewPager.setCurrentItem(tab.getPosition());
+		System.out.println("selected on destroy?");
     }
 	
 	@Override
@@ -152,7 +177,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 				
 			editorTabAdapter.getFragmentList().forEach((fragment) -> {
 				if (!fragment.saveContent()) {
-					Toast.makeText(getApplicationContext(), "Failed to save " + fragment.currentFilePath, Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(), "Failed to save " + fragment.getCurrentFilePath(), Toast.LENGTH_SHORT).show();
 				}
 			});
 			Toast.makeText(getApplicationContext(), "All files saved!", Toast.LENGTH_SHORT).show();
