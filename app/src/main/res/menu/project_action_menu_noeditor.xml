@@ -3,19 +3,25 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 	
 	<item
-		android:id="@+id/project_save_file"
+		android:id="@+id/project_action_drawer_file_open"
+		android:title="File Drawer"
+		android:icon="@drawable/ic_folder"
+		app:showAsAction="never" />
+	
+	<item
+		android:id="@+id/project_action_editor_save"
 		android:title="Save"
 		android:icon="@drawable/ic_save"
 		app:showAsAction="never" />
 
 	<item
-		android:id="@+id/project_save_all_file"
+		android:id="@+id/project_action_editor_save_all"
 		android:title="Save All"
 		android:icon="@drawable/ic_save"
 		app:showAsAction="never" />
 		
 	<item
-		android:id="@+id/project_import_obj"
+		android:id="@+id/project_action_import_obj"
 		android:title="Import 3D Object"
 		android:icon="@drawable/ic_import"
 		app:showAsAction="never" />

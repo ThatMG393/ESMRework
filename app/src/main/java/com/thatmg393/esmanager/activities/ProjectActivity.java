@@ -162,15 +162,18 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
 		} else {
 			getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
+			
+        	if (!ActivityUtils.getInstance().isUserUsingNavigationBar()) {
+				MenuItem mnItem = menu.findItem(R.id.project_action_drawer_file_open);
+				if (mnItem != null) mnItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+			}
 		}
 		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
-		if (menuItem.getItemId() == R.id.project_save_file) {
-			if (editorTabLayout.getTabCount() == 0) return true;
-				
+		if (menuItem.getItemId() == R.id.project_action_editor_save) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
 			if (editorFragment != null) {
 				if (editorFragment.saveContents()) {
@@ -180,9 +183,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 				}
 			}
 			return true;
-		} else if (menuItem.getItemId() == R.id.project_save_all_file) {
-			if (editorTabAdapter.getItemCount() == 0) return true;
-				
+		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
 			editorTabAdapter.getFragmentList().forEach((fragment) -> {
 				if (!fragment.saveContents()) {
 					Toast.makeText(getApplicationContext(), "Failed to save " + fragment.getCurrentFilePath(), Toast.LENGTH_SHORT).show();
@@ -190,26 +191,23 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			});
 			Toast.makeText(getApplicationContext(), "All files saved!", Toast.LENGTH_SHORT).show();
 			return true;
-		} else if (menuItem.getItemId() == R.id.project_import_obj) {
+		} else if (menuItem.getItemId() == R.id.project_action_import_obj) {
 			Toast.makeText(getApplicationContext(), "Function not implemented", Toast.LENGTH_SHORT).show();
 			return true;
-		} else if (menuItem.getItemId() == R.id.project_file_undo) {
+		} else if (menuItem.getItemId() == R.id.project_action_editor_undo) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canUndo()) {
 				editorFragment.getEditor().undo();
 			}
 			return true;
-		} else if (menuItem.getItemId() == R.id.project_file_redo) {
+		} else if (menuItem.getItemId() == R.id.project_action_editor_redo) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canRedo()) {
 				editorFragment.getEditor().redo();
 			}
 			return true;
-		} else if (menuItem.getItemId() == R.id.project_file_drawer) {
-			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
-			if (editorFragment != null & editorFragment.getEditor().canRedo()) {
-				editorFragment.getEditor().redo();
-			}
+		} else if (menuItem.getItemId() == R.id.project_action_drawer_file_open) {
+			editorDrawerLayout.openDrawer(GravityCompat.END);
 			return true;
 		}
 		

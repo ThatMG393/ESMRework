@@ -1,24 +1,41 @@
-Multiblock = {
-    Type = nil
-    
-	Rigidbody = {
-        UseGravity = true
-    }
-    
-    ModBlock = {
-        function Send(d) end
-    }
+
+
+es = {
+    TimeScale = 1,
+    DeltaTime = 0,
+    FixedDeltaTime = 0,
+    Multiblock = {
+        Type = nil,
+	    Rigidbody = {
+            UseGravity = true
+        },
+        ModBlock = { }
+    },
+    Player = { },
+    Quaternion = { }
 }
 
 -- Multiblock
-function TryGetMultiBlockFromConnection(connectionIndex, isIncoming, count) end
-function 
+function es.TryGetMultiBlockFromConnection(connectionIndex, isIncoming, count) end
+-- function 
     
 -- Sound
-function SetSoundVolume(volume) end
-function SetSoundLoop(value) end
-function PlaySound(soundPath) end
+function es.SetSoundVolume(volume) end
+function es.SetSoundLoop(value) end
+function es.PlaySound(soundPath) end
 
 -- Data
-function GetBool(key, value) end
-function GetFloat(key, value) end
+function es.GetBool(key, value) end
+function es.GetFloat(key, value) end
+
+-- Classes
+
+-- Multiblock class implementation
+function es.Multiblock.ModBlock.Send(data) end
+
+-- Quaternion class implementation
+function es.Quaternion.Euler(x, y, z) end
+function es.Quaternion.LookRotation(v3f) end
+function es.Quaternion.LookRotation(v3f, v3u) end
+function es.Quaternion.ToEulerAngles(quaternion) end
+function es.Quaternion.FromToRotation(v3from, v3to) end

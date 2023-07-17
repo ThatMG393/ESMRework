@@ -92,6 +92,11 @@ public class ActivityUtils {
 		
 		return popupMenu;
 	}
+	
+	public boolean isUserUsingNavigationBar() {
+		int id = getRegisteredActivity().getResources().getIdentifier("config_showNavigationBar", "bool", "android");
+		return id > 0 && getRegisteredActivity().getResources().getBoolean(id);
+	}
 
     public AppCompatActivity getRegisteredActivity() {
 		return activity;
