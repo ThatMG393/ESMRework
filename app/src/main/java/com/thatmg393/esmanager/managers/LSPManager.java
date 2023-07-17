@@ -1,5 +1,7 @@
 package com.thatmg393.esmanager.managers;
 
+import androidx.annotation.Nullable;
+import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.lsp.lua.LuaLSPService;
 import com.thatmg393.esmanager.models.LanguageServerModel;
@@ -10,6 +12,8 @@ import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.utils.NetworkUtils;
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
 
+import io.github.rosemoe.sora.widget.CodeEditor;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,7 +23,7 @@ public class LSPManager {
     private static volatile LSPManager INSTANCE;
 
     public static synchronized LSPManager getInstance() {
-        if (INSTANCE == null) { throw new RuntimeException("Initialize first, use 'LSPManager#initializeInstance()'"); }
+        if (INSTANCE == null) throw new RuntimeException("Initialize first, use 'LSPManager#initializeInstance()'");
         return INSTANCE;
     }
 
@@ -30,6 +34,7 @@ public class LSPManager {
 	
 	private HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<String, LanguageServerModel>();
 	private ProjectModel currentProject;
+	private EditorManager editorManager = new EditorManager();
 	
     private LSPManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'LSPManager#getInstance()'!");
@@ -88,7 +93,24 @@ public class LSPManager {
 		this.currentProject = newProject;
 	}
 	
+	public EditorManager getEditorManager() {
+		return this.editorManager;
+	}
+	
 	public ProjectModel getCurrentProject() {
 		return this.currentProject;
+	}
+	
+	public static class EditorManager {
+		@Nullable
+		private TabEditorFragment focusedTabEditor = null;
+		
+		public void setFocusedTabEditor(TabEditorFragment editor) {
+			this.focusedTabEditor = editor;
+		}
+		
+		public TabEditorFragment getFocusedTabEditor() {
+			return this.focusedTabEditor;
+		}
 	}
 }

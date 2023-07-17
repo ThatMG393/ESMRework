@@ -62,10 +62,10 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		setContentView(R.layout.activity_project);
 		LSPManager.getInstance().setCurrentProject(
 			new ProjectModel(
-				"Roblox AFS Script",
-				GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/Roblox AFS Script",
+				"everlogic",
+				GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/everlogic",
 				"v0.1",
-				"ThatMG393"
+				"Veka"
 			)
 		);
 		LSPManager.getInstance().registerLangServers();
@@ -95,25 +95,16 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		
 		editorTabAdapter.addOnTabUpdateListener(new TabEditorAdapter.OnTabUpdateListener() {
 			@Override
-			public void onNewTab(TabLayout.Tab tab, TabEditorFragment fragment) {
-				/* if (!((editorTabLayout.getSelectedTabPosition() - 1) == tab.getPosition())) {
-					tab.select();
-				} */
-			}
-				
-			@Override
 			public void onRemoveTab(int position) {
-				System.out.println("Remove tab at " + position);
-				if (position == 0 && editorTabAdapter.getItemCount() > 0) {
-					editorViewPager.setCurrentItem(0);
-				}
+				invalidateOptionsMenu();
 			}
 		});
+		
 		editorFileTreeViewFragment.addTreeNodeListener((path) -> {
-			if (!editorTabAdapter.checkTabAlreadyInList(path)) {
+			int fragIdx = editorTabAdapter.getIndexOfFragment(path);
+			if (fragIdx == -1) {
 				editorTabAdapter.newTab(path);
 			} else {
-				int fragIdx = editorTabAdapter.getIndexOfFragment(path);
 				if ((editorTabLayout.getSelectedTabPosition() - 1) != fragIdx) {
 					Objects.requireNonNull(editorTabLayout.getTabAt(fragIdx)).select();
 				}
@@ -156,8 +147,19 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.project_action_menu, menu);
+		getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
 		return true;
+	}
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		if (LSPManager.getInstance().getEditorManager().getFocusedTabEditor() != null) {
+			getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
+		} else {
+			getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
+		}
+		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	@Override
@@ -165,18 +167,20 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		if (menuItem.getItemId() == R.id.project_save_file) {
 			if (editorTabLayout.getTabCount() == 0) return true;
 				
-			TabEditorFragment editorFragment = editorTabAdapter.getFragmentList().get(editorTabLayout.getSelectedTabPosition());
-			if (editorFragment.saveContent()) {
-				Toast.makeText(getApplicationContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
-			} else {
-				Toast.makeText(getApplicationContext(), "Failed to save file!", Toast.LENGTH_SHORT).show();
+			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			if (editorFragment != null) {
+				if (editorFragment.saveContents()) {
+					Toast.makeText(getApplicationContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(getApplicationContext(), "Failed to save file!", Toast.LENGTH_SHORT).show();
+				}
 			}
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_save_all_file) {
-			if (editorTabLayout.getTabCount() == 0) return true;
+			if (editorTabAdapter.getItemCount() == 0) return true;
 				
 			editorTabAdapter.getFragmentList().forEach((fragment) -> {
-				if (!fragment.saveContent()) {
+				if (!fragment.saveContents()) {
 					Toast.makeText(getApplicationContext(), "Failed to save " + fragment.getCurrentFilePath(), Toast.LENGTH_SHORT).show();
 				}
 			});
@@ -184,6 +188,18 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_import_obj) {
 			Toast.makeText(getApplicationContext(), "Function not implemented", Toast.LENGTH_SHORT).show();
+			return true;
+		} else if (menuItem.getItemId() == R.id.project_file_undo) {
+			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			if (editorFragment != null & editorFragment.getEditor().canUndo()) {
+				editorFragment.getEditor().undo();
+			}
+			return true;
+		} else if (menuItem.getItemId() == R.id.project_file_redo) {
+			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			if (editorFragment != null & editorFragment.getEditor().canRedo()) {
+				editorFragment.getEditor().redo();
+			}
 			return true;
 		}
 		

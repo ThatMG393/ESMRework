@@ -73,25 +73,18 @@ public class EditorUtils {
 	
 	public static void loadFileToEditor(CodeEditor editor, String path) {
 		CompletableFuture.runAsync(() -> {
-			try {
-				Content text = ContentIO.createFrom(
-					new FileInputStream(path)
-				);
-				
-				ActivityUtils.getInstance().runOnUIThread(() -> {
-					try {
-						editor.setText(text);
-					} catch (Exception e) {
-						LOG.e("Failed to set editor text!");
-						e.printStackTrace(System.err);
+			Content text = FileUtils.openFileAsContent(path);
+			ActivityUtils.getInstance().runOnUIThread(() -> {
+				try {
+					if (text != null) editor.setText(text);
+				} catch (Exception e) {
+					LOG.e("Failed to set editor text!");
+					e.printStackTrace(System.err);
 								
-						Toast.makeText(editor.getContext(), "Failed to load file contents!", Toast.LENGTH_SHORT).show();
-						editor.setEditable(false);
-					}
-				});
-			} catch (IOException e) {
-				e.printStackTrace(System.err);
-			}
+					Toast.makeText(editor.getContext(), "Failed to load file contents!", Toast.LENGTH_SHORT).show();
+					editor.setEditable(false);
+				}
+			});
 		});
 	}
 }

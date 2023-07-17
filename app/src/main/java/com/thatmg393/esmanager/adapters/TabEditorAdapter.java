@@ -26,6 +26,8 @@ import org.apache.commons.io.FilenameUtils;
 public class TabEditorAdapter extends FragmentStateAdapter {
 	public ArrayList<TabEditorFragment> fragments = new ArrayList<>();
 	
+	private FragmentManager fragmentManager;
+	
 	private RelativeLayout noEditorContainer;
 	public final TabLayout tabLayout;
 	private ViewPager2 viewPager;
@@ -33,6 +35,8 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	
 	public TabEditorAdapter(Lifecycle lifecycle, FragmentManager fragmentManager, View projectLayout) {
 		super(fragmentManager, lifecycle);
+		this.fragmentManager = fragmentManager;
+		
 		this.tabLayout = projectLayout.findViewById(R.id.project_editors_tab);
 		this.viewPager = projectLayout.findViewById(R.id.project_editor_view);
 		this.noEditorContainer = projectLayout.findViewById(R.id.project_no_editor_container);
@@ -46,7 +50,9 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	
 	public void newTab(String path) {
 		TabEditorFragment fragment = new TabEditorFragment(path);
+		
 		fragments.add(fragment);
+		notifyDataSetChanged();
 		
 		TabLayout.Tab tab = tabLayout.newTab();
 		tab.setText(FilenameUtils.getName(path));
@@ -54,104 +60,54 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		
 		fragment.initEditor(tabLayout.getContext());
 		
-		notifyDataSetChanged();
-		callOnNewTab(tab, fragment);
+		dispatchOnNewTab(tab, fragment);
 		animateViewsIfNeeded();
 	}
 	
 	public void removeTab(int position) {
-		fragments.remove(position);
 		tabLayout.removeTabAt(position);
-		
+		fragments.remove(position);
 		notifyDataSetChanged();
-		callOnRemoveTab(position);
+		
+		// Bug is when removing a tab at pos 0, the viewpager doesnt update propeely
+		// and desyncing our tabs, fragments, viewpager.
+		// Only happens on pos 0 and getItemCount() > 0
+		if (position == 0 && getItemCount() > 0) viewPager.setAdapter(this);
+		// Also happens on pos 0 and getItemCount() == 0
+		else if (position == 0 && getItemCount() == 0) viewPager.setAdapter(this);
+		
+		dispatchOnRemoveTab(position);
 		animateViewsIfNeeded();
 	}
 	
-	public boolean checkTabAlreadyInList(String s) {
-		for (int idx = 0; idx < fragments.size(); ++idx) {
-			if (fragments.get(idx).getCurrentFilePath().equals(s)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	public int getIndexOfFragment(String path) {
-		for (int idx = 0; idx < fragments.size(); ++idx) {
-			if (fragments.get(idx).getCurrentFilePath().equals(path)) {
-				return idx;
+		int i = 0;
+		for (TabEditorFragment fragment : fragments) {
+			if (fragment.getCurrentFilePath().equals(path)) {
+				return i;
 			}
+			i++;
 		}
-		return 0;
+		return -1;
 	}
 	
 	public void animateViewsIfNeeded() {
 		if (tabLayout.getTabCount() == 0
-		 && tabLayout.getVisibility() == View.VISIBLE
-		 && viewPager.getVisibility() == View.VISIBLE
-		 && noEditorContainer.getVisibility() == View.GONE) {
-			tabLayout.animate()
-				.translationY(-tabLayout.getHeight())
-				.setDuration(300)
-				.setInterpolator(new AccelerateDecelerateInterpolator())
-				.setListener(new AnimatorListenerAdapter() {
-					@Override
-					public void onAnimationEnd(Animator animation) {
-						super.onAnimationEnd(animation);
-						tabLayout.setVisibility(View.GONE);
-					}
-				});
-			
-			viewPager.animate()
-				.translationX(-viewPager.getWidth())
-				.setDuration(200)
-				.setInterpolator(new AccelerateDecelerateInterpolator())
-				.setListener(new AnimatorListenerAdapter() {
-					@Override
-					public void onAnimationEnd(Animator animation) {
-						super.onAnimationEnd(animation);
-						viewPager.setVisibility(View.GONE);
-					}
-				});
+		&& tabLayout.getVisibility() == View.VISIBLE
+		&& viewPager.getVisibility() == View.VISIBLE
+		&& noEditorContainer.getVisibility() == View.GONE) {
+			viewPager.setVisibility(View.GONE);
 			symInputContainer.setVisibility(View.GONE);
-			
+			tabLayout.setVisibility(View.GONE);
 			noEditorContainer.setVisibility(View.VISIBLE);
-			noEditorContainer.animate()
-				.translationY(0)
-				.setDuration(140)
-				.setInterpolator(new AccelerateDecelerateInterpolator())
-				.setListener(null);
 		} else if (tabLayout.getTabCount() > 0
-				&& tabLayout.getVisibility() == View.GONE
-				&& viewPager.getVisibility() == View.GONE
-				&& noEditorContainer.getVisibility() == View.VISIBLE) {
-			noEditorContainer.animate()
-				.translationY(noEditorContainer.getHeight())
-				.setDuration(140)
-				.setInterpolator(new AccelerateDecelerateInterpolator())
-				.setListener(new AnimatorListenerAdapter() {
-					@Override
-					public void onAnimationEnd(Animator animation) {
-						super.onAnimationEnd(animation);
-						noEditorContainer.setVisibility(View.GONE);
-					}
-				});
-			
-			viewPager.setVisibility(View.VISIBLE);
-			viewPager.animate()
-				.translationX(0)
-				.setDuration(200)
-				.setInterpolator(new AccelerateDecelerateInterpolator())
-				.setListener(null);
-			symInputContainer.setVisibility(View.VISIBLE);
-			
+		&& tabLayout.getVisibility() == View.GONE
+		&& viewPager.getVisibility() == View.GONE
+		&& noEditorContainer.getVisibility() == View.VISIBLE) {
+			noEditorContainer.setVisibility(View.GONE);
 			tabLayout.setVisibility(View.VISIBLE);
-			tabLayout.animate()
-				.translationY(0)
-				.setDuration(200)
-				.setInterpolator(new AccelerateDecelerateInterpolator())
-				.setListener(null);
+			viewPager.setVisibility(View.VISIBLE);
+			symInputContainer.setVisibility(View.VISIBLE);
 		}
 	}
 	
@@ -177,15 +133,15 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		tabUpdateListener.remove(listener);
 	}
 	
-	private void callOnNewTab(TabLayout.Tab tab, TabEditorFragment fragment) {
+	private void dispatchOnNewTab(TabLayout.Tab tab, TabEditorFragment fragment) {
 		tabUpdateListener.forEach((listener) -> listener.onNewTab(tab, fragment));
 	}
-	private void callOnRemoveTab(int position) {
+	private void dispatchOnRemoveTab(int position) {
 		tabUpdateListener.forEach((listener) -> listener.onRemoveTab(position));
 	}
 	
 	public static interface OnTabUpdateListener {
 		public default void onNewTab(TabLayout.Tab tab, TabEditorFragment fragment) { }
-		public default void onRemoveTab(int position) { }
+		public default void onRemoveTab(int position) { } 
 	}
 }

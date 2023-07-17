@@ -1,7 +1,5 @@
 package com.thatmg393.esmanager.utils;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -10,6 +8,7 @@ import com.thatmg393.esmanager.managers.LSPManager;
 
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
+import io.github.rosemoe.sora.lsp.client.languageserver.requestmanager.RequestManager;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.LanguageServerDefinition;
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
@@ -44,21 +43,6 @@ public class LSPUtils {
 		);
 	}
 	
-	public static void connectToLsp(
-		@NonNull LspEditor lspEditor
-	) {
-		CompletableFuture.runAsync(() -> {
-			try {
-				lspEditor.connectWithTimeout();
-			} catch(TimeoutException | InterruptedException e) {
-				e.printStackTrace(System.err);
-				ActivityUtils.getInstance().runOnUIThread(
-					() -> Toast.makeText(lspEditor.getEditor().getContext(), "Failed to connect to LSP!\nNo completions will be provided!", Toast.LENGTH_SHORT).show()
-				);
-			}
-		});
-	} 
-	
 	public static LspEditor createNewLspEditor(
 		@NonNull String fileUri,
 		@NonNull LanguageServerDefinition serverDefinition,
@@ -69,10 +53,53 @@ public class LSPUtils {
 				fileUri,
 				serverDefinition
 			);
-					
+		
+		if (lspEditor == null) {
+			LOG.w("LSPEditor for " + fileUri.toString() + " is somehow null...");
+			lspEditor = LspEditorManager.getOrCreateEditorManager(LSPManager.getInstance().getCurrentProject().projectPath)
+				.createEditor(
+					fileUri,
+					serverDefinition
+				);
+		}
+		
 		lspEditor.setWrapperLanguage((TextMateLanguage)editor.getEditorLanguage());
 		lspEditor.setEditor(editor);
 		
 		return lspEditor;
+	}
+	
+	public static void connectToLsp(
+		@NonNull LspEditor lspEditor
+	) {
+		CompletableFuture.runAsync(() -> {
+			try {
+				lspEditor.connectWithTimeout();
+				onLspConnected(lspEditor);
+			} catch(TimeoutException | InterruptedException e) {
+				e.printStackTrace(System.err);
+				ActivityUtils.getInstance().runOnUIThread(
+					() -> Toast.makeText(lspEditor.getEditor().getContext(), "Failed to connect to LSP!\nNo completions will be provided.", Toast.LENGTH_SHORT).show()
+				);
+			}
+		});
+	} 
+	
+	public static void onLspConnected(LspEditor lspEditor) {
+		RequestManager lspRequestManager = lspEditor.getRequestManager();
+		if (lspRequestManager != null) {
+			/*
+			WorkspaceFoldersChangeEvent wfce = new WorkspaceFoldersChangeEvent();
+			wfce.setAdded(Arrays.asList(
+				new WorkspaceFolder(LSPManager.getInstance().getCurrentProject().projectPath)
+			));
+			
+			DidChangeWorkspaceFoldersParams dwfp = new DidChangeWorkspaceFoldersParams();
+			dwfp.setEvent(wfce);
+			
+			lspRequestManager.didChangeWorkspaceFolders(dwfp);
+			*/
+		}
+		
 	}
 }

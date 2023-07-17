@@ -68,7 +68,7 @@ public class ActivityUtils {
 	}
 	
 	public void runOnUIThread(Runnable toBeRun) {
-		mainThread.postAtFrontOfQueue(toBeRun);
+		mainThread.post(toBeRun);
 	}
 	
 	public void createNotificationChannel(String channelID, String channelName, int notificationImportance) {
@@ -81,8 +81,6 @@ public class ActivityUtils {
 
 			NotificationManager manager = activity.getSystemService(NotificationManager.class);
 			manager.createNotificationChannel(serviceChannel);
-		} else {
-			
 		}
 	}
 	

@@ -3,13 +3,18 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 	
 	<item
-		android:id="@+id/project_save_file"
-		android:title="Save"
-		app:showAsAction="never" />
-
+		android:id="@+id/project_file_drawer"
+		android:title="File Drawer"
+		app:showAsAction="always" />
+	
 	<item
 		android:id="@+id/project_save_all_file"
 		android:title="Save All"
+		app:showAsAction="always" />
+	
+	<item
+		android:id="@+id/project_save_file"
+		android:title="Save"
 		app:showAsAction="never" />
 		
 	<item

@@ -68,9 +68,13 @@ public class LanguageServerModel implements ServiceConnection {
 		);
 	}
 	
-    public int getLspPort() {
+    public int getServerPort() {
         return this.serverPort;
     }
+	
+	public LanguageServerWrapper getServerWrapper() {
+		return this.serverWrapper;
+	}
 	
 	public CustomLanguageServerDefinition getServerDefinition() {
 		return (CustomLanguageServerDefinition)this.serverWrapper.getServerDefinition();

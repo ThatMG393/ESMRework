@@ -134,7 +134,7 @@ public class LuaLSPService extends BaseLSPService {
 	}
 	
 	private synchronized void initializeServer() throws Exception {
-		int serverPort = LSPManager.getInstance().getLanguageServer("lua").getLspPort();
+		int serverPort = LSPManager.getInstance().getLanguageServer("lua").getServerPort();
 		
 		if (serverSocket == null) {
 			LOG.d("Binding serverSocket to 'localhost:" + serverPort + "'");
