@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- Old color scheme, might be useful so dont delete
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDefault">#3700B3</color>
     <color name="colorSecondary">#03DAC5</color>
     <color name="colorSecondaryDefault">#018786</color>
+	-->
+	
+	<color name="colorPrimary">#DB1131</color>
+    <color name="colorPrimaryDefault">#B40E28</color>
+    <color name="colorSecondary">#E39F18</color>
+    <color name="colorSecondaryDefault">#D5A340</color>
 </resources>

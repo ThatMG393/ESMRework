@@ -85,8 +85,8 @@ public class ActivityUtils {
 	}
 	
 	public PopupMenu showPopupMenuAt(@NonNull View anchor, @MenuRes int menuRes, @Nullable PopupMenu.OnMenuItemClickListener listener) {
-		PopupMenu popupMenu = new PopupMenu(activity.getApplicationContext(), anchor);
-		popupMenu.inflate(menuRes);
+		PopupMenu popupMenu = new PopupMenu(activity, anchor);
+		popupMenu.getMenuInflater().inflate(menuRes, popupMenu.getMenu());
 		popupMenu.setOnMenuItemClickListener(listener);
 		popupMenu.show();
 		

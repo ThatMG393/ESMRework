@@ -4,10 +4,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -24,6 +24,7 @@ import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.EditorUtils;
+
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver;
@@ -31,7 +32,6 @@ import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 import io.github.rosemoe.sora.widget.SymbolInputView;
 
 import java.util.Objects;
-import org.apache.commons.io.FilenameUtils;
 
 public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 	private DrawerLayout editorDrawerLayout;
@@ -62,10 +62,10 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		setContentView(R.layout.activity_project);
 		LSPManager.getInstance().setCurrentProject(
 			new ProjectModel(
-				"everlogic",
-				GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/everlogic",
+				"Roblox AFS Script",
+				GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/Roblox AFS Script",
 				"v0.1",
-				"Veka"
+				"ThatMG393"
 			)
 		);
 		LSPManager.getInstance().registerLangServers();
@@ -147,6 +147,10 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		if (menu instanceof MenuBuilder) {
+			((MenuBuilder)menu).setOptionalIconsVisible(true);
+		}
+		
 		getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
 		return true;
 	}
@@ -196,6 +200,12 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			}
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_file_redo) {
+			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			if (editorFragment != null & editorFragment.getEditor().canRedo()) {
+				editorFragment.getEditor().redo();
+			}
+			return true;
+		} else if (menuItem.getItemId() == R.id.project_file_drawer) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canRedo()) {
 				editorFragment.getEditor().redo();

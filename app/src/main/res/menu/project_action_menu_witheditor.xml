@@ -4,31 +4,37 @@
 	
 	<item
 		android:id="@+id/project_file_undo"
-		android:title="Undo"
+		android:title="undo"
+		android:icon="@drawable/ic_undo"
 		app:showAsAction="always" />
 	
 	<item
 		android:id="@+id/project_file_redo"
 		android:title="Redo"
+		android:icon="@drawable/ic_redo"
 		app:showAsAction="always" />
 	
 	<item
 		android:id="@+id/project_save_file"
 		android:title="Save"
+		android:icon="@drawable/ic_save"
 		app:showAsAction="ifRoom" />
 	
 	<item
 		android:id="@+id/project_file_drawer"
 		android:title="File Drawer"
+		android:icon="@drawable/ic_folder"
 		app:showAsAction="never" />
 
 	<item
 		android:id="@+id/project_save_all_file"
 		android:title="Save All"
+		android:icon="@drawable/ic_save"
 		app:showAsAction="never" />
 		
 	<item
 		android:id="@+id/project_import_obj"
 		android:title="Import 3D Object"
+		android:icon="@drawable/ic_import"
 		app:showAsAction="never" />
 </menu>

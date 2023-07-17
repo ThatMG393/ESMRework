@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#ff123d</color>
-    <color name="colorPrimaryDefault">#ff859b</color>
-    <color name="colorSecondary">#ffb31c</color>
-    <color name="colorSecondaryDefault">#ffc34d</color>
+    <color name="colorPrimary">#FF123D</color>
+    <color name="colorPrimaryDefault">#B40E28</color>
+    <color name="colorSecondary">#FFB31C</color>
+    <color name="colorSecondaryDefault">#FFC34D</color>
 	
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
