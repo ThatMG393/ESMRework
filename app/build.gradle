@@ -4,14 +4,12 @@ plugins {
 
 android {
 	namespace "com.thatmg393.esmanager"
-	
-    compileSdk 33
-    buildToolsVersion "33.0.1"
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.thatmg393.esmanager"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 010000
         versionName "v1.0-preview"
     }
