@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item
-		android:id="@+id/editor_close_tab"
+		android:id="@+id/project_tab_editor_close"
 		android:title="Close Tab" />
 </menu>

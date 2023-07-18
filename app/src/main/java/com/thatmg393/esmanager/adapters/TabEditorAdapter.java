@@ -142,6 +142,6 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	
 	public static interface OnTabUpdateListener {
 		public default void onNewTab(TabLayout.Tab tab, TabEditorFragment fragment) { }
-		public default void onRemoveTab(int position) { } 
+		public default void onRemoveTab(int position) { }
 	}
 }

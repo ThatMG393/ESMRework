@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager2.widget.ViewPager2;
@@ -41,13 +42,13 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	private TabLayout editorTabLayout;
 	private TabEditorAdapter editorTabAdapter;
 	private ViewPager2 editorViewPager;
+	private SymbolInputView editorSymbolInput;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		SymbolInputView symbolInput = findViewById(R.id.project_symbol_input);
-		symbolInput.addSymbols(
+		editorSymbolInput.addSymbols(
 			new String[] {
 				"->", "{", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
 			}, new String[] {
@@ -60,6 +61,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public void init() {
 		super.init();
 		setContentView(R.layout.activity_project);
+		ActivityUtils.getInstance().registerActivity(this);
 		LSPManager.getInstance().setCurrentProject(
 			new ProjectModel(
 				"Roblox AFS Script",
@@ -86,19 +88,19 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		
 		editorTabLayout = findViewById(R.id.project_editors_tab);
 		editorTabLayout.addOnTabSelectedListener(this);
-		
-		editorViewPager = findViewById(R.id.project_editor_view);
-		editorViewPager.setUserInputEnabled(false);
-		
 		editorTabAdapter = new TabEditorAdapter(getLifecycle(), getSupportFragmentManager(), findViewById(android.R.id.content));
-		editorViewPager.setAdapter(editorTabAdapter);
-		
 		editorTabAdapter.addOnTabUpdateListener(new TabEditorAdapter.OnTabUpdateListener() {
 			@Override
 			public void onRemoveTab(int position) {
 				invalidateOptionsMenu();
 			}
 		});
+		
+		editorViewPager = findViewById(R.id.project_editor_view);
+		editorViewPager.setUserInputEnabled(false);
+		editorViewPager.setAdapter(editorTabAdapter);
+		
+		editorSymbolInput = findViewById(R.id.project_symbol_input);
 		
 		editorFileTreeViewFragment.addTreeNodeListener((path) -> {
 			int fragIdx = editorTabAdapter.getIndexOfFragment(path);
@@ -128,9 +130,9 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
     public void onTabReselected(TabLayout.Tab tab) {
 		ActivityUtils.getInstance().showPopupMenuAt(
 			((ViewGroup) editorTabLayout.getChildAt(0)).getChildAt(tab.getPosition()),
-			R.menu.editor_tab_menu,
+			R.menu.project_tab_editor_menu,
 			(menuItem) -> {
-				if (menuItem.getItemId() == R.id.editor_close_tab) {
+				if (menuItem.getItemId() == R.id.project_tab_editor_close) {
 					editorTabAdapter.removeTab(tab.getPosition());
 					return true;
 				}
@@ -142,7 +144,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
     public void onTabSelected(TabLayout.Tab tab) {
         editorViewPager.setCurrentItem(tab.getPosition());
-		System.out.println("selected on destroy?");
+		editorSymbolInput.bindEditor(editorTabAdapter.getFragmentList().get(tab.getPosition()).getEditor());
     }
 	
 	@Override
@@ -176,18 +178,12 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		if (menuItem.getItemId() == R.id.project_action_editor_save) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
 			if (editorFragment != null) {
-				if (editorFragment.saveContents()) {
-					Toast.makeText(getApplicationContext(), "Saved successfully!", Toast.LENGTH_SHORT).show();
-				} else {
-					Toast.makeText(getApplicationContext(), "Failed to save file!", Toast.LENGTH_SHORT).show();
-				}
+				EditorUtils.saveFileFromEditor(new Pair<>(editorFragment.getEditor(), editorFragment.getCurrentFilePath()));
 			}
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
 			editorTabAdapter.getFragmentList().forEach((fragment) -> {
-				if (!fragment.saveContents()) {
-					Toast.makeText(getApplicationContext(), "Failed to save " + fragment.getCurrentFilePath(), Toast.LENGTH_SHORT).show();
-				}
+				EditorUtils.saveFileFromEditor(new Pair<>(fragment.getEditor(), fragment.getCurrentFilePath()));
 			});
 			Toast.makeText(getApplicationContext(), "All files saved!", Toast.LENGTH_SHORT).show();
 			return true;
@@ -239,7 +235,9 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 				.commit();
 		} catch (RuntimeException ignore) { }
 		
-		LspEditorManager.closeAllManager();
+		LspEditorManager.getOrCreateEditorManager(
+			LSPManager.getInstance().getCurrentProject().projectPath
+		).closeAllEditor();
 		LSPManager.getInstance().stopLSPServices();
 	}
 	

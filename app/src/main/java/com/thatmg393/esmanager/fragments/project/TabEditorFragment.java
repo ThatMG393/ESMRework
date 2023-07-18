@@ -52,13 +52,14 @@ public class TabEditorFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		
+		/*
 		try {
 			LOG.d("Freeing " + toString());
 			if (editor != null) editor.release();
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		}
+		*/
 	}
 	
 	
@@ -91,7 +92,7 @@ public class TabEditorFragment extends Fragment {
 		Language editorLang = EditorUtils.createTMLanguage(fileExtension);
 		if (editorLang != null) editor.setEditorLanguage(editorLang);
 		
-		EditorUtils.loadFileToEditor(editor, editorFile.getAbsolutePath());
+		EditorUtils.loadFileToEditor(editor, getCurrentFilePath());
 		
 		LanguageServerModel lsModel = LSPManager.getInstance().getLanguageServer(fileExtension);
 		if (lsModel != null) {
@@ -112,10 +113,6 @@ public class TabEditorFragment extends Fragment {
 	
 	public CodeEditor getEditor() {
 		return this.editor;
-	}
-	
-	public boolean saveContents() {
-		return FileUtils.writeToFileUsingContent(editor.getText(), editorFile.getAbsolutePath());
 	}
 	
 	public String getCurrentFilePath() {

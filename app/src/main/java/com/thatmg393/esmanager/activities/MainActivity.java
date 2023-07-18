@@ -84,7 +84,8 @@ public class MainActivity extends BaseActivity {
 	@Override
 	public void init() {
 		super.init();
-		ActivityUtils.initializeInstance(this);
+		ActivityUtils.initializeInstance();
+		ActivityUtils.getInstance().registerActivity(this);
 		GlobalConstants.getInstance();
 		
 		setContentView(R.layout.activity_main);
@@ -94,6 +95,12 @@ public class MainActivity extends BaseActivity {
 		StorageUtils.initializeInstance();
 		DRPCManager.initializeInstance();
 		LSPManager.initializeInstance();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		ActivityUtils.getInstance().registerActivity(this);
 	}
 	
 	@Override

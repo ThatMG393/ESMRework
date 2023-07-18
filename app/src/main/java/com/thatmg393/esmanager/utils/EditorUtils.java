@@ -2,6 +2,7 @@ package com.thatmg393.esmanager.utils;
 
 import android.net.Uri;
 import android.widget.Toast;
+import androidx.core.util.Pair;
 import com.anggrayudi.storage.file.DocumentFileCompat;
 import com.anggrayudi.storage.file.DocumentFileType;
 
@@ -73,18 +74,59 @@ public class EditorUtils {
 	
 	public static void loadFileToEditor(CodeEditor editor, String path) {
 		CompletableFuture.runAsync(() -> {
-			Content text = FileUtils.openFileAsContent(path);
-			ActivityUtils.getInstance().runOnUIThread(() -> {
-				try {
-					if (text != null) editor.setText(text);
-				} catch (Exception e) {
-					LOG.e("Failed to set editor text!");
-					e.printStackTrace(System.err);
-								
-					Toast.makeText(editor.getContext(), "Failed to load file contents!", Toast.LENGTH_SHORT).show();
+			try {
+				Content text = FileUtils.openFileAsContent(path);
+				
+				editor.post(() -> editor.setText(text));
+			} catch (IOException e) {
+				LOG.e("Failed to load file!");
+				e.printStackTrace(System.err);
+				
+				editor.post(() -> {
+					Toast.makeText(editor.getContext(), "Failed to load file!", Toast.LENGTH_SHORT).show();
 					editor.setEditable(false);
+				});
+			}
+		});
+	}
+	
+	public static void saveFileFromEditor(CodeEditor editor, String path) {
+		CompletableFuture.runAsync(() -> {
+			try {
+				FileUtils.writeToFileUsingContent(editor.getText(), path);
+			
+				editor.post(() -> {
+					Toast.makeText(editor.getContext(), "Success!", Toast.LENGTH_SHORT).show();
+				});
+			} catch (IOException e) {
+				LOG.e("Failed to save file!");
+				e.printStackTrace(System.err);
+				
+				editor.post(() -> {
+					Toast.makeText(editor.getContext(), "Failed save file!", Toast.LENGTH_SHORT).show();
+				});
+			}
+		});
+	}
+	
+	public static void saveFileFromEditor(Pair<CodeEditor, String>... pairs) {
+		CompletableFuture.runAsync(() -> {
+			for (Pair<CodeEditor, String> pair : pairs) {
+				try {
+					FileUtils.writeToFileUsingContent(pair.first.getText(), pair.second);
+						
+					pair.first.post(() -> {
+						Toast.makeText(pair.first.getContext(), "Success!", Toast.LENGTH_SHORT).show();
+					});
+				} catch (IOException e) {
+					LOG.e("Failed to save file!");
+					e.printStackTrace(System.err);
+					
+					pair.first.post(() -> {
+						Toast.makeText(pair.first.getContext(), "Failed to save " + pair.second + "!", Toast.LENGTH_SHORT).show();
+					});
 				}
-			});
+			}
 		});
 	}
 }

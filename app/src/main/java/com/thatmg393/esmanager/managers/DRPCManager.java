@@ -38,11 +38,11 @@ public class DRPCManager implements ServiceConnection {
     }
 
     public void startDiscordRPC() {
-		ActivityUtils.getInstance().bindService(rpcIntent, DRPCManager.INSTANCE);
+		ActivityUtils.getInstance().bindService(rpcIntent, this);
 	}
 	
 	public void stopDiscordRPC() {
-		ActivityUtils.getInstance().unbindService(DRPCManager.INSTANCE);
+		ActivityUtils.getInstance().unbindService(this);
 	}
 	
 	private RPCService SERVICE_INSTANCE;

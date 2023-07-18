@@ -4,11 +4,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.amrdeveloper.treeview.TreeNode;
 import com.amrdeveloper.treeview.TreeViewAdapter;
 import com.amrdeveloper.treeview.TreeViewHolderFactory;
+import com.anggrayudi.storage.file.FileUtils;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
@@ -119,10 +122,13 @@ public class FileTreeViewFragment extends Fragment {
 			if (node.getLayoutId() == R.layout.project_file_tree_view) {
 				ActivityUtils.getInstance().showPopupMenuAt(
 					treeView,
-					R.menu.editor_tab_menu,
+					R.menu.project_drawer_file_file,
 					(menuItem) -> {
-						if (menuItem.getItemId() == R.id.editor_close_tab) {
-							Toast.makeText(requireContext(), "File Context Menu!", Toast.LENGTH_SHORT).show();
+						if (menuItem.getItemId() == R.id.project_drawer_file_rename) {
+							
+							return true;
+						} else if (menuItem.getItemId() == R.id.project_drawer_file_delete) {
+							
 							return true;
 						}
 						return false;
@@ -131,11 +137,34 @@ public class FileTreeViewFragment extends Fragment {
 			} else {
 				ActivityUtils.getInstance().showPopupMenuAt(
 					treeView,
-					R.menu.editor_tab_menu,
+					R.menu.project_drawer_file_folder,
 					(menuItem) -> {
-						if (menuItem.getItemId() == R.id.editor_close_tab) {
-							Toast.makeText(requireContext(), "File Context Menu!", Toast.LENGTH_SHORT).show();
+						if (menuItem.getItemId() == R.id.project_drawer_file_new_file) {
+							EditText name = new EditText(requireActivity());
+							ActivityUtils.getInstance().createAlertDialog(
+								"Create new file",
+								name,
+								new Pair<>("Cancel", (dialog, which) -> { dialog.dismiss(); }),
+								new Pair<>("Create", (dialog, which) -> {
+									File file = new File(((String) node.getValue()), name.getText().toString());
+									if (file.isDirectory()) Toast.makeText(requireActivity(), "Invalid name!", Toast.LENGTH_SHORT).show();
+										
+									FileUtils.createNewFileIfPossible(file);
+									refreshOrPopulateTreeView();
+								})
+							).show();
 							return true;
+						} else if (menuItem.getItemId() == R.id.project_drawer_file_new_folder) {
+							
+							return true;
+						} else if (menuItem.getItemId() == R.id.project_drawer_file_rename) {
+							
+							return true;
+						} else if (menuItem.getItemId() == R.id.project_drawer_file_delete) {
+							
+							return true;
+						} else {
+							System.out.println("idk what is this" + menuItem.getItemId());
 						}
 						return false;
 					}

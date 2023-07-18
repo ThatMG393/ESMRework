@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/project_drawer_file_rename"
+        android:title="Rename" />
+	
+	<item
+        android:id="@+id/project_drawer_file_delete"
+        android:title="Delete" />
+	
+	<item
+        android:id="@+id/project_drawer_file_new_file"
+        android:title="New File" />
+	
+	<item
+        android:id="@+id/project_drawer_file_new_folder"
+        android:title="New Folder" />
+
+</menu>
