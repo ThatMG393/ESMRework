@@ -1,20 +1,14 @@
 package com.thatmg393.esmanager.managers;
 
 import androidx.annotation.Nullable;
+
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
-import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.lsp.lua.LuaLSPService;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.models.ProjectModel;
-import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.Logger;
-
 import com.thatmg393.esmanager.utils.NetworkUtils;
-import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
 
-import io.github.rosemoe.sora.widget.CodeEditor;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class LSPManager {
@@ -23,11 +17,6 @@ public class LSPManager {
     private static volatile LSPManager INSTANCE;
 
     public static synchronized LSPManager getInstance() {
-        if (INSTANCE == null) throw new RuntimeException("Initialize first, use 'LSPManager#initializeInstance()'");
-        return INSTANCE;
-    }
-
-    public static synchronized LSPManager initializeInstance() {
         if (INSTANCE == null) INSTANCE = new LSPManager();
         return INSTANCE;
     }
@@ -64,12 +53,6 @@ public class LSPManager {
 	
 	public LanguageServerModel getLanguageServer(String language) {
 		return languageServerRegistry.get(language);
-	}
-	
-	public void dispose() {
-		stopLSPServices(); // Sanity
-		languageServerRegistry.clear();
-		INSTANCE = null;
 	}
 	
 	public void registerLangServers() {

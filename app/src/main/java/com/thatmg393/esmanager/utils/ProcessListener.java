@@ -11,42 +11,24 @@ import android.app.usage.UsageEvents;
 import android.content.Intent;
 import android.os.IBinder;
 
-import androidx.annotation.NonNull;
-
-import androidx.appcompat.app.AppCompatActivity;
 import com.thatmg393.esmanager.interfaces.IOnProcessListener;
 
 import java.util.HashMap;
 
 public class ProcessListener implements ServiceConnection {
-	public static int ACTIVITY_DESTROYED = 23; /* It's somehow hidden... for me. */
 	private static volatile ProcessListener INSTANCE;
 
 	public static synchronized ProcessListener getInstance() {
-		if (INSTANCE == null) {
-			throw new RuntimeException("Initialize first, use 'ProcessListener#initializeInstance(AppCompatActivity)'");
-		}
+		if (INSTANCE == null) INSTANCE = new ProcessListener();
 
 		return INSTANCE;
 	}
-
-	public static synchronized ProcessListener initializeInstance(@NonNull AppCompatActivity context) {
-		if (INSTANCE == null) INSTANCE = new ProcessListener(context);
-
-		return INSTANCE;
-	}
-
-	private final AppCompatActivity context;
+	
 	private final Intent listenerServiceIntent;
-
-	private ProcessListener(AppCompatActivity context) {
-		if (INSTANCE != null) {
-			throw new RuntimeException("Please use 'ProcessListener#getInstance()'!");
-		}
-
-		this.context = context;
-		this.listenerServiceIntent = new Intent(context, ProcessListenerService.class);
-		startService();
+	private ProcessListener() {
+		if (INSTANCE != null) throw new RuntimeException("Please use 'ProcessListener#getInstance()'!");
+		
+		this.listenerServiceIntent = new Intent(ActivityUtils.getInstance().getRegisteredActivity(), ProcessListenerService.class);
 	}
 
 	public void startListening(String packageName, IOnProcessListener processListener, boolean stopOnAppStop) {
@@ -55,7 +37,7 @@ public class ProcessListener implements ServiceConnection {
 	}
 
 	public void startListening(String packageName, IOnProcessListener processListener) {
-		startListening(packageName, processListener, true);
+		startListening(packageName, processListener, false);
 	}
 
 	public void stopListening(String packageName) {
@@ -64,15 +46,14 @@ public class ProcessListener implements ServiceConnection {
 	}
 
 	public void startService() {
-		context.startForegroundService(listenerServiceIntent);
+		ActivityUtils.getInstance().bindService(listenerServiceIntent, this);
 	}
 
 	public void stopService() {
-		context.stopService(listenerServiceIntent);
+		ActivityUtils.getInstance().unbindService(this);
 	}
 
 	private ProcessListenerService listenerService;
-
 	@Override
 	public void onServiceConnected(ComponentName cn, IBinder binder) {
 		listenerService = ((ProcessListenerService.ProcessListenerBinder) binder).getInstance();
@@ -83,15 +64,30 @@ public class ProcessListener implements ServiceConnection {
 		listenerService = null;
 	}
 	
+	private final class ProcessListenerThread extends Thread {
+		private final String processName;
+		private final IOnProcessListener callback;
+		private final boolean stopOnAppStop;
+
+		private ProcessListenerThread(String processName, IOnProcessListener callback, boolean stopOnAppStop) {
+			this.processName = processName;
+			this.callback = callback;
+			this.stopOnAppStop = stopOnAppStop;
+		}
+		
+		@Override
+		public void run() {
+			while (!Thread.interrupted()) {
+				// TODO: Implement functionality
+			}
+		}
+	}
+	
 	private class ProcessListenerService extends Service {
-		private final HashMap<String, ProcessListenerThread> threads = new HashMap<String, ProcessListenerThread>();
+		private final HashMap<String, ProcessListenerThread> threads = new HashMap<>();
 		private final ProcessListenerBinder plBinder = new ProcessListenerBinder();
 
-		public void startListeningThread(
-			String packageToListenTo,
-			IOnProcessListener processListenerCallback,
-			boolean stopOnAppStop
-		) {
+		public void startListeningThread(String packageToListenTo, IOnProcessListener processListenerCallback, boolean stopOnAppStop) {
 			ProcessListenerThread plThread = new ProcessListenerThread(packageToListenTo, processListenerCallback, stopOnAppStop);
 			threads.put(packageToListenTo, plThread);
 
@@ -106,11 +102,14 @@ public class ProcessListener implements ServiceConnection {
 		public IBinder onBind(Intent smth) {
 			return plBinder;
 		}
-
+		
 		@Override
-		public void onDestroy() {
+		public boolean onUnbind(Intent intent) {
 			threads.values().forEach(Thread::interrupt);
 			threads.clear();
+			
+			stopSelf();
+			return true;
 		}
 
 		private final boolean isCurrentEventEqualTo(int currentEvent, int activityCode) {
@@ -126,29 +125,6 @@ public class ProcessListener implements ServiceConnection {
 			}
 
 			return currentEvent == activityCode;
-		}
-
-		private final class ProcessListenerThread extends Thread {
-			private final String processName;
-			private final IOnProcessListener callback;
-			private final boolean stopOnAppStop;
-
-			private ProcessListenerThread(
-				final String processName,
-				final IOnProcessListener callback,
-				final boolean stopOnAppStop
-			) {
-				this.processName = processName;
-				this.callback = callback;
-				this.stopOnAppStop = stopOnAppStop;
-			}
-
-			@Override
-			public void run() {
-				super.run();
-				
-				// TODO: Implement functionality
-			}
 		}
 
 		private class ProcessListenerBinder extends Binder {

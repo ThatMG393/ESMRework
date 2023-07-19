@@ -22,14 +22,7 @@ public class StorageUtils {
 	
 	private volatile static StorageUtils INSTANCE;
 	public synchronized static StorageUtils getInstance() {
-		if (INSTANCE == null) { throw new RuntimeException("Initialize first, use 'StorageUtils#initializeInstance()'"); }
-		
-		return INSTANCE;
-	}
-	
-	public synchronized static StorageUtils initializeInstance() {
 		if (INSTANCE == null) INSTANCE = new StorageUtils();
-		
 		return INSTANCE;
 	}
 	
@@ -76,9 +69,5 @@ public class StorageUtils {
 	
 	public enum Status {
 		GRANTED, DENIED, CANNOT_ASK, FAILURE
-	}
-	
-	public static void dispose() {
-		INSTANCE = null;
 	}
 }

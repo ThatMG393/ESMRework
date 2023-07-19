@@ -1,6 +1,8 @@
 package com.thatmg393.esmanager.models;
 
-public class ProjectModel {
+import java.io.Serializable;
+
+public class ProjectModel implements Serializable {
     public final String projectName;
     public final String projectPath;
     public final String projectVersion;

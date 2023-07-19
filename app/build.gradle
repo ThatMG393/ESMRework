@@ -53,7 +53,7 @@ dependencies {
 	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:$LSP_VERSION"
 	
 	// IO / Network
-	implementation 'com.anggrayudi:storage:1.5.4'
+	implementation 'com.anggrayudi:storage:1.5.5'
 	implementation 'commons-io:commons-io:2.11.0'
 	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 	

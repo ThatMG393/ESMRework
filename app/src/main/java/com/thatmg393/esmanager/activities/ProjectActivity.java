@@ -1,6 +1,5 @@
 package com.thatmg393.esmanager.activities;
 
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -16,7 +15,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
-import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.adapters.TabEditorAdapter;
 import com.thatmg393.esmanager.fragments.project.FileTreeViewFragment;
@@ -48,14 +46,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public void init() {
 		super.init();
 		ActivityUtils.getInstance().registerActivity(this);
-		LSPManager.getInstance().setCurrentProject(
-			new ProjectModel(
-				"Roblox AFS Script",
-				GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/Roblox AFS Script",
-				"v0.1",
-				"ThatMG393"
-			)
-		);
+		
+		LSPManager.getInstance().setCurrentProject(getIntent().getSerializableExtra("project", ProjectModel.class));
 		LSPManager.getInstance().registerLangServers();
 		
 		setContentView(R.layout.activity_project);
@@ -143,6 +135,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
     }
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public boolean onCreateOptionsMenu(Menu menu) {
 		if (menu instanceof MenuBuilder) {
 			((MenuBuilder)menu).setOptionalIconsVisible(true);

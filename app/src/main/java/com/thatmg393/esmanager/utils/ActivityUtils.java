@@ -17,10 +17,12 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.PopupMenu;
 
+import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.IntRange;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,12 +37,6 @@ public class ActivityUtils {
 	private static volatile ActivityUtils INSTANCE;
 	
 	public synchronized static ActivityUtils getInstance() {
-		if (INSTANCE == null) { throw new RuntimeException("Initialize first, use 'ActivityUtils#initializeInstance()'"); }
-		
-		return INSTANCE;
-	}
-	
-	public synchronized static ActivityUtils initializeInstance() {
 		if (INSTANCE == null) INSTANCE = new ActivityUtils();
 		
 		return INSTANCE;
@@ -90,6 +86,13 @@ public class ActivityUtils {
 		}
 	}
 	
+	public void showToast(
+		@NonNull String message,
+		@NonNull int length
+	) {
+		Toast.makeText(getRegisteredActivity(), message, length).show();
+	}
+	
 	public PopupMenu showPopupMenuAt(@NonNull View anchor, @MenuRes int menuRes, @Nullable PopupMenu.OnMenuItemClickListener listener) {
 		PopupMenu popupMenu = new PopupMenu(getRegisteredActivity(), anchor);
 		popupMenu.getMenuInflater().inflate(menuRes, popupMenu.getMenu());
@@ -113,6 +116,20 @@ public class ActivityUtils {
 			.create();
 	}
 	
+	public AlertDialog createAlertDialog(
+		@NonNull String title,
+		@Nullable String message,
+		@NonNull Pair<String, DialogInterface.OnClickListener> negativeButton,
+		@NonNull Pair<String, DialogInterface.OnClickListener> positiveButton
+	) {
+		return new MaterialAlertDialogBuilder(getRegisteredActivity())
+			.setTitle(title)
+			.setMessage(message)
+			.setNegativeButton(negativeButton.first, negativeButton.second)
+			.setPositiveButton(positiveButton.first, positiveButton.second)
+			.create();
+	}
+	
 	public boolean isUserUsingNavigationBar() {
 		int id = getRegisteredActivity().getResources().getIdentifier("config_showNavigationBar", "bool", "android");
 		if (id > 0) {
@@ -130,9 +147,5 @@ public class ActivityUtils {
 	
 	public void registerActivity(AppCompatActivity newActivity) {
 		this.registeredActivity = newActivity;
-	}
-	
-	public static void dispose() {
-		INSTANCE = null;
 	}
 }

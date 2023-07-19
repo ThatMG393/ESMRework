@@ -72,7 +72,7 @@ public class ModListAdapter extends ArrayAdapter<ModPropertiesModel> {
 			nameTextView.setText("No mod/s found!");
 			descTextView.setText("Please download some mods!");
 			
-			return null;
+			return convertView;
 		}
 		
 		ModPropertiesModel tmp = dataList.get(position);

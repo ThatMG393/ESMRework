@@ -6,11 +6,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.thatmg393.esmanager.GlobalConstants;
-import com.thatmg393.esmanager.managers.DRPCManager;
-import com.thatmg393.esmanager.managers.LSPManager;
-import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.FileUtils;
-import com.thatmg393.esmanager.utils.StorageUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -48,7 +44,7 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void uncaughtException(Thread curThr, Throwable ex) {
                 Log.e("BaseActivity", curThr + " made an exception! " + fullStacktrace(ex));
-				FileUtils.appendToFile(GlobalConstants.getInstance().ESM_ROOT_FOLDER + "/err.txt", fullStacktrace(ex));
+				FileUtils.appendToFile(GlobalConstants.ESM_ROOT_FOLDER + "/crash.txt", fullStacktrace(ex));
 				
 				System.out.println(curThr.getState().name());
 				/*
@@ -69,7 +65,7 @@ public class BaseActivity extends AppCompatActivity {
 		Thread.setDefaultUncaughtExceptionHandler(thrUEH);
 	}
 	
-	// Always override this for a lot initiaizing stuff
+	// Always override this for a lot of initiaizing stuff
 	// Always call "super.init()" when extending this method!
 	public void init() { }
 	

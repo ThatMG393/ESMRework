@@ -19,14 +19,7 @@ public class DRPCManager implements ServiceConnection {
 	private static volatile DRPCManager INSTANCE;
 
     public static synchronized DRPCManager getInstance() {
-        if (INSTANCE == null) throw new RuntimeException("Initialize first, use 'DRPCManager#initializeInstance(MainActivity)'");
-		
-        return INSTANCE;
-    }
-
-    public static synchronized DRPCManager initializeInstance() {
         if (INSTANCE == null) INSTANCE = new DRPCManager();
-
         return INSTANCE;
     }
 	
@@ -78,10 +71,5 @@ public class DRPCManager implements ServiceConnection {
 		}
 		
 		return null;
-	}
-	
-	public void dispose() {
-		stopDiscordRPC();
-		INSTANCE = null;
 	}
 }
