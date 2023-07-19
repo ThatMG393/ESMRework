@@ -9,24 +9,19 @@ import android.view.ViewGroup;
 import androidx.fragment.app.Fragment;
 
 import com.thatmg393.esmanager.activities.ProjectActivity;
-import com.thatmg393.esmanager.adapters.TabEditorAdapter;
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.LSPManager;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.utils.EditorUtils;
-import com.thatmg393.esmanager.utils.FileUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.utils.SharedPreference;
 
 import io.github.rosemoe.sora.lang.Language;
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry;
-import io.github.rosemoe.sora.lsp.editor.LspEditor;
-import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 import io.github.rosemoe.sora.lsp.utils.URIUtils;
 import io.github.rosemoe.sora.widget.CodeEditor;
 
-import java.util.concurrent.CompletableFuture;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;

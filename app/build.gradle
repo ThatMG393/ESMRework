@@ -4,12 +4,13 @@ plugins {
 
 android {
 	namespace "com.thatmg393.esmanager"
-    compileSdk 34
+    compileSdk 33
+	buildToolsVersion '33.0.3'
 
     defaultConfig {
         applicationId "com.thatmg393.esmanager"
         minSdk 26
-        targetSdk 34
+        targetSdk 33
         versionCode 010000
         versionName "v1.0-preview"
     }
@@ -39,7 +40,7 @@ dependencies {
 	// UI
 	implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha10'
 	implementation 'androidx.viewpager2:viewpager2:1.1.0-beta02'
-	implementation 'com.google.android.material:material:1.11.0-alpha01'
+	implementation 'com.google.android.material:material:1.9.0'
 	implementation 'io.github.amrdeveloper:treeview:1.1.4'
 	
 	// Code Editor

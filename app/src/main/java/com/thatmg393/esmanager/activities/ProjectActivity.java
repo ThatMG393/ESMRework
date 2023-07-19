@@ -45,22 +45,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	private SymbolInputView editorSymbolInput;
 	
 	@Override
-    protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		editorSymbolInput.addSymbols(
-			new String[] {
-				"->", "{", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
-			}, new String[] {
-				"\t", "{ }", "}", "()", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
-			}
-		);
-    }
-	
-	@Override
 	public void init() {
 		super.init();
-		setContentView(R.layout.activity_project);
 		ActivityUtils.getInstance().registerActivity(this);
 		LSPManager.getInstance().setCurrentProject(
 			new ProjectModel(
@@ -71,6 +57,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			)
 		);
 		LSPManager.getInstance().registerLangServers();
+		
+		setContentView(R.layout.activity_project);
 		
 		projectToolbar = findViewById(R.id.project_toolbar);
 		setSupportActionBar(projectToolbar);
@@ -101,6 +89,13 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorViewPager.setAdapter(editorTabAdapter);
 		
 		editorSymbolInput = findViewById(R.id.project_symbol_input);
+		editorSymbolInput.addSymbols(
+			new String[] {
+				"->", "{", "}", "(", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
+			}, new String[] {
+				"\t", "{ }", "}", "()", ")", ",", ".", ";", "\"", "?", "+", "-", "*", "/"
+			}
+		);
 		
 		editorFileTreeViewFragment.addTreeNodeListener((path) -> {
 			int fragIdx = editorTabAdapter.getIndexOfFragment(path);

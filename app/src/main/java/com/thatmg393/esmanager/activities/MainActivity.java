@@ -106,6 +106,10 @@ public class MainActivity extends BaseActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		this.destroy();
+		LSPManager.getInstance().dispose();
+		DRPCManager.getInstance().dispose();
+		
+		StorageUtils.dispose();
+		ActivityUtils.dispose();
 	}
 }

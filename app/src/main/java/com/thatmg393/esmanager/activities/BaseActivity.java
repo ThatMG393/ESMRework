@@ -25,6 +25,7 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		setUEH();
 		if (!changeConfig) {
 			init();
 		} else { changeConfig = false; }
@@ -69,19 +70,8 @@ public class BaseActivity extends AppCompatActivity {
 	}
 	
 	// Always override this for a lot initiaizing stuff
-	// If initializing little things make sure "setUEH()" is present!
 	// Always call "super.init()" when extending this method!
-	public void init() {
-		setUEH();
-	}
-	
-	public void destroy() {
-		LSPManager.getInstance().dispose();
-		DRPCManager.getInstance().dispose();
-		
-		StorageUtils.dispose();
-		ActivityUtils.dispose();
-	}
+	public void init() { }
 	
 	private static final String fullStacktrace(Throwable err) {
 		final Writer result = new StringWriter();
