@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 public class LSPManager {
     private static final Logger LOG = new Logger("ESM/LSPManager");
-
     private static volatile LSPManager INSTANCE;
 
     public static synchronized LSPManager getInstance() {
@@ -22,37 +21,43 @@ public class LSPManager {
     }
 	
 	private HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<String, LanguageServerModel>();
-	private ProjectModel currentProject;
-	private EditorManager editorManager = new EditorManager();
 	
     private LSPManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'LSPManager#getInstance()'!");
     }
 	
 	public void startLSPForAllLanguage() {
-		for (String language : languageServerRegistry.keySet()) {
-			startLSPForLanguage(language);
-		}
+		languageServerRegistry.keySet().forEach((language) -> startLSPForLanguage(language));
 	}
-
-    public void startLSPForLanguage(String language) {
+	
+	public void stopLSPForAllLanguage() {
+		languageServerRegistry.values().forEach((language) -> stopLSPForLanguage(language));
+	}
+	
+	public void startLSPForLanguage(String language) {
 		LOG.d("Starting LSP for language: " + language);
 		
 		LanguageServerModel lsm = languageServerRegistry.get(language);
+		
 		if (lsm != null) lsm.startLSP();
 		else LOG.d("No LSP for language: " + language);
 	}
 	
-	public void stopLSPServices() {
-		languageServerRegistry.values().forEach(LanguageServerModel::stopLSP);
-	}
-	
-	public void registerNewLSPServer(String language, LanguageServerModel lspModel) {
-		languageServerRegistry.put(language, lspModel);
+	public void stopLSPForLanguage(String language) {
+		LOG.d("Stopping LSP for language: " + language);
+		
+		LanguageServerModel lsm = languageServerRegistry.get(language);
+		
+		if (lsm != null) lsm.stopLSP();
+		else LOG.d("No LSP for language: " + language);
 	}
 	
 	public LanguageServerModel getLanguageServer(String language) {
 		return languageServerRegistry.get(language);
+	}
+	
+	public void registerNewLSPServer(String language, LanguageServerModel lspModel) {
+		languageServerRegistry.put(language, lspModel);
 	}
 	
 	public void registerLangServers() {
@@ -70,30 +75,5 @@ public class LSPManager {
 				NetworkUtils.generateRandomPort()
 			)
 		);
-	}
-	
-	public void setCurrentProject(ProjectModel newProject) {
-		this.currentProject = newProject;
-	}
-	
-	public EditorManager getEditorManager() {
-		return this.editorManager;
-	}
-	
-	public ProjectModel getCurrentProject() {
-		return this.currentProject;
-	}
-	
-	public static class EditorManager {
-		@Nullable
-		private TabEditorFragment focusedTabEditor = null;
-		
-		public void setFocusedTabEditor(TabEditorFragment editor) {
-			this.focusedTabEditor = editor;
-		}
-		
-		public TabEditorFragment getFocusedTabEditor() {
-			return this.focusedTabEditor;
-		}
 	}
 }

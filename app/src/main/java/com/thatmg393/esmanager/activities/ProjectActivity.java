@@ -5,6 +5,10 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import static android.os.Build.VERSION_CODES;
+import static android.os.Build.VERSION.SDK_INT;
+
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
@@ -20,6 +24,7 @@ import com.thatmg393.esmanager.adapters.TabEditorAdapter;
 import com.thatmg393.esmanager.fragments.project.FileTreeViewFragment;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.managers.ProjectManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.EditorUtils;
@@ -47,7 +52,14 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		super.init();
 		ActivityUtils.getInstance().registerActivity(this);
 		
-		LSPManager.getInstance().setCurrentProject(getIntent().getSerializableExtra("project", ProjectModel.class));
+		ProjectModel pm = null;
+		if (SDK_INT >= VERSION_CODES.TIRAMISU) {
+			pm = getIntent().getSerializableExtra("projectInfo", ProjectModel.class);
+		} else {
+			pm = getIntent().getSerializableExtra("projectInfo");
+		}
+		
+		ProjectManager.getInstance().setCurrentProject();
 		LSPManager.getInstance().registerLangServers();
 		
 		setContentView(R.layout.activity_project);
@@ -102,14 +114,6 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) editorDrawerLayout.closeDrawer(GravityCompat.END);
 		});
 		
-		FileProviderRegistry.getInstance().addFileProvider(
-			new AssetsFileResolver(
-				getAssets()
-			)
-		);
-		
-		GrammarRegistry.getInstance().loadGrammars("tm/languages/languages.json");
-		EditorUtils.loadTMThemes();
 		LSPManager.getInstance().startLSPForAllLanguage();
 	}
 	
@@ -137,11 +141,9 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if (menu instanceof MenuBuilder) {
-			((MenuBuilder)menu).setOptionalIconsVisible(true);
-		}
+		if (menu instanceof MenuBuilder) ((MenuBuilder)menu).setOptionalIconsVisible(true);
 		
-		getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
+		getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
 		return true;
 	}
 	
@@ -165,36 +167,27 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		if (menuItem.getItemId() == R.id.project_action_editor_save) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
-			if (editorFragment != null) {
-				EditorUtils.saveFileFromEditor(new Pair<>(editorFragment.getEditor(), editorFragment.getCurrentFilePath()));
-			}
+			if (editorFragment != null) EditorUtils.saveFileFromEditor(new Pair<>(editorFragment.getEditor(), editorFragment.getCurrentFilePath()));
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
-			editorTabAdapter.getFragmentList().forEach((fragment) -> {
-				EditorUtils.saveFileFromEditor(new Pair<>(fragment.getEditor(), fragment.getCurrentFilePath()));
-			});
-			Toast.makeText(getApplicationContext(), "All files saved!", Toast.LENGTH_SHORT).show();
+			editorTabAdapter.getFragmentList().forEach((fragment) -> EditorUtils.saveFileFromEditor(new Pair<>(fragment.getEditor(), fragment.getCurrentFilePath())));
+			ActivityUtils.getInstance().showToast("All files saved!", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_import_obj) {
-			Toast.makeText(getApplicationContext(), "Function not implemented", Toast.LENGTH_SHORT).show();
+			ActivityUtils.getInstance().showToast("Function not implemented", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_undo) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
-			if (editorFragment != null & editorFragment.getEditor().canUndo()) {
-				editorFragment.getEditor().undo();
-			}
+			if (editorFragment != null & editorFragment.getEditor().canUndo()) editorFragment.getEditor().undo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_redo) {
 			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
-			if (editorFragment != null & editorFragment.getEditor().canRedo()) {
-				editorFragment.getEditor().redo();
-			}
+			if (editorFragment != null & editorFragment.getEditor().canRedo()) editorFragment.getEditor().redo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_drawer_file_open) {
 			editorDrawerLayout.openDrawer(GravityCompat.END);
 			return true;
 		}
-		
 		return false;
 	}
 	
@@ -224,9 +217,9 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		} catch (RuntimeException ignore) { }
 		
 		LspEditorManager.getOrCreateEditorManager(
-			LSPManager.getInstance().getCurrentProject().projectPath
+			ProjectManager.getInstance().getCurrentProject().projectPath
 		).closeAllEditor();
-		LSPManager.getInstance().stopLSPServices();
+		LSPManager.getInstance().stopLSPForAllLanguage();
 	}
 	
 	@Override

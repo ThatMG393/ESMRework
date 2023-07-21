@@ -21,7 +21,7 @@ public class MainActivity extends BaseActivity {
 		MaterialButton startPA = findViewById(R.id.launch_pa);
 		startPA.setOnClickListener((v) -> {
 			Intent projectIntent = new Intent(getApplicationContext(), ProjectActivity.class);
-			projectIntent.putExtra("project", new ProjectModel(
+			projectIntent.putExtra("projectInfo", new ProjectModel(
 				"Roblox AFS Script",
 				GlobalConstants.ESM_ROOT_FOLDER + "/Roblox AFS Script",
 				"v0.1",
