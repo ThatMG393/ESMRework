@@ -6,8 +6,8 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import androidx.annotation.NonNull;
-
 import androidx.annotation.Nullable;
+
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
 import com.thatmg393.esmanager.managers.ProjectManager;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
@@ -19,7 +19,6 @@ import com.thatmg393.esmanager.utils.Logger;
 import io.github.rosemoe.sora.lsp.client.connection.SocketStreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition;
-
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.LanguageServerWrapper;
 
 import java.util.ArrayList;
