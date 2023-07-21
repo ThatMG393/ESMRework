@@ -22,6 +22,7 @@ import com.anggrayudi.storage.file.CreateMode;
 import com.anggrayudi.storage.file.FileUtils;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.managers.ProjectManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.viewholders.FileViewHolder;
 import com.thatmg393.esmanager.viewholders.FolderViewHolder;
@@ -42,7 +43,7 @@ public class FileTreeViewFragment extends Fragment {
 	private boolean isRefreshing;
 	
 	public FileTreeViewFragment() {
-		this.parentPath = new File(LSPManager.getInstance().getCurrentProject().projectPath);
+		this.parentPath = new File(ProjectManager.getInstance().getCurrentProject().projectPath);
 	}
 	
 	@Override

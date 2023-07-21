@@ -66,7 +66,7 @@ public class MainActivity extends BaseActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		LSPManager.getInstance().stopLSPServices();
+		LSPManager.getInstance().stopLSPForAllLanguage();
 		DRPCManager.getInstance().stopDiscordRPC();
 	}
 }

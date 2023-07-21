@@ -4,7 +4,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.managers.ProjectManager;
 
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
@@ -48,7 +48,7 @@ public class LSPUtils {
 		@NonNull LanguageServerDefinition serverDefinition,
 		@NonNull CodeEditor editor
 	) {
-		LspEditor lspEditor = LspEditorManager.getOrCreateEditorManager(LSPManager.getInstance().getCurrentProject().projectPath)
+		LspEditor lspEditor = LspEditorManager.getOrCreateEditorManager(ProjectManager.getInstance().getCurrentProject().projectPath)
 			.createEditor(
 				fileUri,
 				serverDefinition
@@ -56,7 +56,7 @@ public class LSPUtils {
 		
 		if (lspEditor == null) {
 			LOG.w("LSPEditor for " + fileUri.toString() + " is somehow null...");
-			lspEditor = LspEditorManager.getOrCreateEditorManager(LSPManager.getInstance().getCurrentProject().projectPath)
+			lspEditor = LspEditorManager.getOrCreateEditorManager(ProjectManager.getInstance().getCurrentProject().projectPath)
 				.createEditor(
 					fileUri,
 					serverDefinition

@@ -1,13 +1,12 @@
 package com.thatmg393.esmanager.activities;
 
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION.SDK_INT;
-
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -29,9 +28,6 @@ import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.EditorUtils;
 
-import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
-import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry;
-import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver;
 import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 import io.github.rosemoe.sora.widget.SymbolInputView;
 
@@ -54,12 +50,12 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		
 		ProjectModel pm = null;
 		if (SDK_INT >= VERSION_CODES.TIRAMISU) {
-			pm = getIntent().getSerializableExtra("projectInfo", ProjectModel.class);
+			pm = (ProjectModel) getIntent().getSerializableExtra("projectInfo", ProjectModel.class);
 		} else {
-			pm = getIntent().getSerializableExtra("projectInfo");
+			pm = (ProjectModel) getIntent().getSerializableExtra("projectInfo");
 		}
+		ProjectManager.getInstance().setCurrentProject(pm);
 		
-		ProjectManager.getInstance().setCurrentProject();
 		LSPManager.getInstance().registerLangServers();
 		
 		setContentView(R.layout.activity_project);
@@ -150,7 +146,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
-		if (LSPManager.getInstance().getEditorManager().getFocusedTabEditor() != null) {
+		if (ProjectManager.getInstance().getFocusedTabEditor() != null) {
 			getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
 		} else {
 			getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
@@ -166,7 +162,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		if (menuItem.getItemId() == R.id.project_action_editor_save) {
-			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			TabEditorFragment editorFragment = ProjectManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null) EditorUtils.saveFileFromEditor(new Pair<>(editorFragment.getEditor(), editorFragment.getCurrentFilePath()));
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
@@ -177,11 +173,11 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			ActivityUtils.getInstance().showToast("Function not implemented", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_undo) {
-			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			TabEditorFragment editorFragment = ProjectManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canUndo()) editorFragment.getEditor().undo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_redo) {
-			TabEditorFragment editorFragment = LSPManager.getInstance().getEditorManager().getFocusedTabEditor();
+			TabEditorFragment editorFragment = ProjectManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canRedo()) editorFragment.getEditor().redo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_drawer_file_open) {

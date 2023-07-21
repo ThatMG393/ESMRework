@@ -31,7 +31,7 @@ public class LSPManager {
 	}
 	
 	public void stopLSPForAllLanguage() {
-		languageServerRegistry.values().forEach((language) -> stopLSPForLanguage(language));
+		languageServerRegistry.keySet().forEach((language) -> stopLSPForLanguage(language));
 	}
 	
 	public void startLSPForLanguage(String language) {

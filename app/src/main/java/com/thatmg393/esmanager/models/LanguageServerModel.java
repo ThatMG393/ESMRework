@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 
 import androidx.annotation.Nullable;
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
-import com.thatmg393.esmanager.managers.LSPManager;
+import com.thatmg393.esmanager.managers.ProjectManager;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
@@ -19,13 +19,8 @@ import com.thatmg393.esmanager.utils.Logger;
 import io.github.rosemoe.sora.lsp.client.connection.SocketStreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition;
-import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.EventHandler;
 
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.LanguageServerWrapper;
-import io.github.rosemoe.sora.lsp.utils.LspUtils;
-import org.eclipse.lsp4j.InitializeResult;
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.services.LanguageServer;
 
 import java.util.ArrayList;
 
@@ -33,7 +28,7 @@ public class LanguageServerModel implements ServiceConnection {
 	private static final Logger LOG = new Logger("ESM/LanguageServerModel");
 	private static final Logger LOG_LSP = new Logger("ESM/LuaLanguageServer");
 	
-	private final String serverName;
+	public final String serverName;
 	private final LanguageServerWrapper serverWrapper;
 	
 	@Nullable
@@ -52,7 +47,7 @@ public class LanguageServerModel implements ServiceConnection {
 		this.serverWrapper = LSPUtils.createNewServerWrapper(
 			serverName,
 			new SocketStreamConnectionProvider(() -> serverPort),
-			LSPManager.getInstance().getCurrentProject().projectPath
+			ProjectManager.getInstance().getCurrentProject().projectPath
 		);
     }
 	
@@ -64,7 +59,7 @@ public class LanguageServerModel implements ServiceConnection {
 		this.serverWrapper = LSPUtils.createNewServerWrapper(
 			serverName,
 			serverConnectionProvider,
-			LSPManager.getInstance().getCurrentProject().projectPath
+			ProjectManager.getInstance().getCurrentProject().projectPath
 		);
 	}
 	
