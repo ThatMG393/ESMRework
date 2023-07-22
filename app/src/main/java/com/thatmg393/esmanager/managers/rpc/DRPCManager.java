@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.managers;
+package com.thatmg393.esmanager.managers.rpc;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.widget.Toast;
 
 import com.thatmg393.esmanager.interfaces.IRPCListener;
-import com.thatmg393.esmanager.managers.rpc.RPCService;
+import com.thatmg393.esmanager.managers.rpc.impl.RPCService;
 import com.thatmg393.esmanager.models.DiscordProfileModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.Logger;

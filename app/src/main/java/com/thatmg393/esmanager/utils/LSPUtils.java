@@ -4,7 +4,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.thatmg393.esmanager.managers.ProjectManager;
+import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;

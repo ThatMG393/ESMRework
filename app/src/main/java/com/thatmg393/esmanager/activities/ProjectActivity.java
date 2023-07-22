@@ -22,8 +22,9 @@ import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.adapters.TabEditorAdapter;
 import com.thatmg393.esmanager.fragments.project.FileTreeViewFragment;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
-import com.thatmg393.esmanager.managers.LSPManager;
-import com.thatmg393.esmanager.managers.ProjectManager;
+import com.thatmg393.esmanager.managers.editor.EditorManager;
+import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
+import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.EditorUtils;
@@ -146,7 +147,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
-		if (ProjectManager.getInstance().getFocusedTabEditor() != null) {
+		if (EditorManager.getInstance().getFocusedTabEditor() != null) {
 			getMenuInflater().inflate(R.menu.project_action_menu_witheditor, menu);
 		} else {
 			getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
@@ -162,7 +163,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		if (menuItem.getItemId() == R.id.project_action_editor_save) {
-			TabEditorFragment editorFragment = ProjectManager.getInstance().getFocusedTabEditor();
+			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null) EditorUtils.saveFileFromEditor(new Pair<>(editorFragment.getEditor(), editorFragment.getCurrentFilePath()));
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
@@ -173,11 +174,11 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			ActivityUtils.getInstance().showToast("Function not implemented", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_undo) {
-			TabEditorFragment editorFragment = ProjectManager.getInstance().getFocusedTabEditor();
+			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canUndo()) editorFragment.getEditor().undo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_redo) {
-			TabEditorFragment editorFragment = ProjectManager.getInstance().getFocusedTabEditor();
+			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canRedo()) editorFragment.getEditor().redo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_drawer_file_open) {

@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.managers.rpc;
+package com.thatmg393.esmanager.managers.rpc.impl;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -20,7 +20,7 @@ import androidx.core.app.NotificationCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.interfaces.IRPCListener;
-import com.thatmg393.esmanager.managers.DRPCManager;
+import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.SharedPreference;
 import com.thatmg393.esmanager.utils.ThreadPlus;

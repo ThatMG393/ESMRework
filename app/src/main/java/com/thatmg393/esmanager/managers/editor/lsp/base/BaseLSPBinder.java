@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.managers.lsp.base;
+package com.thatmg393.esmanager.managers.editor.lsp.base;
 
 import android.os.Binder;
 

@@ -1,9 +1,9 @@
-package com.thatmg393.esmanager.managers;
+package com.thatmg393.esmanager.managers.editor.lsp;
 
 import androidx.annotation.Nullable;
 
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
-import com.thatmg393.esmanager.managers.lsp.lua.LuaLSPService;
+import com.thatmg393.esmanager.managers.editor.lsp.lua.LuaLSPService;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.Logger;

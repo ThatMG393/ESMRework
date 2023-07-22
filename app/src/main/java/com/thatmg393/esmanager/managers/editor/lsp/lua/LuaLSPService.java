@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.managers.lsp.lua;
+package com.thatmg393.esmanager.managers.editor.lsp.lua;
 
 import android.content.Intent;
 import android.os.IBinder;
@@ -9,9 +9,9 @@ import androidx.annotation.MainThread;
 import com.tang.vscode.LuaLanguageClient;
 import com.tang.vscode.LuaLanguageServer;
 import com.thatmg393.esmanager.interfaces.ILanguageServerCallback;
-import com.thatmg393.esmanager.managers.LSPManager;
-import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
-import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
+import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
+import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPBinder;
+import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.utils.ThreadPlus;

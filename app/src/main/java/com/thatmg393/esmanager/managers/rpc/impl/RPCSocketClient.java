@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.managers.rpc;
+package com.thatmg393.esmanager.managers.rpc.impl;
 
 import android.util.ArrayMap;
 

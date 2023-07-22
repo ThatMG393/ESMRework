@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.managers;
+package com.thatmg393.esmanager.managers.editor.project;
 
 import com.thatmg393.esmanager.utils.Logger;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
@@ -14,22 +14,13 @@ public class ProjectManager {
     }
 	
 	private ProjectManager() {
-		if (INSTANCE != null) throw new RuntimeException("Please use 'LSPManager#getInstance()'!");
+		if (INSTANCE != null) throw new RuntimeException("Please use 'ProjectManager#getInstance()'!");
     }
 	
-	private TabEditorFragment focusedTabEditor = null;
 	private ProjectModel currentProject = null;
 	
 	public void setCurrentProject(ProjectModel newProject) {
 		this.currentProject = newProject;
-	}
-		
-	public void setFocusedTabEditor(TabEditorFragment editor) {
-		this.focusedTabEditor = editor;
-	}
-		
-	public TabEditorFragment getFocusedTabEditor() {
-		return this.focusedTabEditor;
 	}
 	
 	public ProjectModel getCurrentProject() {

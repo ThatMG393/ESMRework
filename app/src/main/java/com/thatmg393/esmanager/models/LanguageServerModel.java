@@ -9,9 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
-import com.thatmg393.esmanager.managers.ProjectManager;
-import com.thatmg393.esmanager.managers.lsp.base.BaseLSPBinder;
-import com.thatmg393.esmanager.managers.lsp.base.BaseLSPService;
+import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
+import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPBinder;
+import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
 import com.thatmg393.esmanager.utils.Logger;

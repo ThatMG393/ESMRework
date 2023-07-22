@@ -6,8 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
-
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -21,15 +21,15 @@ import com.amrdeveloper.treeview.TreeViewHolderFactory;
 import com.anggrayudi.storage.file.CreateMode;
 import com.anggrayudi.storage.file.FileUtils;
 import com.thatmg393.esmanager.R;
-import com.thatmg393.esmanager.managers.LSPManager;
-import com.thatmg393.esmanager.managers.ProjectManager;
+import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.viewholders.FileViewHolder;
 import com.thatmg393.esmanager.viewholders.FolderViewHolder;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.util.ArrayList;
-import org.apache.commons.io.FilenameUtils;
 
 public class FileTreeViewFragment extends Fragment {
 	private File parentPath;

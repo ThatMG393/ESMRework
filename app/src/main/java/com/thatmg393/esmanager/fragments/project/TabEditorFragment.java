@@ -10,8 +10,9 @@ import androidx.fragment.app.Fragment;
 
 import com.thatmg393.esmanager.activities.ProjectActivity;
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
-import com.thatmg393.esmanager.managers.LSPManager;
-import com.thatmg393.esmanager.managers.ProjectManager;
+import com.thatmg393.esmanager.managers.editor.EditorManager;
+import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
+import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.utils.EditorUtils;
 import com.thatmg393.esmanager.utils.LSPUtils;
@@ -75,8 +76,8 @@ public class TabEditorFragment extends Fragment {
 		editor.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
-				if (hasFocus) ProjectManager.getInstance().setFocusedTabEditor(TabEditorFragment.this);
-				else ProjectManager.getInstance().setFocusedTabEditor(null);
+				if (hasFocus) EditorManager.getInstance().setFocusedTabEditor(TabEditorFragment.this);
+				else EditorManager.getInstance().setFocusedTabEditor(null);
 				
 				((ProjectActivity) requireActivity()).invalidateOptionsMenu();
 			}
