@@ -2,8 +2,6 @@ package com.thatmg393.esmanager.models;
 
 import android.util.ArrayMap;
 import androidx.annotation.NonNull;
-import com.google.gson.internal.LinkedTreeMap;
-import com.thatmg393.esmanager.managers.rpc.RPCSocketClient;
 import java.util.List;
 import java.util.Map;
 
