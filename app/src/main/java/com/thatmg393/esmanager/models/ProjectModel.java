@@ -1,17 +1,18 @@
 package com.thatmg393.esmanager.models;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 
 public class ProjectModel implements Serializable {
-    public final String projectName;
-    public final String projectPath;
-    public final String projectVersion;
-	public final String projectAuthor;
+    public final ModPropertiesModel projectProperties;
+	public final String projectPath;
 
-    public ProjectModel(String projectName, String projectPath, String projectVersion, String projectAuthor) {
-        this.projectName = projectName;
+    public ProjectModel(
+		@NonNull ModPropertiesModel projectProperties,
+		@NonNull String projectPath
+	) {
+		this.projectProperties = projectProperties;
         this.projectPath = projectPath;
-        this.projectVersion = projectVersion;
-		this.projectAuthor = projectAuthor;
     }
 }

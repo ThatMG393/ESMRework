@@ -1,7 +1,9 @@
 package com.thatmg393.esmanager.models;
 
 import android.util.ArrayMap;
+
 import androidx.annotation.NonNull;
+
 import java.util.List;
 import java.util.Map;
 

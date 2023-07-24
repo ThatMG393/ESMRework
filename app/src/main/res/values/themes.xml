@@ -28,9 +28,9 @@
 	</style>
 	
 	<style name="View.ImagePreviewCorner" parent="">
-		<item name="cornerSizeTopRight">30dp</item>
-		<item name="cornerSizeTopLeft">30dp</item>
-		<item name="cornerSizeBottomRight">30dp</item>
-		<item name="cornerSizeBottomLeft">30dp</item>
+		<item name="cornerSizeTopRight">32dp</item>
+		<item name="cornerSizeTopLeft">32dp</item>
+		<item name="cornerSizeBottomRight">32dp</item>
+		<item name="cornerSizeBottomLeft">32dp</item>
 	</style>
 </resources>

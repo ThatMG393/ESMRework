@@ -1,28 +1,28 @@
 package com.thatmg393.esmanager.models;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-public class ModPropertiesModel {
+import java.io.Serializable;
+
+public class ModPropertiesModel implements Serializable {
     private final String MOD_NAME;
     private final String MOD_DESCRIPTION;
     private final String MOD_VERSION;
     private final String MOD_AUTHOR;
-
     private final String MOD_PREVIEW;
 	
 	public ModPropertiesModel(
-		@NotNull String MOD_NAME,
-		@NotNull String MOD_DESCRIPTION,
-		@NotNull String MOD_VERSION,
-		@NotNull String MOD_AUTHOR,
+		@NonNull String MOD_NAME,
+		@NonNull String MOD_DESCRIPTION,
+		@NonNull String MOD_VERSION,
+		@NonNull String MOD_AUTHOR,
 		@Nullable String MOD_PREVIEW
 	) {
 		this.MOD_NAME = MOD_NAME;
 		this.MOD_DESCRIPTION = MOD_DESCRIPTION;
 		this.MOD_VERSION = MOD_VERSION;
 		this.MOD_AUTHOR = MOD_AUTHOR;
-		
 		this.MOD_PREVIEW = MOD_PREVIEW;
 	}
 
@@ -45,4 +45,14 @@ public class ModPropertiesModel {
     public final String getModPreview() {
         return this.MOD_PREVIEW;
     }
+	
+	@Override
+	public boolean equals(Object thisObject) {
+		if (thisObject instanceof ModPropertiesModel) {
+			ModPropertiesModel casted = (ModPropertiesModel) thisObject;
+			return (getModName().equals(casted.getModName()) && getModDescription().equals(casted.getModDescription()) && getModVersion().equals(casted.getModVersion()) && getModAuthor().equals(casted.getModAuthor()) && getModPreview().equals(casted.getModPreview()));
+		}
+		return false;
+	}
+	
 }

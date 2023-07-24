@@ -56,7 +56,6 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			pm = (ProjectModel) getIntent().getSerializableExtra("projectInfo");
 		}
 		ProjectManager.getInstance().setCurrentProject(pm);
-		
 		LSPManager.getInstance().registerLangServers();
 		
 		setContentView(R.layout.activity_project);
@@ -213,9 +212,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 				.commit();
 		} catch (RuntimeException ignore) { }
 		
-		LspEditorManager.getOrCreateEditorManager(
-			ProjectManager.getInstance().getCurrentProject().projectPath
-		).closeAllEditor();
+		LspEditorManager.getOrCreateEditorManager(ProjectManager.getInstance().getCurrentProject().projectPath).closeAllEditor();
 		LSPManager.getInstance().stopLSPForAllLanguage();
 	}
 	

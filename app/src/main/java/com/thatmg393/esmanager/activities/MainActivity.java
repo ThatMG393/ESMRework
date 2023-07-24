@@ -1,60 +1,61 @@
 package com.thatmg393.esmanager.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.R;
+import com.thatmg393.esmanager.fragments.main.HomeFragment;
+import com.thatmg393.esmanager.fragments.main.ModsFragment;
+import com.thatmg393.esmanager.fragments.main.ProjectsFragment;
 import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.PermissionUtils;
+import com.thatmg393.esmanager.utils.StorageUtils;
 
 public class MainActivity extends BaseActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		MaterialButton startPA = findViewById(R.id.launch_pa);
-		startPA.setOnClickListener((v) -> {
-			Intent projectIntent = new Intent(getApplicationContext(), ProjectActivity.class);
-			projectIntent.putExtra("projectInfo", new ProjectModel(
-				"Roblox AFS Script",
-				GlobalConstants.ESM_ROOT_FOLDER + "/Roblox AFS Script",
-				"v0.1",
-				"ThatMG393"
-			));
-			
-			startActivity(projectIntent);
-		});
-		
-		MaterialButton startRPC = findViewById(R.id.launch_rpc);
-		PermissionUtils.requestDrawOverlayPermission(getApplicationContext(), (returnValue) -> {
-			if (returnValue == PermissionUtils.Status.GRANTED) {
-				startRPC.setOnClickListener((v) -> {
-					DRPCManager.getInstance().startDiscordRPC();
-				});
-			} else {
-				Toast.makeText(getApplicationContext(), "Cannot start RPC, please grant 'Appear on top' on Settings", Toast.LENGTH_SHORT).show();
-			}
-		});
-		
-		MaterialButton stopRPC = findViewById(R.id.kill_rpc);
-		stopRPC.setOnClickListener((v) -> {
-			DRPCManager.getInstance().stopDiscordRPC();
-		});
-	}
+	private Toolbar mainToolbar;
+	private FrameLayout mainFragmentContainer;
+	private BottomNavigationView mainBottomNav;
+	
+	private boolean hasAccessToMods;
 	
 	@Override
 	public void init() {
 		super.init();
 		ActivityUtils.getInstance().registerActivity(this);
+		Uri tmp = GlobalConstants.ES_MOD_FOLDER;
 		PermissionUtils.askForUsageStatsPermission(getApplicationContext());
 		
 		setContentView(R.layout.activity_main);
+		
+		mainToolbar = findViewById(R.id.main_toolbar);
+		setSupportActionBar(mainToolbar);
+		
+		mainBottomNav = findViewById(R.id.main_bottom_nav);
+		mainBottomNav.setOnItemSelectedListener((menuItem) -> {
+			if (menuItem.getItemId() == R.id.main_bottom_mods) {
+				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ModsFragment()).commit();
+				return true;
+			} else if (menuItem.getItemId() == R.id.main_bottom_projects) {
+				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ProjectsFragment()).commit();
+				return true;
+			} else if (menuItem.getItemId() == R.id.main_bottom_home) {
+				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new HomeFragment()).commit();
+				return true;
+			}
+			return false;
+		});
+		
+		mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
 	}
 	
 	@Override

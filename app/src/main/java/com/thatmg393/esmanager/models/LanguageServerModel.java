@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 public class LanguageServerModel implements ServiceConnection {
 	private static final Logger LOG = new Logger("ESM/LanguageServerModel");
-	private static final Logger LOG_LSP = new Logger("ESM/LuaLanguageServer");
 	
 	public final String serverName;
 	private final LanguageServerWrapper serverWrapper;
@@ -76,27 +75,29 @@ public class LanguageServerModel implements ServiceConnection {
 	
     // Start of implementation
 	public void startLSP() {
-		if (serverServiceIntent != null) {
-			ActivityUtils.getInstance().bindService(serverServiceIntent, this);
-		}
+		if (serverServiceIntent == null) return;
+		ActivityUtils.getInstance().bindService(serverServiceIntent, this);
 	}
 	
 	public void stopLSP() {
-		if (serverServiceIntent != null) {
-			ActivityUtils.getInstance().unbindService(this);
+		if (serverServiceIntent == null) {
+			dispatchOnShutdown();
+			return;
 		}
+		
+		ActivityUtils.getInstance().unbindService(this);
 	}
 	
 	private BaseLSPService SERVICE_INSTANCE;
     @Override
     public void onServiceConnected(ComponentName cn, IBinder binder) {
 		SERVICE_INSTANCE = ((BaseLSPBinder) binder).getInstance();
-		callbackOnReady();
+		dispatchOnReady();
 	}
 	
     @Override
     public void onServiceDisconnected(ComponentName cn) {
-		callbackOnShutdown();
+		dispatchOnShutdown();
 	}
 	
 	public boolean isServiceRunning() {
@@ -112,10 +113,10 @@ public class LanguageServerModel implements ServiceConnection {
 		}
 	}
 	
-	public void callbackOnReady() {
+	public void dispatchOnReady() {
 		lspCallbackArr.forEach(ILanguageServiceCallback::onReady);
 	}
-	public void callbackOnShutdown() {
+	public void dispatchOnShutdown() {
 		lspCallbackArr.forEach(ILanguageServiceCallback::onShutdown);
 	}
 }

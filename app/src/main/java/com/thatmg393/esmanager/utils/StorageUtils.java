@@ -4,8 +4,12 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES;
 
+import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import com.anggrayudi.storage.SimpleStorage;
 import com.anggrayudi.storage.SimpleStorageHelper;
 import com.anggrayudi.storage.file.DocumentFileUtils;
 import com.anggrayudi.storage.file.FileFullPath;
@@ -14,8 +18,6 @@ import com.anggrayudi.storage.file.StorageType;
 import com.anggrayudi.storage.permission.ActivityPermissionRequest;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.interfaces.IOnAllowFolderAccess;
-
-import org.jetbrains.annotations.NotNull;
 
 public class StorageUtils {
 	private static final Logger LOG = new Logger("ESM/StorageUtils");
@@ -32,39 +34,50 @@ public class StorageUtils {
 		SSH = new SimpleStorageHelper(ActivityUtils.getInstance().getRegisteredActivity());
 	}
 	
-	private static final int REQUEST_FOLDER_ACCESS = 0;
-	
 	private SimpleStorageHelper SSH;
-	public SimpleStorageHelper getSimpleStorageHelper() { return SSH; }
 	
-	public void askForDirectoryAccess(@NotNull String path, @NotNull int requestCode, @NotNull IOnAllowFolderAccess ioafa) {
+	public void askForDirectoryAccess(@NonNull String path, @NonNull int requestCode, @NonNull IOnAllowFolderAccess ioafa) {
 		SSH.setOnStorageAccessGranted((rCode, root) -> {
-			String absolutePath = DocumentFileUtils.getAbsolutePath(root, ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext());
-			ioafa.onAllowFolderAccess(rCode, absolutePath);
-				
-			// Toast.makeText(context, "Access granted for folder: " + absolutePath, Toast.LENGTH_LONG).show();
+			ioafa.onAllowFolderAccess(rCode, root.getUri());
+			SharedPreference.getInstance().putBool(DocumentFileUtils.getAbsolutePath(root, ActivityUtils.getInstance().getRegisteredActivity()), true);
+			
+			Toast.makeText(ActivityUtils.getInstance().getRegisteredActivity(), "Access granted for folder: " + DocumentFileUtils.getAbsolutePath(root, ActivityUtils.getInstance().getRegisteredActivity()), Toast.LENGTH_SHORT).show();
 			return null;
 		});
 		
-		FileFullPath fullPath = null;
-		if (SDK_INT >= 30) { fullPath = new FileFullPath(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), StorageType.EXTERNAL, path); }
-		else if (SDK_INT <= 29) { fullPath = new FileFullPath(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), StorageId.PRIMARY, path); }
-		
-		SSH.requestStorageAccess(
-			requestCode,
-			fullPath,
-			StorageType.EXTERNAL,
-			path
-		);
+		FileFullPath fullPath = getFileFullPath(path);
+		if (!SharedPreference.getInstance().getBool(fullPath.getAbsolutePath())) {
+			SSH.requestStorageAccess(
+				requestCode,
+				fullPath,
+				StorageType.EXTERNAL,
+				path
+			);
+		} else {
+			ioafa.onAllowFolderAccess(requestCode, fullPath.toDocumentUri(ActivityUtils.getInstance().getRegisteredActivity()));
+		}
 	}
 	
 	public void requestFoStoragePermission(ActivityPermissionRequest resultListener) {
-		if (SDK_INT <= VERSION_CODES.O) { LOG.w("Attempting to request storage permission above SDK 28"); return; }
+		if (SDK_INT >= VERSION_CODES.O) return;
 		resultListener.check();
+	}
+	
+	public static FileFullPath getFileFullPath(@NonNull String path) {
+		FileFullPath fullPath = null;
+		
+		if (SDK_INT >= VERSION_CODES.R) { fullPath = new FileFullPath(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), StorageType.EXTERNAL, path); }
+		else if (SDK_INT <= VERSION_CODES.Q) { fullPath = new FileFullPath(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), StorageId.PRIMARY, path); }
+		
+		return fullPath;
 	}
 	
 	public boolean isStoragePermissionGranted() {
 		return PermissionUtils.checkForPermission(ActivityUtils.getInstance().getRegisteredActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE, GlobalConstants.RequestCodes.REQUEST_WRITE_ACCESS);
+	}
+	
+	public SimpleStorageHelper getStorageHelper() {
+		return SSH;
 	}
 	
 	public enum Status {

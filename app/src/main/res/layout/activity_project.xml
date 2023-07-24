@@ -69,7 +69,7 @@
              android:layout_width="match_parent"
              android:layout_below="@id/project_editors_tab"
              android:elevation="1dp"
-			android:layout_above="@id/project_symbol_input_container"
+             android:layout_above="@id/project_symbol_input_container"
              android:outlineProvider="none"
              android:id="@+id/project_editor_view" />
 

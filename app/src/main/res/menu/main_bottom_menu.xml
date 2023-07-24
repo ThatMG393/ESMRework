@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/main_bottom_mods"
+        android:title="Mods"
+        android:icon="@drawable/ic_menu"/>
+	
+	<item
+        android:id="@+id/main_bottom_home"
+        android:title="Home"
+        android:icon="@drawable/ic_home"/>
+	
+	<item
+        android:id="@+id/main_bottom_projects"
+        android:title="Projects"
+        android:icon="@drawable/ic_folder"/>
+    
+</menu>
