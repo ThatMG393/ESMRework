@@ -23,8 +23,8 @@ import com.anggrayudi.storage.file.FileUtils;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.viewholders.FileViewHolder;
-import com.thatmg393.esmanager.viewholders.FolderViewHolder;
+import com.thatmg393.esmanager.viewholders.tree.FileViewHolder;
+import com.thatmg393.esmanager.viewholders.tree.FolderViewHolder;
 
 import org.apache.commons.io.FilenameUtils;
 

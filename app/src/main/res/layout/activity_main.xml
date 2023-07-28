@@ -1,41 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent"
+     android:orientation="vertical"
+     tools:context=".MainActivity">
 
     <RelativeLayout
-        android:layout_height="match_parent"
-        android:layout_width="match_parent">
+         android:layout_height="match_parent"
+         android:layout_width="match_parent">
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:layout_height="?attr/actionBarSize"
-            android:layout_width="match_parent"
-            android:background="@color/colorPrimary"
-            android:elevation="2dp"
-            android:outlineProvider="none"
-            android:layout_alignParentTop="true"
-            android:id="@+id/main_toolbar" />
+             android:layout_height="?attr/actionBarSize"
+             android:layout_width="match_parent"
+             android:background="@color/colorPrimary"
+             android:elevation="2dp"
+             android:outlineProvider="none"
+             android:layout_alignParentTop="true"
+             android:id="@+id/main_toolbar" />
 
         <FrameLayout
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:layout_below="@id/main_toolbar"
-            android:layout_above="@id/main_bottom_nav"
-            android:id="@+id/main_fragment_container" />
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:layout_below="@id/main_toolbar"
+             android:layout_above="@id/main_bottom_nav"
+             android:id="@+id/main_fragment_container">
+
+        </FrameLayout>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            app:itemTextColor="@drawable/bottom_nav_text_color"
-            app:menu="@menu/main_bottom_menu"
-            app:itemIconTint="@drawable/bottom_nav_icon_tint"
-            android:layout_alignParentBottom="true"
-            android:id="@+id/main_bottom_nav" />
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             app:itemTextColor="@drawable/bottom_nav_text_color"
+             app:menu="@menu/main_bottom_menu"
+             app:itemIconTint="@drawable/bottom_nav_icon_tint"
+             android:layout_alignParentBottom="true"
+             android:id="@+id/main_bottom_nav" />
 
     </RelativeLayout>
 

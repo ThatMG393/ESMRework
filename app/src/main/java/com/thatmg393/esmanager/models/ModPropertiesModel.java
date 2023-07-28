@@ -11,19 +11,22 @@ public class ModPropertiesModel implements Serializable {
     private final String MOD_VERSION;
     private final String MOD_AUTHOR;
     private final String MOD_PREVIEW;
+	private final String MOD_PATH;
 	
 	public ModPropertiesModel(
-		@NonNull String MOD_NAME,
-		@NonNull String MOD_DESCRIPTION,
-		@NonNull String MOD_VERSION,
-		@NonNull String MOD_AUTHOR,
-		@Nullable String MOD_PREVIEW
+		@Nullable String MOD_NAME,
+		@Nullable String MOD_DESCRIPTION,
+		@Nullable String MOD_VERSION,
+		@Nullable String MOD_AUTHOR,
+		@Nullable String MOD_PREVIEW,
+		@Nullable String MOD_PATH
 	) {
 		this.MOD_NAME = MOD_NAME;
 		this.MOD_DESCRIPTION = MOD_DESCRIPTION;
 		this.MOD_VERSION = MOD_VERSION;
 		this.MOD_AUTHOR = MOD_AUTHOR;
 		this.MOD_PREVIEW = MOD_PREVIEW;
+		this.MOD_PATH = MOD_PATH;
 	}
 
     public final String getModName() {
@@ -46,6 +49,10 @@ public class ModPropertiesModel implements Serializable {
         return this.MOD_PREVIEW;
     }
 	
+	public final String getModPath() {
+		return this.MOD_PATH;
+	}
+	
 	@Override
 	public boolean equals(Object thisObject) {
 		if (thisObject instanceof ModPropertiesModel) {
@@ -54,5 +61,4 @@ public class ModPropertiesModel implements Serializable {
 		}
 		return false;
 	}
-	
 }

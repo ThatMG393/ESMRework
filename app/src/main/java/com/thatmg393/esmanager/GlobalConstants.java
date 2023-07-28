@@ -21,7 +21,7 @@ public final class GlobalConstants {
 	}
 	
 	private static Uri getESModFolder() {
-		if (SDK_INT < VERSION_CODES.R) {
+		if (SDK_INT < VERSION_CODES.R || ActivityUtils.getInstance().isUserUsingHuawei()) {
 			return Uri.parse(Environment.getExternalStorageDirectory().getAbsolutePath() + "Android/data/com.evertechsandbox/files/mods");
 		} else {
 			StorageUtils.getInstance().askForDirectoryAccess("Android/data/com.evertechsandbox/files/mods", 0, (reqCode, absolutePath) -> {

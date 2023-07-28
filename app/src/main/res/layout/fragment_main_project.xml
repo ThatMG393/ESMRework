@@ -9,14 +9,14 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:visibility="gone"
-        android:id="@+id/fragment_mod_recycler_view" />
+        android:id="@+id/fragment_project_recycler_view" />
 
     <include
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:layout_centerInParent="true"
         layout="@layout/list_loading_layout"
-        android:id="@+id/fragment_mod_loading_container" />
+        android:id="@+id/fragment_project_loading_container" />
 
     <include
         android:layout_height="match_parent"
@@ -24,6 +24,6 @@
         android:layout_centerInParent="true"
         android:visibility="gone"
         layout="@layout/list_empty_layout"
-        android:id="@+id/fragment_mod_empty_container" />
+        android:id="@+id/fragment_project_empty_container" />
 
 </RelativeLayout>

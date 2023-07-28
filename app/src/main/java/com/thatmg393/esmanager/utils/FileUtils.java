@@ -5,6 +5,7 @@ import io.github.rosemoe.sora.text.ContentIO;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -44,5 +45,20 @@ public class FileUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void deleteRecursively(File path) {
+		if (!path.exists()) return;
+		
+		File[] filesInPath = path.listFiles();
+		if (filesInPath != null && filesInPath.length > 0) {
+			for (File file : filesInPath) {
+				if (!file.exists()) continue;
+				
+				if (file.isDirectory()) deleteRecursively(file);
+				else file.delete();
+			}
+		}
+		path.delete();
 	}
 }

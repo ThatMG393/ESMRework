@@ -7,11 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.JsonObject;
@@ -35,43 +38,32 @@ import java.util.concurrent.Executors;
 public class ModsFragment extends Fragment {
 	private final String modInfoJson = "info.json";
 	
-	private LinearLayout modsMainLayout;
-	private ListView modsListView;
-	private ModListAdapter modsListAdapter;
+	private RecyclerView modsRecyclerView;
+	private RelativeLayout modsLoadingLayout;
+	private RelativeLayout modsEmptyLayout;
+	private ModListAdapter modsRecyclerAdapter;
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		init();
-		return modsMainLayout;
+	public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.fragment_main_mod, parent, false);
 	}
 	
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		modsListView.setEmptyView(noItems("No mod/s found!"));
+		init();
 		populateModsList();
 	}
 	
 	public void init() {
-		modsListAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
+		modsRecyclerAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
 		
-		modsListView = new ListView(requireActivity());
-		modsListView.setLayoutParams(
-			new ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT
-			)
-		);
-		modsListView.setAdapter(modsListAdapter);
+		modsRecyclerView = requireView().findViewById(R.id.fragment_mod_recycler_view);
+		modsRecyclerView.setAdapter(modsRecyclerAdapter);
+		modsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 		
-		modsMainLayout = new LinearLayout(requireActivity());
-		modsMainLayout.setLayoutParams(
-			new ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT
-			)
-		);
-		modsMainLayout.addView(modsListView);
+		modsLoadingLayout = requireView().findViewById(R.id.fragment_mod_loading_container);
+		modsEmptyLayout = requireView().findViewById(R.id.fragment_mod_empty_container);
 	}
 	
 	private void populateModsList() {
@@ -79,7 +71,7 @@ public class ModsFragment extends Fragment {
 			DocumentFileCompat modFolder = DocumentFileCompat.fromTreeUri(requireContext(), GlobalConstants.ES_MOD_FOLDER);
 			List<DocumentFileCompat> modFolders = modFolder.listFiles();
 			
-	  	  if (modsListAdapter.getDataList().size() > 0) modsListAdapter.clearData();
+	  	  if (modsRecyclerAdapter.getDataList().size() > 0) modsRecyclerView.post(() -> modsRecyclerAdapter.clearData());
 	  	  if (modFolders != null || modFolders.size() > 0) {
 				for (DocumentFileCompat folder : modFolders) {
 					if (folder.isFile()) continue;
@@ -95,56 +87,20 @@ public class ModsFragment extends Fragment {
 			   			 String modAuthor = j.get("author").getAsString();
 				   		 String modVersion = j.get("version").getAsString();
 				   		 String modPreview = folder.getUri().toString() + "%2F" + j.get("preview").getAsString().replace("/", "%2F");
-							
-					 	   modsListView.post(() -> modsListAdapter.addData(new ModPropertiesModel(modName, modDesc, modAuthor, modVersion, modPreview)));
+							String modPath = folder.getUri().toString();
+								
+					 	   modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(modName, modDesc, modAuthor, modVersion, modPreview, modPath)));
 						} catch (IOException | JsonSyntaxException e) {
-							modsListView.post(() -> modsListAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null)));
+							modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getUri().toString())));
 						}
 					}
 		 	   }
+				modsRecyclerView.post(() -> modsRecyclerView.setVisibility(View.VISIBLE));
+				modsRecyclerView.post(() -> modsLoadingLayout.setVisibility(View.GONE));
+			} else {
+				modsRecyclerView.post(() -> modsLoadingLayout.setVisibility(View.GONE));
+				modsRecyclerView.post(() -> modsEmptyLayout.setVisibility(View.VISIBLE));
 			}
   	  });
-	}
-	
-	private RelativeLayout noItems(String text) {
-		ShapeableImageView noItemsIcon = new ShapeableImageView(requireActivity());
-		noItemsIcon.setId(View.generateViewId());
-		noItemsIcon.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_info));
-		
-   	 MaterialTextView noItemsDesc = new MaterialTextView(requireActivity());
-   	 noItemsDesc.setTextColor(requireContext().getResources().getColor(R.color.colorPrimary));
-    	noItemsDesc.setText(text);
-   	 
-		RelativeLayout noItemsLayout = new RelativeLayout(requireActivity());
-		noItemsLayout.setLayoutParams(
-			new ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT
-			)
-		);
-		noItemsLayout.setVisibility(View.GONE);
-		
-		RelativeLayout.LayoutParams noItemsIconLP = new RelativeLayout.LayoutParams(
-			new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT
-			)
-		);
-		noItemsIconLP.addRule(RelativeLayout.CENTER_IN_PARENT);
-		noItemsLayout.addView(noItemsIcon, noItemsIconLP);
-		
-		RelativeLayout.LayoutParams noItemsDescLP = new RelativeLayout.LayoutParams(
-			new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT
-			)
-		);
-		noItemsDescLP.addRule(RelativeLayout.CENTER_IN_PARENT);
-		noItemsDescLP.addRule(RelativeLayout.BELOW, noItemsIcon.getId());
-		noItemsDescLP.setMargins(0, 8, 0, 0);
-		noItemsLayout.addView(noItemsDesc, noItemsDescLP);
-		
-   	 ((ViewGroup) modsListView.getParent()).addView(noItemsLayout);
-  	  return noItemsLayout;
 	}
 }

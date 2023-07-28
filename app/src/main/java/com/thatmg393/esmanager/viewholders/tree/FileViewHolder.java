@@ -1,4 +1,4 @@
-package com.thatmg393.esmanager.viewholders;
+package com.thatmg393.esmanager.viewholders.tree;
 
 import android.view.View;
 import android.widget.TextView;
@@ -9,14 +9,17 @@ import androidx.annotation.NonNull;
 import com.amrdeveloper.treeview.TreeNode;
 import com.amrdeveloper.treeview.TreeViewHolder;
 import com.thatmg393.esmanager.R;
+
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 
-public class FolderViewHolder extends TreeViewHolder {
+public class FileViewHolder extends TreeViewHolder {
 	private final TextView tv;
 	
-	public FolderViewHolder(@NonNull View itemView) {
+	public FileViewHolder(@NonNull View itemView) {
         super(itemView);
-		tv = itemView.findViewById(R.id.project_treeview_folder_name);
+		tv = itemView.findViewById(R.id.project_treeview_file_name);
     }
 
     @Override
@@ -25,12 +28,14 @@ public class FolderViewHolder extends TreeViewHolder {
 		File nodeName = new File((String) node.getValue());
 		tv.setText(nodeName.getName());
 		
-        switch (nodeName.getName()) {
-			case "audio":  
-			case "meshes": 
-			case "scripts": 
-			case "textures": setDrawableRight(R.drawable.ic_info); break;
-			default: setDrawableRight(R.drawable.ic_folder); break;
+        switch (FilenameUtils.getExtension(nodeName.getAbsolutePath())) {
+			case "lua": 
+			case "json": 
+			case "wav":
+			case "png":
+			case "jpg": 
+			case "obj": setDrawableRight(R.drawable.ic_info); break;
+			default: setDrawableRight(R.drawable.ic_file); break;
 		}
     }
 	

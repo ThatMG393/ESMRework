@@ -14,8 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
+import com.google.android.material.imageview.ShapeableImageView;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
 
 public class BitmapUtils {
 	public static Bitmap getRescaledDrawable(@DrawableRes int drawableId) {
@@ -61,5 +63,27 @@ public class BitmapUtils {
   	  } else {
        	 return image;
   	  }
+	}
+	
+	public static void loadBitmapAsync(@NonNull ShapeableImageView imgView, Uri path) {
+		CompletableFuture.runAsync(() -> {
+			try {
+				Bitmap b = getRescaledBitmap(path);
+				if (b != null) {
+					imgView.post(() -> imgView.setImageBitmap(b));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	public static void loadDrawableAsync(@NonNull ShapeableImageView imgView, @DrawableRes int drawableRes) {
+		CompletableFuture.runAsync(() -> {
+			Bitmap d = getRescaledDrawable(drawableRes);
+			if (d != null) {
+				imgView.post(() -> imgView.setImageBitmap(d));
+			}
+		});
 	}
 }

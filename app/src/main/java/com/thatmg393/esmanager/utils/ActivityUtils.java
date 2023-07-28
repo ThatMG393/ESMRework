@@ -1,5 +1,6 @@
 package com.thatmg393.esmanager.utils;
 
+import android.os.Build;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES;
 
@@ -139,6 +140,10 @@ public class ActivityUtils {
         	boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
         	return !hasMenuKey && !hasBackKey;
     	}
+	}
+	
+	public boolean isUserUsingHuawei() {
+		return Build.MANUFACTURER.toLowerCase().contains("huawei") && Build.BRAND.toLowerCase().contains("huawei");
 	}
 
     public AppCompatActivity getRegisteredActivity() {
