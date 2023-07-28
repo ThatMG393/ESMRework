@@ -5,6 +5,9 @@
 	<string name="nav_drawer_open">Open Navigation Drawer</string>
 	<string name="nav_drawer_close">Open Navigation Drawer</string>
 	
+	<string name="toast_success">Success!</string>
+	<string name="toast_failed">Failed!</string>
+	
 	<!-- File Drawer -->
 	<string name="file_drawer_no_files">Folder does not exist</string>
 	<string name="file_drawer_popup_new_file">New file</string>
@@ -14,7 +17,8 @@
 	<string name="file_drawer_popup_delete_confirmation">Are you sure?</string>
 	<string name="file_drawer_popup_create">Create</string>
 	<string name="file_drawer_popup_cancel">Cancel</string>
-	<string name="file_drawer_toast_success">Success!</string>
-	<string name="file_drawer_toast_failed">Failed!</string>
+	
+	<!-- List layout -->
+	<string name="layout_list_bar_loading">Loading...</string>
 	
 </resources>

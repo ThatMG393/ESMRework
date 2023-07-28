@@ -142,9 +142,9 @@ public class FileTreeViewFragment extends Fragment {
 									String newNameOfTarget = name.getText().toString();
 									
 									if (FileUtils.moveTo(target, requireContext(), new File(target.getParent(), newNameOfTarget)) == null) {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_failed), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									} else {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_success), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
 									}
 								})
@@ -157,9 +157,9 @@ public class FileTreeViewFragment extends Fragment {
 								new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.dismiss()),
 								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
 									if (!FileUtils.forceDelete(new File((String) node.getValue()))) {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_failed), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									} else {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_success), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
 									}
 								})
@@ -184,9 +184,9 @@ public class FileTreeViewFragment extends Fragment {
 									File newFile = new File((String) node.getValue(), name.getText().toString());
 									
 									if (!FileUtils.createNewFileIfPossible(newFile)) {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_failed), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									} else {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_success), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
 									}
 								})
@@ -202,9 +202,9 @@ public class FileTreeViewFragment extends Fragment {
 									File file = new File((String) node.getValue(), name.getText().toString());
 									
 									if (FileUtils.makeFolder(new File((String) node.getValue()), requireContext(), name.getText().toString(), CreateMode.SKIP_IF_EXISTS) == null) {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_failed), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									} else {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_success), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
 									}
 								})
@@ -223,9 +223,9 @@ public class FileTreeViewFragment extends Fragment {
 									String newNameOfTarget = name.getText().toString();
 									
 									if (FileUtils.moveTo(target, requireContext(), new File(target.getParent(), newNameOfTarget)) == null) {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_failed), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									} else {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_success), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
 									}
 								})
@@ -238,9 +238,9 @@ public class FileTreeViewFragment extends Fragment {
 								new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.dismiss()),
 								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
 									if (!FileUtils.forceDelete(new File((String) node.getValue()))) {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_failed), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									} else {
-										ActivityUtils.getInstance().showToast(getString(R.string.file_drawer_toast_success), Toast.LENGTH_SHORT);
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
 									}
 								})
