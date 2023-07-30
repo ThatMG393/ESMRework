@@ -1,18 +1,19 @@
 package com.thatmg393.esmanager;
 
-import android.net.Uri;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES;
 
+import android.net.Uri;
 import android.os.Environment;
 
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.StorageUtils;
+import com.thatmg393.esmanager.utils.URIUtils;
+
 import java.io.File;
 
 public final class GlobalConstants {
 	public static final String PREFERENCE_NAME = "imaginefindingthisandchangingasettingbutitdoesntdoanything";
-	public static Uri ES_MOD_FOLDER = getESModFolder();
+	public static final String ES_MOD_FOLDER = getESModFolder();
 	public static final String ESM_ROOT_FOLDER = getESMRootFolder();
 	
 	public static final class RequestCodes {
@@ -20,15 +21,26 @@ public final class GlobalConstants {
 		public static final int REQUEST_EVERTECH_FOLDER_ACCESS = 1;
 	}
 	
-	private static Uri getESModFolder() {
-		if (SDK_INT < VERSION_CODES.R || ActivityUtils.getInstance().isUserUsingHuawei()) {
-			return Uri.parse(Environment.getExternalStorageDirectory().getAbsolutePath() + "Android/data/com.evertechsandbox/files/mods");
+	private static Uri tmp;
+	private static String getESModFolder() {
+		/*
+		if (SDK_INT <= VERSION_CODES.Q) {
+			/* We expect:
+			   content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods/document/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods
+		*/
+		return URIUtils.getTreeUriFromFile(
+			ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(),
+			new File("Android/data/com.evertechsandbox/files/mods")
+		).toString();
+		/*
 		} else {
 			StorageUtils.getInstance().askForDirectoryAccess("Android/data/com.evertechsandbox/files/mods", 0, (reqCode, absolutePath) -> {
-				ES_MOD_FOLDER = absolutePath;
+				tmp = absolutePath;
 			});
-			return ES_MOD_FOLDER;
+			
+			return tmp.toString();
 		}
+		*/
 	}
 	
 	private static String getESMRootFolder() {

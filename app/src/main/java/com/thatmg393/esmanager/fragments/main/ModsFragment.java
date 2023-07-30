@@ -68,7 +68,7 @@ public class ModsFragment extends Fragment {
 	private void populateModsList() {
 		Executors.newSingleThreadExecutor().execute(() -> {
 			try {
-				DocumentFileCompat modFolder = DocumentFileCompat.fromTreeUri(requireContext(), GlobalConstants.ES_MOD_FOLDER);
+				DocumentFileCompat modFolder = DocumentFileCompat.fromTreeUri(requireContext(), Uri.parse(GlobalConstants.ES_MOD_FOLDER));
 				List<DocumentFileCompat> modFolders = modFolder.listFiles();
 			
 	  	 	 if (modsRecyclerAdapter.getDataList().size() > 0) modsRecyclerView.post(() -> modsRecyclerAdapter.clearData());
