@@ -23,24 +23,15 @@ public final class GlobalConstants {
 	
 	private static Uri tmp;
 	private static String getESModFolder() {
-		/*
-		if (SDK_INT <= VERSION_CODES.Q) {
-			/* We expect:
-			   content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods/document/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods
+		/* (SDK_INT <= VERSION_CODES.Q)
+		We expect:
+		content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods/document/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods
 		*/
-		return URIUtils.getTreeUriFromFile(
-			ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(),
-			new File("Android/data/com.evertechsandbox/files/mods")
-		).toString();
-		/*
-		} else {
-			StorageUtils.getInstance().askForDirectoryAccess("Android/data/com.evertechsandbox/files/mods", 0, (reqCode, absolutePath) -> {
-				tmp = absolutePath;
-			});
-			
-			return tmp.toString();
-		}
-		*/
+		StorageUtils.getInstance().askForDirectoryAccess("Android/data/com.evertechsandbox/files/mods", 0, (reqCode, absolutePath) -> {
+			tmp = absolutePath;
+		});
+		
+		return tmp.toString();
 	}
 	
 	private static String getESMRootFolder() {
