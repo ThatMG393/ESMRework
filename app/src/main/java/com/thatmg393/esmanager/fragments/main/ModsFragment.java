@@ -95,17 +95,27 @@ public class ModsFragment extends Fragment {
 							}
 						}
 		 	  	 }
-					modsRecyclerView.post(() -> modsRecyclerView.setVisibility(View.VISIBLE));
-					modsRecyclerView.post(() -> modsLoadingLayout.setVisibility(View.GONE));
+					modsRecyclerView.post(() -> {
+						modsRecyclerView.setVisibility(View.VISIBLE);
+						modsLoadingLayout.setVisibility(View.GONE);
+					});
 				} else {
-					modsRecyclerView.post(() -> modsLoadingLayout.setVisibility(View.GONE));
-					modsRecyclerView.post(() -> modsEmptyLayout.setVisibility(View.VISIBLE));
+					modsRecyclerView.post(() -> {
+						modsLoadingLayout.setVisibility(View.GONE);
+						modsEmptyLayout.setVisibility(View.VISIBLE);
+					});
 				}
 			} catch (Exception e) {
-				modsRecyclerView.post(() -> modsLoadingLayout.setVisibility(View.GONE));
-				modsRecyclerView.post(() -> modsEmptyLayout.setVisibility(View.VISIBLE));
+				modsRecyclerView.post(() -> {
+					modsLoadingLayout.setVisibility(View.GONE);
+					modsEmptyLayout.setVisibility(View.VISIBLE);
 					
-				modsRecyclerView.post(() -> ActivityUtils.getInstance().showToast("Failed to load mods\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT));
+					if (e instanceof UnsupportedOperationException && e.getMessage().contains("is not Tree uri")) {
+						ActivityUtils.getInstance().showToast("Is this a Tree URI?\n" + GlobalConstants.ES_MOD_FOLDER, Toast.LENGTH_SHORT);
+					} else {
+						ActivityUtils.getInstance().showToast("Failed to load mods\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT);
+					}
+				});
 			}
   	  });
 	}

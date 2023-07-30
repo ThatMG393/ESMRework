@@ -7,9 +7,7 @@ import android.net.Uri;
 import android.os.Environment;
 
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.URIUtils;
-
-import java.io.File;
+import com.thatmg393.esmanager.utils.StorageUtils;
 
 public final class GlobalConstants {
 	public static final String PREFERENCE_NAME = "imaginefindingthisandchangingasettingbutitdoesntdoanything";
@@ -24,8 +22,8 @@ public final class GlobalConstants {
 	private static Uri tmp;
 	private static String getESModFolder() {
 		/* (SDK_INT <= VERSION_CODES.Q)
-		We expect:
-		content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods/document/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods
+			We expect:
+			content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods/document/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods
 		*/
 		StorageUtils.getInstance().askForDirectoryAccess("Android/data/com.evertechsandbox/files/mods", 0, (reqCode, absolutePath) -> {
 			tmp = absolutePath;
