@@ -1,5 +1,8 @@
 package com.thatmg393.esmanager.fragments.main;
 
+import android.content.Context;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +12,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleObserver;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -96,8 +101,8 @@ public class ModsFragment extends Fragment {
 						}
 		 	  	 }
 					modsRecyclerView.post(() -> {
-						modsRecyclerView.setVisibility(View.VISIBLE);
 						modsLoadingLayout.setVisibility(View.GONE);
+						modsRecyclerView.setVisibility(View.VISIBLE);
 					});
 				} else {
 					modsRecyclerView.post(() -> {

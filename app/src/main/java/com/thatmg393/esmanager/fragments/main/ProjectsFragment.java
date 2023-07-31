@@ -130,17 +130,23 @@ public class ProjectsFragment extends Fragment {
 							}
 						}
 		 	   	}
-					projectsRecyclerView.post(() -> projectsRecyclerView.setVisibility(View.VISIBLE));
-					projectsRecyclerView.post(() -> projectsLoadingLayout.setVisibility(View.GONE));
+					projectsRecyclerView.post(() -> {
+						projectsLoadingLayout.setVisibility(View.GONE);
+						projectsRecyclerView.setVisibility(View.VISIBLE);
+					});
 				} else {
-					projectsRecyclerView.post(() -> projectsLoadingLayout.setVisibility(View.GONE));
-					projectsRecyclerView.post(() -> projectsEmptyLayout.setVisibility(View.VISIBLE));
+					projectsRecyclerView.post(() -> {
+						projectsLoadingLayout.setVisibility(View.GONE);
+						projectsEmptyLayout.setVisibility(View.VISIBLE);
+					});
 				}
 			} catch (Exception e) {
-				projectsRecyclerView.post(() -> projectsLoadingLayout.setVisibility(View.GONE));
-				projectsRecyclerView.post(() -> projectsEmptyLayout.setVisibility(View.VISIBLE));
+				projectsRecyclerView.post(() -> {
+					projectsLoadingLayout.setVisibility(View.GONE);
+					projectsEmptyLayout.setVisibility(View.VISIBLE);
 					
-				projectsRecyclerView.post(() -> ActivityUtils.getInstance().showToast("Failed to load projects\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT));
+					ActivityUtils.getInstance().showToast("Failed to load projects\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT);
+				});
 			}
   	  });
 	}

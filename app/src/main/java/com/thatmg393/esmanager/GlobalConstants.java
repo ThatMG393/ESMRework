@@ -11,7 +11,7 @@ import com.thatmg393.esmanager.utils.StorageUtils;
 
 public final class GlobalConstants {
 	public static final String PREFERENCE_NAME = "imaginefindingthisandchangingasettingbutitdoesntdoanything";
-	public static final String ES_MOD_FOLDER = getESModFolder();
+	public static String ES_MOD_FOLDER = getESModFolder();
 	public static final String ESM_ROOT_FOLDER = getESMRootFolder();
 	
 	public static final class RequestCodes {
@@ -19,17 +19,18 @@ public final class GlobalConstants {
 		public static final int REQUEST_EVERTECH_FOLDER_ACCESS = 1;
 	}
 	
-	private static Uri tmp;
+	private GlobalConstants() { }
+	
 	private static String getESModFolder() {
 		/* (SDK_INT <= VERSION_CODES.Q)
 			We expect:
 			content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods/document/primary%3AAndroid%2Fdata%2Fcom.evertechsandbox%2Ffiles%2Fmods
 		*/
 		StorageUtils.getInstance().askForDirectoryAccess("Android/data/com.evertechsandbox/files/mods", 0, (reqCode, absolutePath) -> {
-			tmp = absolutePath;
+			ES_MOD_FOLDER = absolutePath.toString();
 		});
 		
-		return tmp.toString();
+		return null;
 	}
 	
 	private static String getESMRootFolder() {

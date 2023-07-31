@@ -20,14 +20,12 @@ public class MainActivity extends BaseActivity {
 	private FrameLayout mainFragmentContainer;
 	private BottomNavigationView mainBottomNav;
 	
-	private boolean hasAccessToMods;
-	
 	@Override
 	public void init() {
 		super.init();
 		ActivityUtils.getInstance().registerActivity(this);
-		String tmp = GlobalConstants.ES_MOD_FOLDER;
 		PermissionUtils.askForUsageStatsPermission(getApplicationContext());
+		String h = GlobalConstants.ES_MOD_FOLDER;
 		
 		setContentView(R.layout.activity_main);
 		
@@ -36,19 +34,18 @@ public class MainActivity extends BaseActivity {
 		
 		mainBottomNav = findViewById(R.id.main_bottom_nav);
 		mainBottomNav.setOnItemSelectedListener((menuItem) -> {
-			if (menuItem.getItemId() == R.id.main_bottom_mods) {
+			if (menuItem.getItemId() == R.id.main_bottom_mods && mainBottomNav.getSelectedItemId() != R.id.main_bottom_mods) {
 				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ModsFragment()).commit();
 				return true;
-			} else if (menuItem.getItemId() == R.id.main_bottom_projects) {
+			} else if (menuItem.getItemId() == R.id.main_bottom_projects && mainBottomNav.getSelectedItemId() != R.id.main_bottom_projects) {
 				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ProjectsFragment()).commit();
 				return true;
-			} else if (menuItem.getItemId() == R.id.main_bottom_home) {
+			} else if (menuItem.getItemId() == R.id.main_bottom_home && mainBottomNav.getSelectedItemId() != R.id.main_bottom_home) {
 				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new HomeFragment()).commit();
 				return true;
 			}
 			return false;
 		});
-		
 		mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
 	}
 	

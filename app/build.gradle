@@ -61,6 +61,7 @@ dependencies {
 	// Collections
 	implementation 'org.apache.commons:commons-collections4:4.4'
 	
+	debugImplementation 'com.itsaky.androidide:logsender:2.5.1-beta-27c6ea872-SNAPSHOT'
 	// debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 	
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
