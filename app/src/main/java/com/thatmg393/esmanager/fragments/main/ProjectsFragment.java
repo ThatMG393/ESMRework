@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +17,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.lazygeniouz.dfc.file.DocumentFileCompat;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.activities.ProjectActivity;
@@ -64,6 +66,16 @@ public class ProjectsFragment extends Fragment {
 		projectsRecyclerView.setAdapter(projectsRecyclerAdapter);
 		projectsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 		
+		MaterialButton projectNewButton = requireView().findViewById(R.id.fragment_project_new_project);
+		projectNewButton.setOnClickListener((v) -> {
+			ActivityUtils.getInstance().createAlertDialog(
+				"Create new project",
+				"No UI yet!",
+				new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.cancel()),
+				new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> dialog.cancel())
+			).show();
+		});
+		
 		projectsLoadingLayout = requireView().findViewById(R.id.fragment_project_loading_container);
 		projectsEmptyLayout = requireView().findViewById(R.id.fragment_project_empty_container);
 		
@@ -81,11 +93,9 @@ public class ProjectsFragment extends Fragment {
 						projectIntent.putExtra("projectInfo", new ProjectModel(
 							modProp, modProp.getModPath()
 						));
-						
 						startActivity(projectIntent);
 						return true;
 					} else if (menuItem.getItemId() == R.id.main_project_delete) {
-						//	System.out.println(projectsRecyclerAdapter.getDataList().get(pos).getModPath());
 						File project = new File(projectsRecyclerAdapter.getDataList().get(pos).getModPath());
 						FileUtils.deleteRecursively(project);
 						if (!project.exists()) {
@@ -124,7 +134,7 @@ public class ProjectsFragment extends Fragment {
 				   			 String projectPreview = new File(folder.getAbsolutePath(), j.get("preview").getAsString()).getAbsolutePath();
 								String projectPath = folder.getAbsolutePath();
 							
-					 	 	  projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(projectName, projectDesc, projectAuthor, projectVersion, projectPreview, projectPath)));
+					 	 	  projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(projectName, projectDesc, projectAuthor, projectVersion, DocumentFileCompat.fromFile(requireContext(), new File(projectPreview)).getUri().toString(), projectPath)));
 							} catch (IOException | JsonSyntaxException e) {
 								projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getAbsolutePath())));
 							}

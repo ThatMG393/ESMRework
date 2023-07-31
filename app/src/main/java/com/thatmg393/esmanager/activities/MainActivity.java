@@ -1,5 +1,7 @@
 package com.thatmg393.esmanager.activities;
 
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.widget.Toolbar;
@@ -10,6 +12,7 @@ import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.fragments.main.HomeFragment;
 import com.thatmg393.esmanager.fragments.main.ModsFragment;
 import com.thatmg393.esmanager.fragments.main.ProjectsFragment;
+import com.thatmg393.esmanager.fragments.main.SettingsFragment;
 import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
@@ -47,6 +50,21 @@ public class MainActivity extends BaseActivity {
 			return false;
 		});
 		mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.main_action_menu, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.main_action_settings) {
+			SettingsFragment.start(getApplicationContext());
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

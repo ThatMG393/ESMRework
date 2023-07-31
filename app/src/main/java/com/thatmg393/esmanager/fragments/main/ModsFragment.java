@@ -111,6 +111,7 @@ public class ModsFragment extends Fragment {
 					});
 				}
 			} catch (Exception e) {
+				e.printStackTrace(System.err);
 				modsRecyclerView.post(() -> {
 					modsLoadingLayout.setVisibility(View.GONE);
 					modsEmptyLayout.setVisibility(View.VISIBLE);

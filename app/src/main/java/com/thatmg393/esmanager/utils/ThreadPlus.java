@@ -23,7 +23,7 @@ public class ThreadPlus implements Runnable {
 		this.runnable = runnable;
 		this.thread = new Thread(this);
 		
-		thread.setDaemon(true);
+		thread.setDaemon(false);
 	}
 	
 	public ThreadPlus(@NonNull Runnable runnable, boolean loopThread) {

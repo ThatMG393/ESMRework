@@ -19,8 +19,6 @@ public final class GlobalConstants {
 		public static final int REQUEST_EVERTECH_FOLDER_ACCESS = 1;
 	}
 	
-	private GlobalConstants() { }
-	
 	private static String getESModFolder() {
 		/* (SDK_INT <= VERSION_CODES.Q)
 			We expect:
@@ -30,7 +28,7 @@ public final class GlobalConstants {
 			ES_MOD_FOLDER = absolutePath.toString();
 		});
 		
-		return null;
+		return ES_MOD_FOLDER;
 	}
 	
 	private static String getESMRootFolder() {

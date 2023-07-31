@@ -18,6 +18,7 @@ import com.anggrayudi.storage.file.StorageType;
 import com.anggrayudi.storage.permission.ActivityPermissionRequest;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.interfaces.IOnAllowFolderAccess;
+import java.io.File;
 
 public class StorageUtils {
 	private static final Logger LOG = new Logger("ESM/StorageUtils");
@@ -54,7 +55,7 @@ public class StorageUtils {
 				path
 			);
 		} else {
-			ioafa.onAllowFolderAccess(requestCode, fullPath.toDocumentUri(ActivityUtils.getInstance().getRegisteredActivity()));
+			ioafa.onAllowFolderAccess(requestCode, URIUtils.getTreeUriFromFile(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), new File(path)));
 		}
 	}
 	

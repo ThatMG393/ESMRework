@@ -9,11 +9,6 @@
 	<uses-permission
 		android:name="android.permission.PACKAGE_USAGE_STATS"
 		tools:ignore="ProtectedPermissions" />
-	
-	<uses-permission
-		android:name="android.permission.MANAGE_EXTERNAL_STORAGE" 
-		android:minSdkVersion="30"
-		tools:ignore="ScopedStorage" />
 		
 	<uses-permission
 		android:name="android.permission.POST_NOTIFICATIONS"
@@ -23,7 +18,6 @@
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	
     <application
         android:allowBackup="true"
@@ -45,8 +39,9 @@
 			
         </activity>
 		<activity android:name=".activities.ProjectActivity" />
+		<activity android:name=".fragments.main.SettingsFragment" />
 		
-		<service android:name=".managers.rpc.RPCService" android:stopWithTask="true"/>
-		<service android:name=".managers.lsp.lua.LuaLSPService" android:stopWithTask="true"/>
+		<service android:name=".managers.rpc.impl.RPCService" android:stopWithTask="true"/>
+		<service android:name=".managers.editor.lsp.lua.LuaLSPService" android:stopWithTask="true"/>
     </application>
 </manifest>

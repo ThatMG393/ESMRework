@@ -10,7 +10,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -35,7 +35,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Queue;
 
-@SuppressWarnings("deprecation")
 public class RPCService extends Service {
 	private static final String CHANNEL_ID = "DRPCService";
 	private static final int NOTIFICATION_ID = 1;
@@ -98,6 +97,7 @@ public class RPCService extends Service {
 		getNotificationManager().notify(NOTIFICATION_ID, notificationBuilder.build());
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void startRPC() {
 		if (SharedPreference.getInstance().getString("lol69420") != null) {
 			websocketThread.start();
@@ -127,24 +127,20 @@ public class RPCService extends Service {
 		webLoginView.getSettings().setDomStorageEnabled(true);
 		
 		webLoginView.setWebViewClient(new WebViewClient() {
-			@SuppressWarnings("deprecation")
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView v, String url) {
-				if (url.endsWith("/app")) {
+    		@Override
+    		public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+        		if (request.getUrl().toString().endsWith("/app")) {
 					SharedPreference.getInstance().putString("lol69420", extractToken());
 					
 					loginDialog.dismiss();
 					websocketThread.start();
 				}
 				return true;
-			}
+   		 }
 		});
 		
-		int LAYOUT_FLAG = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
-		loginDialog.getWindow().setType(LAYOUT_FLAG);
-		loginDialog.show();
-		
 		webLoginView.loadUrl("https://discord.com/login");
+		loginDialog.show();
 	}
 	
 	private Queue<String> contentFIFO = new CircularFifoQueue<>(10);
