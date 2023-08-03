@@ -26,11 +26,4 @@
 		<item name="textAllCaps">false</item>
 		<item name="android:textAllCaps">false</item>
 	</style>
-	
-	<style name="View.ImagePreviewCorner" parent="">
-		<item name="cornerSizeTopRight">32dp</item>
-		<item name="cornerSizeTopLeft">32dp</item>
-		<item name="cornerSizeBottomRight">32dp</item>
-		<item name="cornerSizeBottomLeft">32dp</item>
-	</style>
 </resources>

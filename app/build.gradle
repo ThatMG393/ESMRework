@@ -11,7 +11,7 @@ android {
         applicationId "com.thatmg393.esmanager"
         minSdk 26
         targetSdk 33
-        versionCode 010000
+        versionCode 1
         versionName "v1.0-preview"
     }
 
@@ -34,13 +34,17 @@ dependencies {
 	
 	implementation 'androidx.appcompat:appcompat:1.7.0-alpha02'
 	implementation 'androidx.core:core-splashscreen:1.0.1'
-    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 	
 	// UI
-	implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha10'
+	implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01"
 	implementation 'androidx.viewpager2:viewpager2:1.1.0-beta02'
 	implementation 'com.google.android.material:material:1.9.0'
+	implementation 'com.github.delight-im:Android-AdvancedWebView:v3.2.1'
+	implementation 'com.github.cachapa:ExpandableLayout:2.9.2'
+	implementation 'com.intuit.sdp:sdp-android:1.1.0'
+	implementation 'com.intuit.ssp:ssp-android:1.1.0'
 	implementation 'io.github.amrdeveloper:treeview:1.1.4'
 	
 	// Code Editor
@@ -55,6 +59,7 @@ dependencies {
 	// IO / Network
 	implementation 'com.anggrayudi:storage:1.5.5'
 	implementation 'com.lazygeniouz:dfc:1.0.7'
+	implementation 'com.squareup.picasso:picasso:2.8'
 	implementation 'commons-io:commons-io:2.11.0'
 	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 	

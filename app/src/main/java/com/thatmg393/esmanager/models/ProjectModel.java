@@ -5,14 +5,14 @@ import androidx.annotation.NonNull;
 import java.io.Serializable;
 
 public class ProjectModel implements Serializable {
-    public final ModPropertiesModel projectProperties;
+	public final ModPropertiesModel projectProperties;
 	public final String projectPath;
 
-    public ProjectModel(
+	public ProjectModel(
 		@NonNull ModPropertiesModel projectProperties,
 		@NonNull String projectPath
 	) {
 		this.projectProperties = projectProperties;
-        this.projectPath = projectPath;
-    }
+		this.projectPath = projectPath;
+	}
 }

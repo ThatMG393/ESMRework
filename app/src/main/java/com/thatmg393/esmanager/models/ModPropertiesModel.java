@@ -6,11 +6,11 @@ import androidx.annotation.Nullable;
 import java.io.Serializable;
 
 public class ModPropertiesModel implements Serializable {
-    private final String MOD_NAME;
-    private final String MOD_DESCRIPTION;
-    private final String MOD_VERSION;
-    private final String MOD_AUTHOR;
-    private final String MOD_PREVIEW;
+	private final String MOD_NAME;
+	private final String MOD_DESCRIPTION;
+	private final String MOD_VERSION;
+	private final String MOD_AUTHOR;
+	private final String MOD_PREVIEW;
 	private final String MOD_PATH;
 	
 	public ModPropertiesModel(
@@ -29,25 +29,25 @@ public class ModPropertiesModel implements Serializable {
 		this.MOD_PATH = MOD_PATH;
 	}
 
-    public final String getModName() {
-        return this.MOD_NAME;
-    }
+	public final String getModName() {
+		return this.MOD_NAME;
+	}
 
-    public final String getModDescription() {
-        return this.MOD_DESCRIPTION;
-    }
+	public final String getModDescription() {
+		return this.MOD_DESCRIPTION;
+	}
 
-    public final String getModVersion() {
-        return this.MOD_VERSION;
-    }
+	public final String getModVersion() {
+		return this.MOD_VERSION;
+	}
 
-    public final String getModAuthor() {
-        return this.MOD_AUTHOR;
-    }
+	public final String getModAuthor() {
+		return this.MOD_AUTHOR;
+	}
 
-    public final String getModPreview() {
-        return this.MOD_PREVIEW;
-    }
+	public final String getModPreview() {
+		return this.MOD_PREVIEW;
+	}
 	
 	public final String getModPath() {
 		return this.MOD_PATH;

@@ -1,11 +1,13 @@
 package com.thatmg393.esmanager.fragments.main;
 
+import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.fragment.app.Fragment;
+
 import com.google.android.material.textview.MaterialTextView;
 
 public class HomeFragment extends Fragment {

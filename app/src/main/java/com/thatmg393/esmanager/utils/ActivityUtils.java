@@ -1,6 +1,5 @@
 package com.thatmg393.esmanager.utils;
 
-import android.os.Build;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES;
 
@@ -10,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyCharacterMap;
@@ -17,13 +17,12 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.PopupMenu;
-
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.IntRange;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,28 +32,32 @@ import androidx.core.os.HandlerCompat;
 import androidx.core.util.Pair;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import java.util.Locale;
 
 public class ActivityUtils {
 	private static volatile ActivityUtils INSTANCE;
-	
 	public synchronized static ActivityUtils getInstance() {
 		if (INSTANCE == null) INSTANCE = new ActivityUtils();
-		
 		return INSTANCE;
+	}
+	
+	public synchronized static void dispose() {
+		if (INSTANCE != null) INSTANCE = null;
 	}
 	
 	private AppCompatActivity registeredActivity;
 	private ActivityUtils() {
-		if (INSTANCE != null) { throw new RuntimeException("Please use 'ActivityUtils#getInstance()'!"); }
+		if (INSTANCE != null) throw new UnsupportedOperationException("Please use 'ActivityUtils#getInstance()'!");
+		mainThread = HandlerCompat.createAsync(Looper.getMainLooper());
 	}
 	
-	private Handler mainThread = HandlerCompat.createAsync(Looper.getMainLooper());
+	private final Handler mainThread;
 	
 	public ActivityResultLauncher<Intent> registerForActivityResult(@NonNull ActivityResultCallback<ActivityResult> arc) {
 		return getRegisteredActivity().registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), arc);
 	}
 	
-	public void bindService(final Intent serviceIntent, final ServiceConnection serviceCallback) {
+	public void bindService(@NonNull Intent serviceIntent, @NonNull ServiceConnection serviceCallback) {
 		try {
 			getRegisteredActivity().bindService(serviceIntent, serviceCallback, Context.BIND_AUTO_CREATE);
 		} catch (IllegalArgumentException e) {
@@ -62,7 +65,7 @@ public class ActivityUtils {
 		}
 	}
 	
-	public void unbindService(final ServiceConnection serviceCallback) {
+	public void unbindService(@NonNull ServiceConnection serviceCallback) {
 		try {
 			getRegisteredActivity().unbindService(serviceCallback);
 		} catch (IllegalArgumentException e) {
@@ -74,17 +77,19 @@ public class ActivityUtils {
 		mainThread.post(toBeRun);
 	}
 	
-	public void createNotificationChannel(String channelID, String channelName, int notificationImportance) {
-		if (SDK_INT >= VERSION_CODES.O) {
-			NotificationChannel serviceChannel = new NotificationChannel(
-					channelID,
-					channelName,
-					notificationImportance
-			);
+	public void createNotificationChannel(
+		@NonNull String channelID,
+		@NonNull String channelName,
+		@NonNull int notificationImportance
+	) {
+		NotificationChannel serviceChannel = new NotificationChannel(
+			channelID,
+			channelName,
+			notificationImportance
+		);
 
-			NotificationManager manager = getRegisteredActivity().getSystemService(NotificationManager.class);
-			manager.createNotificationChannel(serviceChannel);
-		}
+		NotificationManager manager = getRegisteredActivity().getSystemService(NotificationManager.class);
+		manager.createNotificationChannel(serviceChannel);
 	}
 	
 	public void showToast(
@@ -94,7 +99,11 @@ public class ActivityUtils {
 		Toast.makeText(getRegisteredActivity(), message, length).show();
 	}
 	
-	public PopupMenu showPopupMenuAt(@NonNull View anchor, @MenuRes int menuRes, @Nullable PopupMenu.OnMenuItemClickListener listener) {
+	public PopupMenu showPopupMenuAt(
+		@NonNull View anchor,
+		@MenuRes int menuRes,
+		@Nullable PopupMenu.OnMenuItemClickListener listener
+	) {
 		PopupMenu popupMenu = new PopupMenu(getRegisteredActivity(), anchor);
 		popupMenu.getMenuInflater().inflate(menuRes, popupMenu.getMenu());
 		popupMenu.setOnMenuItemClickListener(listener);
@@ -131,26 +140,26 @@ public class ActivityUtils {
 			.create();
 	}
 	
-	public boolean isUserUsingNavigationBar() {
-		int id = getRegisteredActivity().getResources().getIdentifier("config_showNavigationBar", "bool", "android");
-		if (id > 0) {
-			return getRegisteredActivity().getResources().getBoolean(id);
-		} else {
-			boolean hasMenuKey = ViewConfiguration.get(getRegisteredActivity()).hasPermanentMenuKey();
-        	boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
-        	return !hasMenuKey && !hasBackKey;
-    	}
+	public void registerActivity(@NonNull AppCompatActivity newActivity) {
+		this.registeredActivity = newActivity;
 	}
 	
-	public boolean isUserUsingHuawei() {
-		return Build.MANUFACTURER.toLowerCase().contains("huawei") && Build.BRAND.toLowerCase().contains("huawei");
-	}
-
-    public AppCompatActivity getRegisteredActivity() {
+	public AppCompatActivity getRegisteredActivity() {
 		return registeredActivity;
 	}
 	
-	public void registerActivity(AppCompatActivity newActivity) {
-		this.registeredActivity = newActivity;
+	@SuppressWarnings("DiscouragedApi")
+	public boolean isUserUsingNavigationBar() {
+		int id = getRegisteredActivity().getResources().getIdentifier("config_showNavigationBar", "bool", "android");
+		if (id > 0) return getRegisteredActivity().getResources().getBoolean(id);
+		else {
+			boolean hasMenuKey = ViewConfiguration.get(getRegisteredActivity()).hasPermanentMenuKey();
+			boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
+			return !hasMenuKey && !hasBackKey;
+		}
+	}
+	
+	public boolean isUserUsingHuawei() {
+		return Build.MANUFACTURER.toLowerCase(Locale.getDefault()).contains("huawei") && Build.BRAND.toLowerCase(Locale.getDefault()).contains("huawei");
 	}
 }

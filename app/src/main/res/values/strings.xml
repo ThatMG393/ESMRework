@@ -19,6 +19,6 @@
 	<string name="file_drawer_popup_cancel">Cancel</string>
 	
 	<!-- List layout -->
-	<string name="layout_list_bar_loading">Loading...</string>
+	<string name="layout_list_bar_loading">Loading…</string>
 	
 </resources>

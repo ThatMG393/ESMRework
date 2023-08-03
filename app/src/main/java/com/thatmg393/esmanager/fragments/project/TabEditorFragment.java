@@ -43,8 +43,8 @@ public class TabEditorFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return editor;
-    }
+		return editor;
+	}
 	
 	@Override
 	public void onDestroy() {

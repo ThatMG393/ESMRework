@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+         android:layout_height="?attr/actionBarSize"
+         android:layout_width="match_parent"
+         android:background="?attr/colorPrimary"
+         android:elevation="2dp"
+         android:outlineProvider="none"
+         android:id="@+id/new_project_toolbar" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+         android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         android:src="@drawable/ic_info"
+         android:layout_below="@id/new_project_toolbar"
+         android:minHeight="@dimen/_48sdp"
+         android:layout_margin="@dimen/_8sdp"
+         android:layout_centerHorizontal="true"
+         android:minWidth="@dimen/_48sdp"
+         android:id="@+id/new_project_preview" />
+
+    <LinearLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:layout_below="@id/new_project_preview"
+         android:layout_margin="@dimen/_8sdp"
+         android:baselineAligned="false"
+         android:layout_centerHorizontal="true"
+         android:id="@+id/new_project_name_n_athr_layout">
+
+        <com.google.android.material.textfield.TextInputLayout
+             android:layout_height="wrap_content"
+             android:layout_width="0dp"
+             android:hint="Enter your project name"
+             android:layout_marginEnd="@dimen/_4sdp"
+             android:layout_weight="1">
+
+            <com.google.android.material.textfield.TextInputEditText
+                 android:layout_height="wrap_content"
+                 android:layout_width="match_parent"
+                 android:maxLines="1"
+                 android:id="@+id/new_project_name_field" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+             android:layout_height="wrap_content"
+             android:layout_width="0dp"
+             android:hint="Enter author name"
+             android:layout_weight="1">
+
+            <com.google.android.material.textfield.TextInputEditText
+                 android:layout_height="wrap_content"
+                 android:layout_width="match_parent"
+                 android:maxLines="1"
+                 android:id="@+id/new_project_author_field" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:layout_below="@id/new_project_name_n_athr_layout"
+         android:hint="Enter your description"
+         android:layout_margin="@dimen/_8sdp"
+         android:id="@+id/new_project_description_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:maxLines="5"
+             android:id="@+id/new_project_description_field" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <RelativeLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:layout_below="@id/new_project_description_layout"
+         android:layout_marginTop="@dimen/_8sdp"
+         android:layout_marginStart="@dimen/_8sdp"
+         android:id="@+id/new_project_advanced_layout">
+
+        <com.google.android.material.imageview.ShapeableImageView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:src="@drawable/ic_arrow_right"
+             android:rotation="-90"
+             android:minHeight="@dimen/_28sdp"
+             android:padding="@dimen/_2sdp"
+             android:minWidth="@dimen/_28sdp"
+             android:id="@+id/new_project_advanced_arrow" />
+
+        <com.google.android.material.textview.MaterialTextView
+             android:layout_height="wrap_content"
+             android:layout_width="wrap_content"
+             android:layout_toEndOf="@id/new_project_advanced_arrow"
+             android:layout_centerVertical="true"
+             android:textSize="@dimen/_12ssp"
+             android:text="Advance" />
+
+    </RelativeLayout>
+
+    <net.cachapa.expandablelayout.ExpandableLayout
+         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:layout_below="@id/new_project_advanced_layout"
+         app:el_parallax="0.5"
+         app:el_duration="500"
+         android:id="@+id/new_project_advanced_expand_layout">
+
+        <com.google.android.material.textfield.TextInputLayout
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:hint="Enter the project version"
+             android:layout_margin="@dimen/_8sdp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                 android:layout_height="wrap_content"
+                 android:layout_width="match_parent"
+                 android:id="@+id/new_project_version" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </net.cachapa.expandablelayout.ExpandableLayout>
+
+</RelativeLayout>

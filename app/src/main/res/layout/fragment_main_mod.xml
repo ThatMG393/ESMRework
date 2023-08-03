@@ -5,12 +5,19 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:visibility="gone"
-        android:id="@+id/fragment_mod_recycler_view" />
+        android:id="@+id/fragment_mod_refresh_layout">
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:id="@+id/fragment_mod_recycler_view" />
+		
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+	
     <include
         android:layout_height="match_parent"
         android:layout_width="match_parent"

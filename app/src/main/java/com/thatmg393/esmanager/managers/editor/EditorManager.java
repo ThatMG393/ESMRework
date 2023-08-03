@@ -5,16 +5,16 @@ import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 
 public class EditorManager {
 	private static final Logger LOG = new Logger("ESM/EditorManager");
-    private static volatile EditorManager INSTANCE;
+	private static volatile EditorManager INSTANCE;
 
-    public static synchronized EditorManager getInstance() {
-        if (INSTANCE == null) INSTANCE = new EditorManager();
-        return INSTANCE;
-    }
+	public static synchronized EditorManager getInstance() {
+		if (INSTANCE == null) INSTANCE = new EditorManager();
+		return INSTANCE;
+	}
 	
 	private EditorManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'EditorManager#getInstance()'!");
-    }
+	}
 	
 	private TabEditorFragment focusedTabEditor = null;
 		

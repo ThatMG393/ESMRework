@@ -3,11 +3,13 @@ package com.thatmg393.esmanager.activities;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES;
 
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.CallSuper;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
@@ -45,8 +47,9 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	private SymbolInputView editorSymbolInput;
 	
 	@Override
-	public void init() {
-		super.init();
+	public void init(Bundle savedInstanceState) {
+		super.init(savedInstanceState);
+		
 		ActivityUtils.getInstance().registerActivity(this);
 		
 		ProjectModel pm = null;
@@ -114,7 +117,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	}
 	
 	@Override
-    public void onTabReselected(TabLayout.Tab tab) {
+	public void onTabReselected(TabLayout.Tab tab) {
 		ActivityUtils.getInstance().showPopupMenuAt(
 			((ViewGroup) editorTabLayout.getChildAt(0)).getChildAt(tab.getPosition()),
 			R.menu.project_tab_editor_menu,
@@ -129,13 +132,13 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	}
 	
 	@Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        editorViewPager.setCurrentItem(tab.getPosition());
+	public void onTabSelected(TabLayout.Tab tab) {
+		editorViewPager.setCurrentItem(tab.getPosition());
 		editorSymbolInput.bindEditor(editorTabAdapter.getFragmentList().get(tab.getPosition()).getEditor());
-    }
+	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("RestrictedApi")
 	public boolean onCreateOptionsMenu(Menu menu) {
 		if (menu instanceof MenuBuilder) ((MenuBuilder)menu).setOptionalIconsVisible(true);
 		
@@ -151,7 +154,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		} else {
 			getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
 			
-        	if (!ActivityUtils.getInstance().isUserUsingNavigationBar()) {
+			if (!ActivityUtils.getInstance().isUserUsingNavigationBar()) {
 				MenuItem mnItem = menu.findItem(R.id.project_action_drawer_file_open);
 				if (mnItem != null) mnItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
@@ -217,5 +220,5 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	}
 	
 	@Override
-    public void onTabUnselected(TabLayout.Tab tab) { }
+	public void onTabUnselected(TabLayout.Tab tab) { }
 }

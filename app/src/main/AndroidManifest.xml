@@ -3,10 +3,6 @@
 	xmlns:tools="http://schemas.android.com/tools">
 	
 	<uses-permission
-		android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-		android:maxSdkVersion="29" />
-	
-	<uses-permission
 		android:name="android.permission.PACKAGE_USAGE_STATS"
 		tools:ignore="ProtectedPermissions" />
 		
@@ -14,10 +10,19 @@
 		android:name="android.permission.POST_NOTIFICATIONS"
 		android:minSdkVersion="33" />
 	
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	<uses-permission
+		android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+		android:maxSdkVersion="28" />
+	
+	<uses-permission
+		android:name="android.permission.READ_EXTERNAL_STORAGE"
+		android:maxSdkVersion="28" />
+	
+	<uses-permission
+		android:name="android.permission.FOREGROUND_SERVICE"
+		android:minSdkVersion="28" />
+	
 	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	
     <application
         android:allowBackup="true"
@@ -38,10 +43,21 @@
             </intent-filter>
 			
         </activity>
-		<activity android:name=".activities.ProjectActivity" />
-		<activity android:name=".fragments.main.SettingsFragment" />
+		<activity
+			android:name=".activities.ProjectActivity"
+			android:exported="false" />
+		<activity
+			android:name=".fragments.main.SettingsFragment"
+			android:exported="false" />
 		
-		<service android:name=".managers.rpc.impl.RPCService" android:stopWithTask="true"/>
-		<service android:name=".managers.editor.lsp.lua.LuaLSPService" android:stopWithTask="true"/>
+		<service
+			android:name=".managers.rpc.impl.RPCService"
+			android:stopWithTask="true"
+			android:exported="false" />
+		<service
+			android:name=".managers.editor.lsp.lua.LuaLSPService"
+			android:stopWithTask="true"
+			android:exported="false" />
+		
     </application>
 </manifest>

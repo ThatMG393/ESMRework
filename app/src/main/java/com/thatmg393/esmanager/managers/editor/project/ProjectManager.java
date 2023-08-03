@@ -6,16 +6,16 @@ import com.thatmg393.esmanager.models.ProjectModel;
 
 public class ProjectManager {
 	private static final Logger LOG = new Logger("ESM/ProjectManager");
-    private static volatile ProjectManager INSTANCE;
+	private static volatile ProjectManager INSTANCE;
 
-    public static synchronized ProjectManager getInstance() {
-        if (INSTANCE == null) INSTANCE = new ProjectManager();
-        return INSTANCE;
-    }
+	public static synchronized ProjectManager getInstance() {
+		if (INSTANCE == null) INSTANCE = new ProjectManager();
+		return INSTANCE;
+	}
 	
 	private ProjectManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'ProjectManager#getInstance()'!");
-    }
+	}
 	
 	private ProjectModel currentProject = null;
 	

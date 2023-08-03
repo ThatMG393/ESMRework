@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.thatmg393.esmanager.R;
@@ -22,8 +21,8 @@ public class SettingsFragment extends BaseActivity {
 	}
 	
 	@Override
-	public void init() {
-		super.init();
+	public void init(Bundle savedInstanceState) {
+		super.init(savedInstanceState);
 		ActivityUtils.getInstance().registerActivity(this);
 		setContentView(R.layout.activity_fragment_base);
 		setSupportActionBar(findViewById(R.id.fragment_base_toolbar));

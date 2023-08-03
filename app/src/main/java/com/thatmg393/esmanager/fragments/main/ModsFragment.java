@@ -1,8 +1,6 @@
 package com.thatmg393.esmanager.fragments.main;
 
 import android.content.Context;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,13 +11,17 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import com.lazygeniouz.dfc.file.DocumentFileCompat;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.R;
@@ -28,6 +30,8 @@ import com.thatmg393.esmanager.managers.rpc.impl.RPCSocketClient;
 import com.thatmg393.esmanager.models.ModPropertiesModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 
+import com.thatmg393.esmanager.utils.ThreadPlus;
+import java.util.Locale;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -40,6 +44,8 @@ import java.util.concurrent.Executors;
 public class ModsFragment extends Fragment {
 	private final String modInfoJson = "info.json";
 	
+	private ThreadPlus modsReaderThread;
+	private SwipeRefreshLayout modsRefreshLayout;
 	private RecyclerView modsRecyclerView;
 	private RelativeLayout modsLoadingLayout;
 	private RelativeLayout modsEmptyLayout;
@@ -54,11 +60,42 @@ public class ModsFragment extends Fragment {
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		init();
-		populateModsList();
+		if (savedInstanceState != null) {
+			List<ModPropertiesModel> cachedData = RPCSocketClient.GSON.fromJson(savedInstanceState.getString("modsList_data"), new TypeToken<List<ModPropertiesModel>>() {}.getType());
+			if (cachedData.size() > 0) {
+				modsRecyclerAdapter.updateData(cachedData);
+				modsLoadingLayout.setVisibility(View.GONE);
+				modsRecyclerView.setVisibility(View.VISIBLE);
+			} else {
+				populateModsList();
+			}
+		} else {
+			populateModsList();
+		}
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		super.onSaveInstanceState(savedInstanceState);
+		savedInstanceState.putString("modsList_data", RPCSocketClient.GSON.toJson(modsRecyclerAdapter.getDataList()));
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		modsReaderThread.kill();
 	}
 	
 	public void init() {
 		modsRecyclerAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
+		
+		modsRefreshLayout = requireView().findViewById(R.id.fragment_mod_refresh_layout);
+		modsRefreshLayout.setOnRefreshListener(() -> {
+			modsRecyclerView.setVisibility(View.GONE);
+			modsEmptyLayout.setVisibility(View.GONE);
+			modsLoadingLayout.setVisibility(View.VISIBLE);
+			populateModsList();
+		});
 		
 		modsRecyclerView = requireView().findViewById(R.id.fragment_mod_recycler_view);
 		modsRecyclerView.setAdapter(modsRecyclerAdapter);
@@ -71,43 +108,51 @@ public class ModsFragment extends Fragment {
 	}
 	
 	private void populateModsList() {
-		Executors.newSingleThreadExecutor().execute(() -> {
+		if (modsReaderThread != null) {
+			modsReaderThread.start();
+			return;
+		}
+		
+		modsReaderThread = new ThreadPlus(() -> {
+			modsRecyclerView.post(() -> modsRefreshLayout.setRefreshing(true));
 			try {
-				DocumentFileCompat modFolder = DocumentFileCompat.fromTreeUri(requireContext(), Uri.parse(GlobalConstants.ES_MOD_FOLDER));
+				DocumentFileCompat modFolder = DocumentFileCompat.fromTreeUri(requireContext(), Uri.parse(GlobalConstants.getInstance().getESModFolder()));
 				List<DocumentFileCompat> modFolders = modFolder.listFiles();
-			
-	  	 	 if (modsRecyclerAdapter.getDataList().size() > 0) modsRecyclerView.post(() -> modsRecyclerAdapter.clearData());
-	  	 	 if (modFolders != null || modFolders.size() > 0) {
+				
+				if (modsRecyclerAdapter.getDataList().size() > 0) modsRecyclerView.post(() -> modsRecyclerAdapter.clearData());
+				if (modFolders != null || modFolders.size() > 0) {
 					for (DocumentFileCompat folder : modFolders) {
 						if (folder.isFile()) continue;
-						if (folder.getName().toLowerCase().equals("tools")) continue;
+						if (folder.getName().toLowerCase(Locale.getDefault()).equals("tools")) continue;
 					
 						DocumentFileCompat jsonFile = DocumentFileCompat.fromSingleUri(requireContext(), Uri.parse(folder.getUri().toString() + "%2F" + modInfoJson));
 						if (jsonFile.exists() && jsonFile.isFile()) {
 							try (InputStream jsonIS = requireContext().getContentResolver().openInputStream(jsonFile.getUri())) {
-				 	   		JsonObject j = RPCSocketClient.GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
+								JsonObject j = RPCSocketClient.GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
 							
-				 			   String modName = j.get("name").getAsString();
-					 		   String modDesc = j.get("description").getAsString();
-			   				 String modAuthor = j.get("author").getAsString();
-				   			 String modVersion = j.get("version").getAsString();
-				   			 String modPreview = folder.getUri().toString() + "%2F" + j.get("preview").getAsString().replace("/", "%2F");
+								String modName = j.get("name").getAsString();
+								String modDesc = j.get("description").getAsString();
+								String modAuthor = j.get("author").getAsString();
+								String modVersion = j.get("version").getAsString();
+								String modPreview = folder.getUri().toString() + "%2F" + j.get("preview").getAsString().replace("/", "%2F");
 								String modPath = folder.getUri().toString();
-								
+									
 					 	 	  modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(modName, modDesc, modAuthor, modVersion, modPreview, modPath)));
 							} catch (IOException | JsonSyntaxException e) {
 								modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getUri().toString())));
 							}
 						}
-		 	  	 }
+					}
 					modsRecyclerView.post(() -> {
 						modsLoadingLayout.setVisibility(View.GONE);
 						modsRecyclerView.setVisibility(View.VISIBLE);
+						modsRefreshLayout.setRefreshing(false);
 					});
 				} else {
 					modsRecyclerView.post(() -> {
 						modsLoadingLayout.setVisibility(View.GONE);
 						modsEmptyLayout.setVisibility(View.VISIBLE);
+						modsRefreshLayout.setRefreshing(false);
 					});
 				}
 			} catch (Exception e) {
@@ -115,14 +160,16 @@ public class ModsFragment extends Fragment {
 				modsRecyclerView.post(() -> {
 					modsLoadingLayout.setVisibility(View.GONE);
 					modsEmptyLayout.setVisibility(View.VISIBLE);
+					modsRefreshLayout.setRefreshing(false);
 					
-					if (e instanceof UnsupportedOperationException && e.getMessage().contains("is not Tree uri")) {
-						ActivityUtils.getInstance().showToast("Is this a Tree URI?\n" + GlobalConstants.ES_MOD_FOLDER, Toast.LENGTH_SHORT);
+					if (e instanceof UnsupportedOperationException && e.getMessage().toLowerCase(Locale.getDefault()).contains("is not tree uri")) {
+						ActivityUtils.getInstance().showToast("Is this a Tree URI?\n" + GlobalConstants.getInstance().getESModFolder(), Toast.LENGTH_SHORT);
 					} else {
 						ActivityUtils.getInstance().showToast("Failed to load mods\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT);
 					}
 				});
 			}
-  	  });
+		}, false);
+		modsReaderThread.start();
 	}
 }

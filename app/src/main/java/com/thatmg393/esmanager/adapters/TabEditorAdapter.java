@@ -52,7 +52,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		TabEditorFragment fragment = new TabEditorFragment(path);
 		
 		fragments.add(fragment);
-		notifyDataSetChanged();
+		notifyItemInserted(fragments.size());
 		
 		TabLayout.Tab tab = tabLayout.newTab();
 		tab.setText(FilenameUtils.getName(path));
@@ -67,7 +67,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	public void removeTab(int position) {
 		tabLayout.removeTabAt(position);
 		fragments.remove(position);
-		notifyDataSetChanged();
+		notifyItemRemoved(position);
 		
 		// Bug is when removing a tab at pos 0, the viewpager doesnt update propeely
 		// and desyncing our tabs, fragments, viewpager.
@@ -111,13 +111,13 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		}
 	}
 	
-    @Override
-    public int getItemCount() {
+	@Override
+	public int getItemCount() {
 		return fragments.size();
 	}
 
-    @Override
-    public Fragment createFragment(int position) {
+	@Override
+	public Fragment createFragment(int position) {
 		return fragments.get(position);
 	}
 	

@@ -13,11 +13,4 @@
 		
 		<item name="colorOnBackground">@color/black</item>
     </style>
-	
-	<style name="View.ImagePreviewCorner" parent="">
-		<item name="cornerSizeTopRight">30dp</item>
-		<item name="cornerSizeTopLeft">30dp</item>
-		<item name="cornerSizeBottomRight">30dp</item>
-		<item name="cornerSizeBottomLeft">30dp</item>
-	</style>
 </resources>

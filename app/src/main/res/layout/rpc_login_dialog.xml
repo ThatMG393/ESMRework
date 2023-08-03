@@ -11,7 +11,7 @@
 		 android:focusable="true"
 		 android:id="@+id/keyboard_puller" />
 	
-	<WebView
+	<im.delight.android.webview.AdvancedWebView
 		 android:layout_height="match_parent"
 		 android:layout_width="match_parent"
 		 android:id="@+id/rcp_webview" />

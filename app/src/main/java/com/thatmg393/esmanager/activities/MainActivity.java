@@ -1,5 +1,6 @@
 package com.thatmg393.esmanager.activities;
 
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -17,6 +18,8 @@ import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.PermissionUtils;
+import com.thatmg393.esmanager.utils.SharedPreference;
+import com.thatmg393.esmanager.utils.StorageUtils;
 
 public class MainActivity extends BaseActivity {
 	private Toolbar mainToolbar;
@@ -24,11 +27,13 @@ public class MainActivity extends BaseActivity {
 	private BottomNavigationView mainBottomNav;
 	
 	@Override
-	public void init() {
-		super.init();
+	public void init(Bundle savedInstanceState) {
+		super.init(savedInstanceState);
+		
 		ActivityUtils.getInstance().registerActivity(this);
+		StorageUtils.initStorageHelper();
 		PermissionUtils.askForUsageStatsPermission(getApplicationContext());
-		String h = GlobalConstants.ES_MOD_FOLDER;
+		GlobalConstants.getInstance().initConstants();
 		
 		setContentView(R.layout.activity_main);
 		
@@ -41,7 +46,7 @@ public class MainActivity extends BaseActivity {
 				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ModsFragment()).commit();
 				return true;
 			} else if (menuItem.getItemId() == R.id.main_bottom_projects && mainBottomNav.getSelectedItemId() != R.id.main_bottom_projects) {
-				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ProjectsFragment()).commit();
+				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ProjectsFragment(), ProjectsFragment.TAG).commit();
 				return true;
 			} else if (menuItem.getItemId() == R.id.main_bottom_home && mainBottomNav.getSelectedItemId() != R.id.main_bottom_home) {
 				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new HomeFragment()).commit();
@@ -49,7 +54,28 @@ public class MainActivity extends BaseActivity {
 			}
 			return false;
 		});
-		mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
+		
+		if (savedInstanceState != null) mainBottomNav.setSelectedItemId(savedInstanceState.getInt("bottomNav_selectedItem"));
+		else mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
+		
+		// Shared preference stuff
+		if (SharedPreference.getInstance().getBool("main_rpc_active")) DRPCManager.getInstance().startDiscordRPC();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		LSPManager.getInstance().stopLSPForAllLanguage();
+		DRPCManager.getInstance().stopDiscordRPC();
+		
+		ActivityUtils.dispose();
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle savedInstanceState) {
+		super.onSaveInstanceState(savedInstanceState);
+		savedInstanceState.putInt("bottomNav_selectedItem", mainBottomNav.getSelectedItemId());
 	}
 	
 	@Override
@@ -71,12 +97,5 @@ public class MainActivity extends BaseActivity {
 	protected void onResume() {
 		super.onResume();
 		ActivityUtils.getInstance().registerActivity(this);
-	}
-	
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		LSPManager.getInstance().stopLSPForAllLanguage();
-		DRPCManager.getInstance().stopDiscordRPC();
 	}
 }

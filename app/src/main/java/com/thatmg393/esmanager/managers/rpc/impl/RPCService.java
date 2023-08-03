@@ -6,13 +6,11 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
@@ -24,6 +22,8 @@ import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.SharedPreference;
 import com.thatmg393.esmanager.utils.ThreadPlus;
+
+import im.delight.android.webview.AdvancedWebView;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
@@ -121,22 +121,26 @@ public class RPCService extends Service {
 											}
 										}).create();
 										
-		WebView webLoginView = layout.findViewById(R.id.rcp_webview);
-		webLoginView.getSettings().setJavaScriptEnabled(true);
-		webLoginView.getSettings().setDatabaseEnabled(true);
-		webLoginView.getSettings().setDomStorageEnabled(true);
-		
-		webLoginView.setWebViewClient(new WebViewClient() {
-    		@Override
-    		public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-        		if (request.getUrl().toString().endsWith("/app")) {
+		AdvancedWebView webLoginView = layout.findViewById(R.id.rcp_webview);
+		webLoginView.setListener(ActivityUtils.getInstance().getRegisteredActivity(), new AdvancedWebView.Listener() {
+			@Override
+			public void onPageStarted(String url, Bitmap favicon) {
+				if (url.endsWith("/app")) {
 					SharedPreference.getInstance().putString("lol69420", extractToken());
 					
 					loginDialog.dismiss();
 					websocketThread.start();
 				}
-				return true;
-   		 }
+			}
+			
+			@Override	
+			public void onPageFinished(String url) { }
+			@Override
+			public void onPageError(int errorCode, String description, String failingUrl) { }
+			@Override
+			public void onDownloadRequested(String url, String suggestedFilename, String mimeType, long contentLength, String contentDisposition, String userAgent) { }
+			@Override
+			public void onExternalPageRequest(String url) { }
 		});
 		
 		webLoginView.loadUrl("https://discord.com/login");

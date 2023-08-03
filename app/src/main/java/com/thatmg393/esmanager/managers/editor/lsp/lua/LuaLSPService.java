@@ -28,10 +28,10 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 
 public class LuaLSPService extends BaseLSPService {
-    private final Logger LOG = new Logger("ESM/LSPManager.LSPService");
-    private final LuaLSPBinder binder = new LuaLSPBinder();
+	private final Logger LOG = new Logger("ESM/LSPManager.LSPService");
+	private final LuaLSPBinder binder = new LuaLSPBinder();
 	
-    private volatile boolean isServerRunning;
+	private volatile boolean isServerRunning;
 	
 	private ThreadPlus serverThread;
 	
@@ -45,23 +45,23 @@ public class LuaLSPService extends BaseLSPService {
 	private LuaLanguageServer luaServer = new LuaLanguageServer();
 // }
 	
-    @Override
-    public IBinder onBind(Intent smth) {
+	@Override
+	public IBinder onBind(Intent smth) {
 		startLSPServer();
 		return binder;
 	}
 
-    @Override
-    public boolean onUnbind(Intent smth) {
-        stopLSPServer();
-        stopSelf();
+	@Override
+	public boolean onUnbind(Intent smth) {
+		stopLSPServer();
+		stopSelf();
 		
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public void onCreate() {
-        serverThread = new ThreadPlus(() -> {
+	@Override
+	public void onCreate() {
+		serverThread = new ThreadPlus(() -> {
 			try {
 				initializeServer();
 				startServer();
@@ -80,13 +80,13 @@ public class LuaLSPService extends BaseLSPService {
 				super.stop();
 			}
 		};
-    }
+	}
 	
 	@Override
-    public void startLSPServer() {
-        LOG.i("Starting Lua LSP Server");
-        if (!serverThread.isRunning()) serverThread.start();
-    }
+	public void startLSPServer() {
+		LOG.i("Starting Lua LSP Server");
+		if (!serverThread.isRunning()) serverThread.start();
+	}
 	
 	@Override
 	public void stopLSPServer() {
@@ -94,13 +94,10 @@ public class LuaLSPService extends BaseLSPService {
 		if (serverThread.isRunning()) serverThread.stop();
 	}
 
-    @Override
-    protected void startServer() throws Exception {
+	@Override
+	protected void startServer() throws Exception {
 		callbackOnStart();
-		
-		LOG.d("Wait for someone to connect");
 		serverClientSocket = serverSocket.accept().get();
-		LOG.d("Somebody connected!");
 		
 		while (serverThread.isRunning()) {
 			if (!isServerRunning()) {
@@ -115,10 +112,9 @@ public class LuaLSPService extends BaseLSPService {
 				isServerRunning = true;
 			}
 		}
-    }
+	}
 	
-	private void fullyCloseServer() {
-		LOG.d("Closing server");
+	private synchronized void fullyCloseServer() {
 		luaServer.shutdown();
 		
 		try {
@@ -152,9 +148,9 @@ public class LuaLSPService extends BaseLSPService {
 	}
 	
 	@Override
-    public boolean isServerRunning() {
-        return isServerRunning && serverThread.isRunning();
-    }
+	public boolean isServerRunning() {
+		return isServerRunning && serverThread.isRunning();
+	}
 	
 	private ArrayList<ILanguageServerCallback> listeners = new ArrayList<>();
 	@Override

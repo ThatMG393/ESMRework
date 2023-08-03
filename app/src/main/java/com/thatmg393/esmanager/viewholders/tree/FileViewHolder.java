@@ -18,17 +18,17 @@ public class FileViewHolder extends TreeViewHolder {
 	private final TextView tv;
 	
 	public FileViewHolder(@NonNull View itemView) {
-        super(itemView);
+		super(itemView);
 		tv = itemView.findViewById(R.id.project_treeview_file_name);
-    }
+	}
 
-    @Override
-    public void bindTreeNode(TreeNode node) {
-        super.bindTreeNode(node);
+	@Override
+	public void bindTreeNode(TreeNode node) {
+		super.bindTreeNode(node);
 		File nodeName = new File((String) node.getValue());
 		tv.setText(nodeName.getName());
 		
-        switch (FilenameUtils.getExtension(nodeName.getAbsolutePath())) {
+		switch (FilenameUtils.getExtension(nodeName.getAbsolutePath())) {
 			case "lua": 
 			case "json": 
 			case "wav":
@@ -37,7 +37,7 @@ public class FileViewHolder extends TreeViewHolder {
 			case "obj": setDrawableRight(R.drawable.ic_info); break;
 			default: setDrawableRight(R.drawable.ic_file); break;
 		}
-    }
+	}
 	
 	private void setDrawableRight(@DrawableRes int drawable) {
 		tv.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);

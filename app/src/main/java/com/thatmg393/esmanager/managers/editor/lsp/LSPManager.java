@@ -12,19 +12,19 @@ import com.thatmg393.esmanager.utils.NetworkUtils;
 import java.util.HashMap;
 
 public class LSPManager {
-    private static final Logger LOG = new Logger("ESM/LSPManager");
-    private static volatile LSPManager INSTANCE;
+	private static final Logger LOG = new Logger("ESM/LSPManager");
+	private static volatile LSPManager INSTANCE;
 
-    public static synchronized LSPManager getInstance() {
-        if (INSTANCE == null) INSTANCE = new LSPManager();
-        return INSTANCE;
-    }
+	public static synchronized LSPManager getInstance() {
+		if (INSTANCE == null) INSTANCE = new LSPManager();
+		return INSTANCE;
+	}
 	
 	private HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<String, LanguageServerModel>();
 	
-    private LSPManager() {
+	private LSPManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'LSPManager#getInstance()'!");
-    }
+	}
 	
 	public void startLSPForAllLanguage() {
 		languageServerRegistry.keySet().forEach((language) -> startLSPForLanguage(language));

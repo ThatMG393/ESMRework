@@ -34,20 +34,20 @@ public class LanguageServerModel implements ServiceConnection {
 	
 	private int serverPort = -1;
 	
-    public LanguageServerModel(
+	public LanguageServerModel(
 		@NonNull String serverName,
 		@NonNull Class<? extends BaseLSPService> serverServiceClass,
 		@NonNull int serverPort
 	) {
 		this.serverName = serverName;
 		this.serverServiceIntent = new Intent(ActivityUtils.getInstance().getRegisteredActivity().getApplicationContext(), serverServiceClass);
-        this.serverPort = serverPort;
+		this.serverPort = serverPort;
 		this.serverWrapper = LSPUtils.createNewServerWrapper(
 			serverName,
 			new SocketStreamConnectionProvider(() -> serverPort),
 			ProjectManager.getInstance().getCurrentProject().projectPath
 		);
-    }
+	}
 	
 	public LanguageServerModel(
 		@NonNull String serverName,
@@ -61,9 +61,9 @@ public class LanguageServerModel implements ServiceConnection {
 		);
 	}
 	
-    public int getServerPort() {
-        return this.serverPort;
-    }
+	public int getServerPort() {
+		return this.serverPort;
+	}
 	
 	public LanguageServerWrapper getServerWrapper() {
 		return this.serverWrapper;
@@ -73,7 +73,7 @@ public class LanguageServerModel implements ServiceConnection {
 		return (CustomLanguageServerDefinition)this.serverWrapper.getServerDefinition();
 	}
 	
-    // Start of implementation
+	// Start of implementation
 	public void startLSP() {
 		if (serverServiceIntent == null) return;
 		ActivityUtils.getInstance().bindService(serverServiceIntent, this);
@@ -89,14 +89,14 @@ public class LanguageServerModel implements ServiceConnection {
 	}
 	
 	private BaseLSPService SERVICE_INSTANCE;
-    @Override
-    public void onServiceConnected(ComponentName cn, IBinder binder) {
+	@Override
+	public void onServiceConnected(ComponentName cn, IBinder binder) {
 		SERVICE_INSTANCE = ((BaseLSPBinder) binder).getInstance();
 		dispatchOnReady();
 	}
 	
-    @Override
-    public void onServiceDisconnected(ComponentName cn) {
+	@Override
+	public void onServiceDisconnected(ComponentName cn) {
 		dispatchOnShutdown();
 	}
 	
