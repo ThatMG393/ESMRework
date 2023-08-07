@@ -13,4 +13,6 @@ Notes:
 - If the `Projects` folder doesn't exist, create it yourself
 
 ## RPC
-No way of accessing it for a moment.
+- Open the app
+- Click the settings button at the top left corner
+- Click the `Discord Rich Presence` option
