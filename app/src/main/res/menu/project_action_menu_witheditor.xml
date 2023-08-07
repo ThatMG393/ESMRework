@@ -18,7 +18,7 @@
 		android:id="@+id/project_action_editor_save"
 		android:title="Save"
 		android:icon="@drawable/ic_save"
-		app:showAsAction="ifRoom" />
+		app:showAsAction="always" />
 	
 	<item
 		android:id="@+id/project_action_drawer_file_open"

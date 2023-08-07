@@ -74,7 +74,7 @@
             android:id="@+id/project_editor_view" />
 
         <HorizontalScrollView
-            android:layout_height="@dimen/_560sdp"
+            android:layout_height="@dimen/_56sdp"
             android:layout_width="match_parent"
             android:elevation="0dp"
             android:orientation="vertical"

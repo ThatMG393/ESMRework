@@ -1,10 +1,7 @@
 package com.thatmg393.esmanager.adapters;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.LinearLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 
 import androidx.fragment.app.Fragment;
@@ -17,21 +14,19 @@ import com.google.android.material.tabs.TabLayout;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 
-import io.github.rosemoe.sora.widget.SymbolInputView;
+import org.apache.commons.io.FilenameUtils;
 
 import java.util.ArrayList;
-import java.util.Objects;
-import org.apache.commons.io.FilenameUtils;
 
 public class TabEditorAdapter extends FragmentStateAdapter {
 	public ArrayList<TabEditorFragment> fragments = new ArrayList<>();
 	
 	private FragmentManager fragmentManager;
 	
-	private RelativeLayout noEditorContainer;
-	public final TabLayout tabLayout;
-	private ViewPager2 viewPager;
-	private LinearLayout symInputContainer;
+	private final RelativeLayout noEditorContainer;
+	private final TabLayout tabLayout;
+	private final ViewPager2 viewPager;
+	private final HorizontalScrollView symInputContainer;
 	
 	public TabEditorAdapter(Lifecycle lifecycle, FragmentManager fragmentManager, View projectLayout) {
 		super(fragmentManager, lifecycle);
@@ -45,7 +40,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		tabLayout.setVisibility(View.GONE);
 		viewPager.setVisibility(View.GONE);
 		symInputContainer.setVisibility(View.GONE);
-		animateViewsIfNeeded();
+		updateViewsIfNeeded();
 	}
 	
 	public void newTab(String path) {
@@ -58,10 +53,11 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		tab.setText(FilenameUtils.getName(path));
 		tabLayout.addTab(tab);
 		
+		fragment.setCurrentTabObject(tab);
 		fragment.initEditor(tabLayout.getContext());
 		
 		dispatchOnNewTab(tab, fragment);
-		animateViewsIfNeeded();
+		updateViewsIfNeeded();
 	}
 	
 	public void removeTab(int position) {
@@ -77,7 +73,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		else if (position == 0 && getItemCount() == 0) viewPager.setAdapter(this);
 		
 		dispatchOnRemoveTab(position);
-		animateViewsIfNeeded();
+		updateViewsIfNeeded();
 	}
 	
 	public int getIndexOfFragment(String path) {
@@ -91,7 +87,7 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		return -1;
 	}
 	
-	public void animateViewsIfNeeded() {
+	public void updateViewsIfNeeded() {
 		if (tabLayout.getTabCount() == 0
 		&& tabLayout.getVisibility() == View.VISIBLE
 		&& viewPager.getVisibility() == View.VISIBLE

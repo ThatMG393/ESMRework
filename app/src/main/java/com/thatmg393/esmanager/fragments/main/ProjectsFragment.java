@@ -8,11 +8,10 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.JsonObject;
@@ -23,14 +22,13 @@ import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.activities.ProjectActivity;
 import com.thatmg393.esmanager.adapters.ModListAdapter;
+import com.thatmg393.esmanager.fragments.main.base.ListFragment;
 import com.thatmg393.esmanager.managers.rpc.impl.RPCSocketClient;
 import com.thatmg393.esmanager.models.ModPropertiesModel;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.FileUtils;
 
-import com.thatmg393.esmanager.utils.ThreadPlus;
-import java.util.List;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -39,18 +37,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
+import java.util.List;
 
-public class ProjectsFragment extends Fragment {
+public class ProjectsFragment extends ListFragment {
 	public static final String TAG = "ProjectsFragment";
 	private final String modInfoJson = "info.json";
 	
-	private ThreadPlus projectsReaderThread;
-	private SwipeRefreshLayout projectsRefreshLayout;
 	private RecyclerView projectsRecyclerView;
 	private RelativeLayout projectsLoadingLayout;
 	private RelativeLayout projectsEmptyLayout;
-	private MaterialButton projectsNewProjectButton;
 	private ModListAdapter projectsRecyclerAdapter;
 	
 	@Override
@@ -66,13 +61,12 @@ public class ProjectsFragment extends Fragment {
 			List<ModPropertiesModel> cachedData = RPCSocketClient.GSON.fromJson(savedInstanceState.getString("projectsList_data"), new TypeToken<List<ModPropertiesModel>>() {}.getType());
 			if (cachedData.size() > 0) {
 				projectsRecyclerAdapter.updateData(cachedData);
-				projectsLoadingLayout.setVisibility(View.GONE);
-				projectsRecyclerView.setVisibility(View.VISIBLE);
+				updateViewStates(ReaderState.DONE);
 			} else {
-				populateProjectList();
+				refreshOrPopulateRecyclerView();
 			}
 		} else {
-			populateProjectList();
+			refreshOrPopulateRecyclerView();
 		}
 	}
 	
@@ -81,13 +75,6 @@ public class ProjectsFragment extends Fragment {
 		super.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putString("projectsList_data", RPCSocketClient.GSON.toJson(projectsRecyclerAdapter.getDataList()));
 	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		projectsReaderThread.kill();
-	}
-	
 	
 	public void init() {
 		projectsRecyclerAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
@@ -110,7 +97,7 @@ public class ProjectsFragment extends Fragment {
 						FileUtils.deleteRecursively(project);
 						if (!project.exists()) {
 							ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
-							populateProjectList();
+							refreshOrPopulateRecyclerView();
 						} else {
 							ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 						}
@@ -121,12 +108,10 @@ public class ProjectsFragment extends Fragment {
 			);
 		});
 		
-		projectsRefreshLayout = requireView().findViewById(R.id.fragment_project_refresh_layout);
+		SwipeRefreshLayout projectsRefreshLayout = requireView().findViewById(R.id.fragment_project_refresh_layout);
 		projectsRefreshLayout.setOnRefreshListener(() -> {
-			projectsRecyclerView.setVisibility(View.GONE);
-			projectsEmptyLayout.setVisibility(View.GONE);
-			projectsLoadingLayout.setVisibility(View.VISIBLE);
-			populateProjectList();
+			updateViewStates(ReaderState.LOADING);
+			refreshOrPopulateRecyclerView();
 		});
 		
 		projectsRecyclerView = requireView().findViewById(R.id.fragment_project_recycler_view);
@@ -142,64 +127,56 @@ public class ProjectsFragment extends Fragment {
 		projectsEmptyLayout = requireView().findViewById(R.id.fragment_project_empty_container);
 		
 		((MaterialTextView)projectsEmptyLayout.findViewById(R.id.list_empty_desc)).setText("No project/s found");
-	}
-	
-	public void populateProjectList() {
-		if (projectsReaderThread != null) {
-			projectsReaderThread.start();
-			return;
-		}
 		
-		projectsReaderThread = new ThreadPlus(() -> {
-			projectsRecyclerView.post(() -> projectsRefreshLayout.setRefreshing(true));
-			try {
-				File[] projectFolders = new File(GlobalConstants.getInstance().getESMRootFolder(), "Projects").listFiles((file, name) -> {
-					return file.isDirectory();
-				});
-			
-				if (projectsRecyclerAdapter.getDataList().size() > 0) projectsRecyclerView.post(() -> projectsRecyclerAdapter.clearData());
-				if (projectFolders != null && projectFolders.length > 0) {
-					for (File folder : projectFolders) {
-						File jsonFile = new File(folder.getAbsolutePath(), modInfoJson);
-						if (jsonFile.exists() && jsonFile.isFile()) {
-							try (InputStream jsonIS = new FileInputStream(jsonFile)) {
-				 	  	 	JsonObject j = RPCSocketClient.GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
-							
-								String projectName = j.get("name").getAsString();
-								String projectDesc = j.get("description").getAsString();
-								String projectAuthor = j.get("author").getAsString();
-								String projectVersion = j.get("version").getAsString();
-								String projectPreview = new File(folder.getAbsolutePath(), j.get("preview").getAsString()).getAbsolutePath();
-								String projectPath = folder.getAbsolutePath();
-							
-								projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(projectName, projectDesc, projectAuthor, projectVersion, DocumentFileCompat.fromFile(requireContext(), new File(projectPreview)).getUri().toString(), projectPath)));
-							} catch (IOException | JsonSyntaxException e) {
-								projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getAbsolutePath())));
-							}
-						}
-		 	   	}
-					projectsRecyclerView.post(() -> {
-						projectsLoadingLayout.setVisibility(View.GONE);
-						projectsRecyclerView.setVisibility(View.VISIBLE);
-						projectsRefreshLayout.setRefreshing(false);
+		registerLayouts(
+			projectsRefreshLayout,
+			projectsRecyclerView,
+			projectsLoadingLayout,
+			projectsEmptyLayout,
+			() -> {
+				try {
+					File[] projectFolders = new File(GlobalConstants.getInstance().getESMRootFolder(), "Projects").listFiles((file, name) -> {
+						return file.isDirectory();
 					});
-				} else {
+			
+					if (projectsRecyclerAdapter.getDataList().size() > 0) projectsRecyclerView.post(() -> projectsRecyclerAdapter.clearData());
+					if (projectFolders != null && projectFolders.length > 0) {
+						for (File folder : projectFolders) {
+							if (Thread.interrupted()) {
+								updateViewStates(ReaderState.EMPTY); return;
+							}
+							
+							File jsonFile = new File(folder.getAbsolutePath(), modInfoJson);
+							if (jsonFile.exists() && jsonFile.isFile()) {
+								try (InputStream jsonIS = new FileInputStream(jsonFile)) {
+				 	  	 		JsonObject j = RPCSocketClient.GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
+							
+									String projectName = j.get("name").getAsString();
+									String projectDesc = j.get("description").getAsString();
+									String projectAuthor = j.get("author").getAsString();
+									String projectVersion = j.get("version").getAsString();
+									String projectPreview = new File(folder.getAbsolutePath(), j.get("preview").getAsString()).getAbsolutePath();
+									String projectPath = folder.getAbsolutePath();
+							
+									projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(projectName, projectDesc, projectAuthor, projectVersion, DocumentFileCompat.fromFile(requireContext(), new File(projectPreview)).getUri().toString(), projectPath)));
+								} catch (IOException | JsonSyntaxException e) {
+									projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getAbsolutePath())));
+								}
+							}
+		 	   		}
+						updateViewStates(ReaderState.DONE);
+					} else {
+						updateViewStates(ReaderState.EMPTY);
+					}
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+					updateViewStates(ReaderState.EMPTY);
+				
 					projectsRecyclerView.post(() -> {
-						projectsLoadingLayout.setVisibility(View.GONE);
-						projectsEmptyLayout.setVisibility(View.VISIBLE);
-						projectsRefreshLayout.setRefreshing(false);
+						ActivityUtils.getInstance().showToast("Failed to load projects\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT);
 					});
 				}
-			} catch (Exception e) {
-				projectsRecyclerView.post(() -> {
-					projectsLoadingLayout.setVisibility(View.GONE);
-					projectsEmptyLayout.setVisibility(View.VISIBLE);
-					projectsRefreshLayout.setRefreshing(false);
-						
-					ActivityUtils.getInstance().showToast("Failed to load projects\n" + e.getClass().getName() + "\n" + e.getMessage(), Toast.LENGTH_SHORT);
-				});
 			}
-  	  }, false);
-		projectsReaderThread.start();
+		);
 	}
 }

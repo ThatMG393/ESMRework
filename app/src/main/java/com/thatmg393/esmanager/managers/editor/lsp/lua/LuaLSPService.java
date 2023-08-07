@@ -2,7 +2,6 @@ package com.thatmg393.esmanager.managers.editor.lsp.lua;
 
 import android.content.Intent;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.annotation.MainThread;
 
@@ -26,6 +25,9 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class LuaLSPService extends BaseLSPService {
 	private final Logger LOG = new Logger("ESM/LSPManager.LSPService");
@@ -36,13 +38,15 @@ public class LuaLSPService extends BaseLSPService {
 	private ThreadPlus serverThread;
 	
 // Server variables {
-	private AsynchronousServerSocketChannel serverSocket;
-	private AsynchronousSocketChannel serverClientSocket;
+	private ExecutorService jsonrpcThreadPool = Executors.newCachedThreadPool();
 	
-	private InputStream serverIS;
-	private OutputStream serverOS;
+	private volatile AsynchronousServerSocketChannel serverSocket;
+	private volatile AsynchronousSocketChannel serverClientSocket;
 	
-	private LuaLanguageServer luaServer = new LuaLanguageServer();
+	private volatile InputStream serverIS;
+	private volatile OutputStream serverOS;
+	
+	private volatile LuaLanguageServer luaServer = new LuaLanguageServer();
 // }
 	
 	@Override
@@ -67,12 +71,9 @@ public class LuaLSPService extends BaseLSPService {
 				startServer();
 			} catch (Exception e) {
 				e.printStackTrace();
-				ActivityUtils.getInstance().runOnUIThread(() -> {
-					Toast.makeText(getApplicationContext(), "A Language server encountered an error!", Toast.LENGTH_SHORT).show();
-				});
+			} finally {
+				ActivityUtils.getInstance().runOnUIThread(() -> fullyCloseServer());
 			}
-			
-			fullyCloseServer();
 		}) {
 			@Override
 			public void stop() {
@@ -104,7 +105,13 @@ public class LuaLSPService extends BaseLSPService {
 				serverIS = Channels.newInputStream(serverClientSocket);
 				serverOS = Channels.newOutputStream(serverClientSocket);
 				
-				Launcher serverLauncher = Launcher.createLauncher(luaServer, LuaLanguageClient.class, serverIS, serverOS);
+				Launcher serverLauncher = new Launcher.Builder()
+					.setLocalService(luaServer)
+					.setRemoteInterface(LuaLanguageClient.class)
+					.setInput(serverIS)
+					.setOutput(serverOS)
+					.setExecutorService(jsonrpcThreadPool)
+					.create();
 				
 				luaServer.connect((LuaLanguageClient) serverLauncher.getRemoteProxy());
 				serverLauncher.startListening();
@@ -115,11 +122,13 @@ public class LuaLSPService extends BaseLSPService {
 	}
 	
 	private synchronized void fullyCloseServer() {
-		luaServer.shutdown();
-		
 		try {
+			if (luaServer != null) luaServer.shutdown();
+			
 			if (serverIS != null) serverIS.close();
 			if (serverOS != null) serverOS.close();
+			
+			jsonrpcThreadPool.shutdown();
 			
 			if (serverSocket != null) serverSocket.close();
 			if (serverClientSocket != null) serverClientSocket.close();

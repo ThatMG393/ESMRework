@@ -1,7 +1,6 @@
 package com.thatmg393.esmanager.utils;
 
 import androidx.annotation.NonNull;
-import java.lang.Thread;
 
 /** ThreadPlus is a layer on top of {@link java.lang.Thread}
  * for easy use.
@@ -24,6 +23,7 @@ public class ThreadPlus implements Runnable {
 		this.thread = new Thread(this);
 		
 		thread.setDaemon(false);
+		thread.setPriority(Thread.MAX_PRIORITY);
 	}
 	
 	public ThreadPlus(@NonNull Runnable runnable, boolean loopThread) {
@@ -32,6 +32,7 @@ public class ThreadPlus implements Runnable {
 		this.loopThread = loopThread;
 		
 		thread.setDaemon(true);
+		thread.setPriority(Thread.MAX_PRIORITY);
 	}
 
 	@Override
@@ -54,11 +55,13 @@ public class ThreadPlus implements Runnable {
 		if (isRunning()) return;
 		
 		try {
-			thread.start();
+			if (!thread.isAlive()) thread.start();
 			isRunning = true;
 		} catch (IllegalThreadStateException itse) {
 			LOG.e("Thread is already running or dead!");
 			LOG.i("The thread state is " + thread.getState().name());
+			
+			isRunning = false;
 		}
 	}
 	

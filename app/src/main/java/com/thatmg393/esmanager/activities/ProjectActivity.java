@@ -9,7 +9,6 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.annotation.CallSuper;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
@@ -29,7 +28,6 @@ import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.EditorUtils;
 
 import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 import io.github.rosemoe.sora.widget.SymbolInputView;
@@ -166,10 +164,10 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		if (menuItem.getItemId() == R.id.project_action_editor_save) {
 			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
-			if (editorFragment != null) EditorUtils.saveFileFromEditor(new Pair<>(editorFragment.getEditor(), editorFragment.getCurrentFilePath()));
+			if (editorFragment != null) editorFragment.save();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
-			editorTabAdapter.getFragmentList().forEach((fragment) -> EditorUtils.saveFileFromEditor(new Pair<>(fragment.getEditor(), fragment.getCurrentFilePath())));
+			editorTabAdapter.getFragmentList().forEach((fragment) -> fragment.save());
 			ActivityUtils.getInstance().showToast("All files saved!", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_import_obj) {
@@ -200,9 +198,17 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public void onBackPressed() {
 		if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) {
 			editorDrawerLayout.closeDrawer(GravityCompat.END);
-		} else { 
-			_destroy();
-			super.onBackPressed();
+		} else {
+			ActivityUtils.getInstance().createAlertDialog(
+				"Close project",
+				"Are you sure?",
+				new Pair<>("No", (dialog, which) -> dialog.dismiss()),
+				new Pair<>("Yes", (dialog, which) -> {
+					dialog.dismiss();
+					_destroy();
+					super.onBackPressed();
+				})
+			).show();
 		}
 	}
 	
@@ -213,10 +219,10 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			getSupportFragmentManager().beginTransaction()
 				.remove(editorFileTreeViewFragment)
 				.commit();
+			
+			LspEditorManager.getOrCreateEditorManager(ProjectManager.getInstance().getCurrentProject().projectPath).closeAllEditor();
+			LSPManager.getInstance().stopLSPForAllLanguage();
 		} catch (RuntimeException ignore) { }
-		
-		LspEditorManager.getOrCreateEditorManager(ProjectManager.getInstance().getCurrentProject().projectPath).closeAllEditor();
-		LSPManager.getInstance().stopLSPForAllLanguage();
 	}
 	
 	@Override

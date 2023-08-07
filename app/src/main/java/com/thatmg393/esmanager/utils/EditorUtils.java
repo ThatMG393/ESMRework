@@ -80,7 +80,7 @@ public class EditorUtils {
 			try {
 				Content text = FileUtils.openFileAsContent(path);
 				
-				editor.post(() -> editor.setText(text));
+				if (text != null) editor.post(() -> editor.setText(text));
 			} catch (IOException e) {
 				LOG.e("Failed to load file!");
 				e.printStackTrace(System.err);
@@ -93,14 +93,15 @@ public class EditorUtils {
 		});
 	}
 	
-	public static void saveFileFromEditor(CodeEditor editor, String path) {
-		CompletableFuture.runAsync(() -> {
+	public static CompletableFuture<Boolean> saveFileFromEditor(CodeEditor editor, String path) {
+		return CompletableFuture.supplyAsync(() -> {
 			try {
 				FileUtils.writeToFileUsingContent(editor.getText(), path);
 			
 				editor.post(() -> {
 					Toast.makeText(editor.getContext(), "Success!", Toast.LENGTH_SHORT).show();
 				});
+				return true;
 			} catch (IOException e) {
 				LOG.e("Failed to save file!");
 				e.printStackTrace(System.err);
@@ -109,11 +110,13 @@ public class EditorUtils {
 					Toast.makeText(editor.getContext(), "Failed save file!", Toast.LENGTH_SHORT).show();
 				});
 			}
+			return false;
 		});
 	}
 	
-	public static void saveFileFromEditor(Pair<CodeEditor, String>... pairs) {
-		CompletableFuture.runAsync(() -> {
+	public static CompletableFuture<Boolean> saveFileFromEditor(Pair<CodeEditor, String>... pairs) {
+		return CompletableFuture.supplyAsync(() -> {
+			boolean failed = false;
 			for (Pair<CodeEditor, String> pair : pairs) {
 				try {
 					FileUtils.writeToFileUsingContent(pair.first.getText(), pair.second);
@@ -128,8 +131,10 @@ public class EditorUtils {
 					pair.first.post(() -> {
 						Toast.makeText(pair.first.getContext(), "Failed to save " + pair.second + "!", Toast.LENGTH_SHORT).show();
 					});
+					failed = true;
 				}
 			}
+			return failed;
 		});
 	}
 }

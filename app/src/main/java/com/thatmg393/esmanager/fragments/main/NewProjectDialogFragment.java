@@ -106,6 +106,6 @@ public class NewProjectDialogFragment extends AppCompatDialogFragment {
 		ActivityUtils.getInstance().showToast("Function not implemented", Toast.LENGTH_SHORT);
 		
 		dismiss();
-		projectsFragment.populateProjectList();
+		projectsFragment.refreshOrPopulateRecyclerView();
 	}
 }
