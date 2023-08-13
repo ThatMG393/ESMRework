@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.thatmg393.esmanager.GlobalConstants;
+import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.models.DiscordProfileModel;
 import com.thatmg393.esmanager.utils.FileUtils;
 import com.thatmg393.esmanager.utils.Logger;
@@ -23,7 +24,7 @@ import java.util.Map;
 // Original: https://github.com/khanhduytran0/MRPC/blob/main/app/src/main/java/com/kdt/mrpc/DiscordSocketClient.java
 public class RPCSocketClient extends WebSocketClient {
 	private static final Logger LOG = new Logger("ESM/RPCSocketClient");
-	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+	private final Gson GSON = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
 
 	private final RPCService serviceInstance;
 	private final ThreadPlus heartbeatThread;

@@ -1,24 +1,21 @@
 package com.thatmg393.esmanager.utils;
 
-import android.net.Uri;
 import android.widget.Toast;
-import androidx.core.util.Pair;
-import com.anggrayudi.storage.file.DocumentFileCompat;
-import com.anggrayudi.storage.file.DocumentFileType;
 
-import com.google.android.material.tabs.TabLayout;
-import com.thatmg393.esmanager.adapters.TabEditorAdapter;
+import androidx.core.util.Pair;
+
+import com.thatmg393.esmanager.managers.editor.language.LanguageManager;
+
+import io.github.rosemoe.sora.lang.Language;
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme;
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage;
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel;
 import io.github.rosemoe.sora.text.Content;
-import io.github.rosemoe.sora.text.ContentIO;
 import io.github.rosemoe.sora.widget.CodeEditor;
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
 
-import java.io.FileInputStream;
 import org.eclipse.tm4e.core.registry.IThemeSource;
 
 import java.io.IOException;
@@ -45,15 +42,9 @@ public class EditorUtils {
 	}
 	
 	public static TextMateLanguage createTMLanguage(String language) {
-		switch (language) {
-			default:
-				try {
-					return TextMateLanguage.create("source." + language, true);
-				} catch (Exception e) {
-					LOG.w(language + " is not supported!");
-					return null;
-				}
-		}
+		Language l = LanguageManager.getInstance().getLanguage(language);
+		if (l != null && l instanceof TextMateLanguage) return (TextMateLanguage) l;
+		return null;
 	}
 	
 	public static void loadTMThemes() {

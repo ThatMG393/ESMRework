@@ -1,6 +1,7 @@
 package com.thatmg393.esmanager.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.text.Spanned;
 import android.view.LayoutInflater;
@@ -11,8 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.squareup.picasso.Picasso;
 import com.thatmg393.esmanager.R;
+import com.thatmg393.esmanager.adapters.base.IBaseRecyclerAdapter;
 import com.thatmg393.esmanager.interfaces.IOnRecyclerItemClickListener;
 import com.thatmg393.esmanager.models.ModPropertiesModel;
 import com.thatmg393.esmanager.utils.BitmapUtils;
@@ -21,7 +24,7 @@ import com.thatmg393.esmanager.viewholders.mod.ModViewHolder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> {
+public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implements IBaseRecyclerAdapter<ModPropertiesModel> {
 	private final Context context;
 	private final ArrayList<ModPropertiesModel> data;
 	
@@ -31,14 +34,16 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> {
 		this.context = context;
 		this.data = data;
 	}
-
+	
+	@Override
 	public void addData(ModPropertiesModel data) {
 		if (data != null) {
 			this.data.add(data);
 			notifyItemInserted(this.data.size());
 		}
 	}
-
+	
+	@Override
 	public void updateData(List<ModPropertiesModel> data) {
 		if (data != null && data.size() > 0) {
 			this.data.clear();
@@ -46,7 +51,8 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> {
 			notifyItemRangeChanged(0, this.data.size());
 		}
 	}
-
+	
+	@Override
 	public void clearData() {
 		int dataSize = data.size();
 		if (data != null && dataSize > 0) {
@@ -54,7 +60,7 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> {
 			notifyItemRangeRemoved(0, dataSize);
 		}
 	}
-
+	
 	public ArrayList<ModPropertiesModel> getDataList() {
 		return data;
 	}
@@ -78,29 +84,52 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> {
 	
 	@Override
 	public void onBindViewHolder(@NonNull ModViewHolder viewHolder, int position) {
-		ModPropertiesModel modProp = data.get(position);
-
-		if (modProp.getModName() != null) viewHolder.nameTextView.setText(applyFancyTexts(modProp.getModName()));
+		String modName;
+		String modDesc;
+		String modVersion;
+		String modAuthor;
+		String modPreview;
+		/*
+		if (data.get(position) instanceof LinkedTreeMap) {
+			LinkedTreeMap<Object, Object> modProp = (LinkedTreeMap) data.get(position);
+			
+			modName = modProp.get("").toString();
+			modDesc = modProp.get("").toString();
+			modVersion = modProp.get("").toString();
+			modAuthor = modProp.get("").toString();
+			modPreview = modProp.get("").toString();
+		} */
+		ModPropertiesModel modProp = (ModPropertiesModel) data.get(position);
+			
+		modName = modProp.getModName();
+		modDesc = modProp.getModDescription();
+		modVersion = modProp.getModVersion();
+		modAuthor = modProp.getModAuthor();
+		modPreview = modProp.getModPreview();
+		
+		if (modName != null) viewHolder.nameTextView.setText(applyFancyTexts(modName));
 		else viewHolder.nameTextView.setText("Unknown");
 		
-		if (modProp.getModDescription() != null) viewHolder.descTextView.setText(applyFancyTexts(modProp.getModDescription()));
+		if (modDesc != null) viewHolder.descTextView.setText(applyFancyTexts(modDesc));
 		else viewHolder.descTextView.setText("Unknown");
 		
-		if (modProp.getModVersion() != null) viewHolder.versionTextView.setText(applyFancyTexts(modProp.getModVersion()));
+		if (modVersion != null) viewHolder.versionTextView.setText(applyFancyTexts(modVersion));
 		else viewHolder.versionTextView.setText("0.0.0");
 
-		if (modProp.getModAuthor() != null) viewHolder.authorTextView.setText(applyFancyTexts(modProp.getModAuthor()));
+		if (modAuthor != null) viewHolder.authorTextView.setText(applyFancyTexts(modAuthor));
 		else viewHolder.authorTextView.setText("Unknown");
 		
-		if (modProp.getModPreview() != null) {
+		if (modPreview != null) {
 			Picasso.get()
-				.load(Uri.parse(modProp.getModPreview()))
+				.load(Uri.parse(modPreview))
+				.placeholder(R.drawable.ic_import)
 				.error(R.drawable.ic_info)
 				.resize(BitmapUtils.DEFAULT_RESIZE_KEEPASPECT[0], BitmapUtils.DEFAULT_RESIZE_KEEPASPECT[1])
 				.into(viewHolder.previewView);
 		} else {
 			Picasso.get()
 				.load(R.drawable.ic_info)
+				.placeholder(R.drawable.ic_import)
 				.resize(BitmapUtils.DEFAULT_RESIZE_KEEPASPECT[0], BitmapUtils.DEFAULT_RESIZE_KEEPASPECT[1])
 				.into(viewHolder.previewView);
 		}

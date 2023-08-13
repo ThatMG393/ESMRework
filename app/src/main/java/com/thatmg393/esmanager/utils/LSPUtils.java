@@ -63,7 +63,7 @@ public class LSPUtils {
 				);
 		}
 		
-		lspEditor.setWrapperLanguage((TextMateLanguage)editor.getEditorLanguage());
+		lspEditor.setWrapperLanguage(editor.getEditorLanguage());
 		lspEditor.setEditor(editor);
 		
 		return lspEditor;

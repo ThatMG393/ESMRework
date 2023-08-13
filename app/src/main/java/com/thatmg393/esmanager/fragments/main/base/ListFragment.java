@@ -1,5 +1,6 @@
 package com.thatmg393.esmanager.fragments.main.base;
 
+import android.os.Bundle;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -8,9 +9,29 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.thatmg393.esmanager.adapters.base.IBaseRecyclerAdapter;
+import com.thatmg393.esmanager.managers.rpc.impl.RPCSocketClient;
 import com.thatmg393.esmanager.utils.ThreadPlus;
 
-public class ListFragment extends Fragment {
+import java.util.ArrayList;
+import java.util.List;
+
+/** ListFragment
+ *
+ * You must call {@link com.thatmg393.esmanager.fragments.main.base.ListFragment#setDataType())} first
+ * then {@link com.thatmg393.esmanager.fragments.main.base.ListFragment#registerLayout())}
+ * in order for the ListFragment to work!
+ * 
+ * @param <D> the data type of your adapter
+ * @author ThatMG393
+ */
+public class ListFragment<D> extends Fragment {
+	public static final String LIST_DATA_KEY = "savedListData";
+	public final Gson GSON = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+	
 	private ThreadPlus readerThread;
 	private SwipeRefreshLayout refreshLayout;
 	private RecyclerView recyclerView;
@@ -18,6 +39,32 @@ public class ListFragment extends Fragment {
 	private RelativeLayout emptyLayout;
 	
 	private boolean isScanningWhileOnPause;
+	private TypeToken dataType;
+	
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		initViews();
+		if (savedInstanceState != null) {
+			ArrayList<Object> cachedData = GSON.fromJson(savedInstanceState.getString(LIST_DATA_KEY), dataType.getType());
+			if (cachedData.size() > 0) {
+				((IBaseRecyclerAdapter) recyclerView.getAdapter()).updateData(cachedData);
+				updateViewStates(ReaderState.DONE);
+			} else {
+				refreshOrPopulateRecyclerView();
+			}
+		} else {
+			refreshOrPopulateRecyclerView();
+		}
+	}
+	
+	/* This is used for saving the data of your adapter
+	 * GSON needs this to cast the data to your model
+	 *
+	 * @param type the class of the type, you get the class by doing {TheClass.class} or {TheClass.getClass()}
+	 */
+	public void setDataType(Class<D> type) {
+		this.dataType = TypeToken.getParameterized(ArrayList.class, type);
+	}
 	
 	public void registerLayouts(
 		SwipeRefreshLayout refreshLayout,
@@ -75,6 +122,9 @@ public class ListFragment extends Fragment {
 	public void refreshOrPopulateRecyclerView() {
 		readerThread.start();
 	}
+	
+	// @CallSuper
+	public void initViews() { }
 	
 	public volatile ReaderState currentState = ReaderState.LOADING;
 	public synchronized void setReaderState(ReaderState newState) {

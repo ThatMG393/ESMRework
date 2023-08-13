@@ -3,11 +3,7 @@ package com.thatmg393.esmanager;
 import android.app.Application;
 import android.content.Context;
 
-import com.itsaky.androidide.logsender.ILogSender;
-import com.itsaky.androidide.logsender.LogSender;
-import com.itsaky.androidide.logsender.utils.LogSenderInstaller;
-import com.itsaky.androidide.utils.AndroidLogger;
-import com.itsaky.androidide.utils.ILogger;
+import com.thatmg393.esmanager.managers.editor.language.LanguageManager;
 import com.thatmg393.esmanager.utils.EditorUtils;
 
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
@@ -22,7 +18,12 @@ public class MainApplication extends Application {
 			new AssetsFileResolver(getAssets())
 		);
 		
-		GrammarRegistry.getInstance().loadGrammars("tm/languages/languages.json");
-		EditorUtils.loadTMThemes();
+		try {
+			GrammarRegistry.getInstance().loadGrammars("tm/languages/languages.json");
+			EditorUtils.loadTMThemes();
+			LanguageManager.getInstance().registerLanguages();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

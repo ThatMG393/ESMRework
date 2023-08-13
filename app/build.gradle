@@ -48,7 +48,7 @@ dependencies {
 	implementation 'io.github.amrdeveloper:treeview:1.1.4'
 	
 	// Code Editor
-	implementation platform('io.github.Rosemoe.sora-editor:bom:0.21.1-f243159-SNAPSHOT')
+	implementation platform('io.github.Rosemoe.sora-editor:bom:0.22.0-77372aa-SNAPSHOT')
 	implementation 'io.github.Rosemoe.sora-editor:editor'
 	implementation 'io.github.Rosemoe.sora-editor:editor-lsp'
 	implementation 'io.github.Rosemoe.sora-editor:language-textmate'

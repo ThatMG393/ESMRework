@@ -1,106 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:id="@+id/project_drawer_layout"
-    tools:context=".ProjectActivity">
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_height="match_parent"
+     android:layout_width="match_parent"
+     android:id="@+id/project_drawer_layout"
+     tools:context=".ProjectActivity">
 
     <RelativeLayout
-        android:layout_height="match_parent"
-        android:layout_width="match_parent">
+         android:layout_height="match_parent"
+         android:layout_width="match_parent">
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:layout_height="?attr/actionBarSize"
-            android:layout_width="match_parent"
-            android:background="@color/colorPrimary"
-            android:elevation="2dp"
-            android:outlineProvider="none"
-            android:id="@+id/project_toolbar" />
+             android:layout_height="?attr/actionBarSize"
+             android:layout_width="match_parent"
+             android:background="@color/colorPrimary"
+             android:elevation="2dp"
+             android:outlineProvider="none"
+             android:id="@+id/project_toolbar" />
 
         <RelativeLayout
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:layout_below="@id/project_toolbar"
-            android:elevation="1dp"
-            android:outlineProvider="none"
-            android:id="@+id/project_no_editor_container">
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:layout_below="@id/project_toolbar"
+             android:elevation="1dp"
+             android:outlineProvider="none"
+             android:id="@+id/project_no_editor_container">
 
             <TextView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_centerInParent="true"
-                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                android:id="@+id/project_no_editor_title"
-                android:text="@string/app_name" />
+                 android:layout_height="wrap_content"
+                 android:layout_width="wrap_content"
+                 android:layout_centerInParent="true"
+                 android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                 android:id="@+id/project_no_editor_title"
+                 android:text="@string/app_name" />
 
             <TextView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_below="@id/project_no_editor_title"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                android:textSize="13sp"
-                android:layout_marginTop="4dp"
-                android:text="Open some files on the file drawer (swipe right to left)" />
+                 android:layout_height="wrap_content"
+                 android:layout_width="wrap_content"
+                 android:layout_centerInParent="true"
+                 android:layout_below="@id/project_no_editor_title"
+                 android:gravity="center"
+                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                 android:textSize="@dimen/_11ssp"
+                 android:layout_marginTop="@dimen/_4sdp"
+                 android:text="Open some files on the file drawer (swipe right to left)" />
 
         </RelativeLayout>
 
         <com.google.android.material.tabs.TabLayout
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:elevation="1dp"
-            app:tabIndicatorColor="@color/colorSecondary"
-            app:tabTextColor="@color/white"
-            android:layout_below="@id/project_toolbar"
-            android:background="?attr/colorPrimary"
-            android:minHeight="28dp"
-            app:tabGravity="start"
-            style="@style/App.TabLayoutTheme"
-            app:tabTextAppearance="@style/App.TabLayoutTheme.Title"
-            android:outlineProvider="none"
-            android:id="@+id/project_editors_tab" />
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:elevation="1dp"
+             app:tabIndicatorColor="@color/colorSecondary"
+             app:tabTextColor="@color/white"
+             android:layout_below="@id/project_toolbar"
+             android:background="?attr/colorPrimary"
+             android:minHeight="@dimen/_28sdp"
+             app:tabGravity="start"
+             style="@style/App.TabLayoutTheme"
+             app:tabTextAppearance="@style/App.TabLayoutTheme.Title"
+             android:outlineProvider="none"
+             android:id="@+id/project_editors_tab" />
 
         <androidx.viewpager2.widget.ViewPager2
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:layout_below="@id/project_editors_tab"
-            android:elevation="1dp"
-            android:layout_above="@id/project_symbol_input_container"
-            android:outlineProvider="none"
-            android:id="@+id/project_editor_view" />
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:layout_below="@id/project_editors_tab"
+             android:elevation="1dp"
+             android:layout_above="@id/project_symbol_input_container"
+             android:outlineProvider="none"
+             android:id="@+id/project_editor_view" />
 
         <HorizontalScrollView
-            android:layout_height="@dimen/_56sdp"
-            android:layout_width="match_parent"
-            android:elevation="0dp"
-            android:orientation="vertical"
-            android:outlineProvider="none"
-            android:layout_alignParentBottom="true"
-            android:id="@+id/project_symbol_input_container">
+             android:layout_height="@dimen/_56sdp"
+             android:layout_width="match_parent"
+             android:elevation="0dp"
+             android:orientation="vertical"
+             android:outlineProvider="none"
+             android:layout_alignParentBottom="true"
+             android:id="@+id/project_symbol_input_container">
 
             <io.github.rosemoe.sora.widget.SymbolInputView
-                android:layout_height="match_parent"
-                android:layout_width="wrap_content"
-                android:id="@+id/project_symbol_input" />
+                 android:layout_height="match_parent"
+                 android:layout_width="wrap_content"
+                 android:id="@+id/project_symbol_input" />
 
         </HorizontalScrollView>
 
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:layout_height="match_parent"
-        android:layout_width="wrap_content"
-        android:layout_gravity="end"
-        android:id="@+id/project_file_drawer">
+         android:layout_height="match_parent"
+         android:layout_width="wrap_content"
+         android:layout_gravity="end"
+         android:id="@+id/project_file_drawer">
 
         <FrameLayout
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:id="@+id/project_file_drawer_fragment">
+             android:layout_height="match_parent"
+             android:layout_width="match_parent"
+             android:id="@+id/project_file_drawer_fragment">
 
         </FrameLayout>
 

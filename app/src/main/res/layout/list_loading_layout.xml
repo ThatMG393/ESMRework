@@ -16,9 +16,9 @@
         android:layout_width="wrap_content"
         android:layout_centerInParent="true"
         android:textColor="@color/colorPrimary"
-        android:textSize="16sp"
+        android:textSize="@dimen/_13ssp"
         android:layout_below="@id/list_loading_loading_bar"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/_12sdp"
         android:text="@string/layout_list_bar_loading" />
 
 </RelativeLayout>

@@ -16,7 +16,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import com.lazygeniouz.dfc.file.DocumentFileCompat;
 import com.thatmg393.esmanager.GlobalConstants;
 import com.thatmg393.esmanager.R;
@@ -37,9 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 
-public class ProjectsFragment extends ListFragment {
+public class ProjectsFragment extends ListFragment<ModPropertiesModel> {
 	public static final String TAG = "ProjectsFragment";
 	private final String modInfoJson = "info.json";
 	
@@ -50,33 +48,18 @@ public class ProjectsFragment extends ListFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+		setDataType(ModPropertiesModel.class);
 		return inflater.inflate(R.layout.fragment_main_project, parent, false);
-	}
-	
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		init();
-		if (savedInstanceState != null) {
-			List<ModPropertiesModel> cachedData = RPCSocketClient.GSON.fromJson(savedInstanceState.getString("projectsList_data"), new TypeToken<List<ModPropertiesModel>>() {}.getType());
-			if (cachedData.size() > 0) {
-				projectsRecyclerAdapter.updateData(cachedData);
-				updateViewStates(ReaderState.DONE);
-			} else {
-				refreshOrPopulateRecyclerView();
-			}
-		} else {
-			refreshOrPopulateRecyclerView();
-		}
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 		super.onSaveInstanceState(savedInstanceState);
-		savedInstanceState.putString("projectsList_data", RPCSocketClient.GSON.toJson(projectsRecyclerAdapter.getDataList()));
+		savedInstanceState.putString(LIST_DATA_KEY, GSON.toJson(projectsRecyclerAdapter.getDataList()));
 	}
 	
-	public void init() {
+	@Override
+	public void initViews() {
 		projectsRecyclerAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
 		projectsRecyclerAdapter.setItemClickListener((v, pos) -> {
 			ActivityUtils.getInstance().showPopupMenuAt(
@@ -149,7 +132,7 @@ public class ProjectsFragment extends ListFragment {
 							File jsonFile = new File(folder.getAbsolutePath(), modInfoJson);
 							if (jsonFile.exists() && jsonFile.isFile()) {
 								try (InputStream jsonIS = new FileInputStream(jsonFile)) {
-				 	  	 		JsonObject j = RPCSocketClient.GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
+				 	  	 		JsonObject j = GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
 							
 									String projectName = j.get("name").getAsString();
 									String projectDesc = j.get("description").getAsString();

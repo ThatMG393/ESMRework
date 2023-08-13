@@ -4,6 +4,7 @@ import android.util.ArrayMap;
 
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -67,5 +68,34 @@ public class DiscordProfileModel {
 
 	public String getOldStatus() {
 		return this.oldStatus;
+	}
+	
+	@Override
+	public String toString() {
+		return getFullUsername() + " : " + getStatus();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DiscordProfileModel) {
+			DiscordProfileModel casted = (DiscordProfileModel) obj;
+			return (
+				casted.getUsername().equals(getUsername()) &&
+				casted.getDiscriminator().equals(getDiscriminator()) &&
+				casted.getStatus().equals(getStatus()) &&
+				casted.getEmail().equals(getEmail()) &&
+				casted.getId().equals(getId())
+			);
+		}
+		return false;
+	}
+	
+	public static class ProfileStatus {
+		public static final String ONLINE = "online";
+		public static final String DO_NOT_DISTURB = "dnd";
+		public static final String IDLE = "idle";
+		public static final String INVISIBLE = "invisible";
+		
+		private ProfileStatus() { }
 	}
 }

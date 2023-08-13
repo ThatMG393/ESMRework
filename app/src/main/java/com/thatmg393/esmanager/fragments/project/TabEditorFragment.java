@@ -1,6 +1,5 @@
 package com.thatmg393.esmanager.fragments.project;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +49,7 @@ public class TabEditorFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		initEditor();
 		return editor;
 	}
 	
@@ -70,18 +70,14 @@ public class TabEditorFragment extends Fragment {
 		this.tab = currentTab;
 	}
 	
-	public void initEditor(Context context) {
-		editor = new CodeEditor(context);
-		editor.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				if (hasFocus) EditorManager.getInstance().setFocusedTabEditor(TabEditorFragment.this);
-				else EditorManager.getInstance().setFocusedTabEditor(null);
+	private void initEditor() {
+		editor = new CodeEditor(requireActivity());
+		editor.setOnFocusChangeListener((v, hasFocus) -> {
+			if (hasFocus) EditorManager.getInstance().setFocusedTabEditor(TabEditorFragment.this);
+			else EditorManager.getInstance().setFocusedTabEditor(null);
 				
-				((ProjectActivity) requireActivity()).invalidateOptionsMenu();
-			}
+			((ProjectActivity) requireActivity()).invalidateOptionsMenu();
 		});
-		
 		editor.subscribeEvent(ContentChangeEvent.class, (event, unsub) -> {
 			switch (event.getAction()) {
 				case ContentChangeEvent.ACTION_INSERT:
@@ -118,12 +114,16 @@ public class TabEditorFragment extends Fragment {
 	}
 	
 	public void save() {
-		if (!isModified) return;
+		if (!isFileModified()) return;
 		CompletableFuture<Boolean> success = EditorUtils.saveFileFromEditor(editor, editorFile.getAbsolutePath());
 		try {
 			isModified = !success.get();
 			tab.setText(FilenameUtils.getName(editorFile.getAbsolutePath()));
 		} catch (ExecutionException | InterruptedException ignore) { }
+	}
+	
+	public Tab getCurrentTab() {
+		return this.tab;
 	}
 	
 	public CodeEditor getEditor() {
@@ -132,5 +132,9 @@ public class TabEditorFragment extends Fragment {
 	
 	public String getCurrentFilePath() {
 		return this.editorFile.getAbsolutePath();
+	}
+	
+	public boolean isFileModified() {
+		return this.isModified;
 	}
 }

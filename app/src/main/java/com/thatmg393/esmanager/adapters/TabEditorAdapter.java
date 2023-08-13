@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
@@ -14,14 +15,13 @@ import com.google.android.material.tabs.TabLayout;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 
+import com.thatmg393.esmanager.utils.ActivityUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.ArrayList;
 
 public class TabEditorAdapter extends FragmentStateAdapter {
 	public ArrayList<TabEditorFragment> fragments = new ArrayList<>();
-	
-	private FragmentManager fragmentManager;
 	
 	private final RelativeLayout noEditorContainer;
 	private final TabLayout tabLayout;
@@ -30,7 +30,6 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	
 	public TabEditorAdapter(Lifecycle lifecycle, FragmentManager fragmentManager, View projectLayout) {
 		super(fragmentManager, lifecycle);
-		this.fragmentManager = fragmentManager;
 		
 		this.tabLayout = projectLayout.findViewById(R.id.project_editors_tab);
 		this.viewPager = projectLayout.findViewById(R.id.project_editor_view);
@@ -44,6 +43,47 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	}
 	
 	public void newTab(String path) {
+		if (getItemCount() <= 0) newTabInternal(path);
+		else {
+			TabEditorFragment fragmentInTab = null;
+			for (TabEditorFragment fragment : fragments) {
+				if (fragment.getCurrentFilePath() == path) {
+					fragmentInTab = fragment;
+					break;
+				}
+			}
+			
+			if (fragmentInTab != null) {
+				TabLayout.Tab fragmentTab = fragmentInTab.getCurrentTab();
+				if (fragmentTab.getPosition() != tabLayout.getSelectedTabPosition()) {
+					fragmentTab.select();
+				}
+			} else newTabInternal(path);
+		}
+	}
+	
+	public void removeTab(int position) {
+		TabEditorFragment fragment = fragments.get(position);
+		if (fragment.isFileModified()) {
+			ActivityUtils.getInstance().createAlertDialog(
+				"Unsaved file",
+				"Would you like to save: " + fragment.getCurrentFilePath() + "?",
+				new Pair<>("No", (dialog, which) -> {
+					dialog.dismiss();
+					removeTabInternal(position);
+				}),
+				new Pair<>("Yes", (dialog, which) -> {
+					dialog.dismiss();
+					fragment.save();
+					removeTabInternal(position);
+				})
+			).show();
+		} else {
+			removeTabInternal(position);
+		}
+	}
+	
+	private void newTabInternal(String path) {
 		TabEditorFragment fragment = new TabEditorFragment(path);
 		
 		fragments.add(fragment);
@@ -53,20 +93,23 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		tab.setText(FilenameUtils.getName(path));
 		tabLayout.addTab(tab);
 		
+		if (tab.getPosition() != tabLayout.getSelectedTabPosition()) {
+			tab.select();
+		}
+		
 		fragment.setCurrentTabObject(tab);
-		fragment.initEditor(tabLayout.getContext());
 		
 		dispatchOnNewTab(tab, fragment);
 		updateViewsIfNeeded();
 	}
 	
-	public void removeTab(int position) {
+	private void removeTabInternal(int position) {
 		tabLayout.removeTabAt(position);
 		fragments.remove(position);
 		notifyItemRemoved(position);
 		
-		// Bug is when removing a tab at pos 0, the viewpager doesnt update propeely
-		// and desyncing our tabs, fragments, viewpager.
+		// Bug is when removing a tab at pos 0, the viewpager doesnt update properly
+		// and desyncing our tabs, fragments, and viewpager.
 		// Only happens on pos 0 and getItemCount() > 0
 		if (position == 0 && getItemCount() > 0) viewPager.setAdapter(this);
 		// Also happens on pos 0 and getItemCount() == 0
@@ -74,17 +117,6 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		
 		dispatchOnRemoveTab(position);
 		updateViewsIfNeeded();
-	}
-	
-	public int getIndexOfFragment(String path) {
-		int i = 0;
-		for (TabEditorFragment fragment : fragments) {
-			if (fragment.getCurrentFilePath().equals(path)) {
-				return i;
-			}
-			i++;
-		}
-		return -1;
 	}
 	
 	public void updateViewsIfNeeded() {

@@ -117,7 +117,7 @@ public class FileTreeViewFragment extends Fragment {
 		treeAdapter = new TreeViewAdapter(treeFactory);
 		treeAdapter.setTreeNodeClickListener((node, treeView) -> {
 			if (node.getLayoutId() == R.layout.project_file_tree_view) {
-				callOnNodeClickListeners((String) node.getValue());
+				dispatchOnFileClick((String) node.getValue());
 			}
 		});
 		treeAdapter.setTreeNodeLongClickListener((node, treeView) -> {
@@ -277,18 +277,18 @@ public class FileTreeViewFragment extends Fragment {
 		recyclerScrollView.addView(recyclerView);
 	}
 	
-	private ArrayList<OnTreeNodeClick> nodeClickListeners = new ArrayList<OnTreeNodeClick>();
-	public void addTreeNodeListener(OnTreeNodeClick listener) {
-		nodeClickListeners.add(listener);
+	private ArrayList<OnFileClick> fileClickListeners = new ArrayList<>();
+	public void addOnFileClickListener(OnFileClick listener) {
+		fileClickListeners.add(listener);
 	}
-	public void removeTreeNodeListener(TreeViewAdapter.OnTreeNodeClickListener listener) {
-		nodeClickListeners.remove(listener);
+	public void removeOnFileClickListener(OnFileClick listener) {
+		fileClickListeners.remove(listener);
 	}
-	public void callOnNodeClickListeners(String filePath) {
-		nodeClickListeners.forEach((listener) -> listener.onTreeNodeClick(filePath));
+	public void dispatchOnFileClick(String filePath) {
+		fileClickListeners.forEach((listener) -> listener.onFileClick(filePath));
 	}
 	
-	public static interface OnTreeNodeClick {
-		public void onTreeNodeClick(String filePath);
+	public static interface OnFileClick {
+		public void onFileClick(String filePath);
 	}
 }

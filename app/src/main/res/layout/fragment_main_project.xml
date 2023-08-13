@@ -8,14 +8,14 @@
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-		android:id="@+id/fragment_project_refresh_layout">
+        android:id="@+id/fragment_project_refresh_layout">
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_height="match_parent"
             android:layout_width="match_parent"
             android:visibility="gone"
             android:id="@+id/fragment_project_recycler_view" />
-		
+
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.button.MaterialButton

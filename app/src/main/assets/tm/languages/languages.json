@@ -5,6 +5,12 @@
             "name": "lua",
             "scopeName": "source.lua",
             "languageConfiguration": "tm/languages/lua/language-configuration.json"
+        },
+		{
+        	"grammar": "tm/languages/json/syntaxes/JSON.tmLanguage.json",
+            "name": "json",
+            "scopeName": "source.json",
+            "languageConfiguration": "tm/languages/json/language-configuration.json"
         }
     ]
 }

@@ -12,6 +12,9 @@
         <item name="android:statusBarColor">@color/colorPrimaryDefault</item>
 		
 		<item name="colorOnBackground">@color/white</item>
+		<item name="colorControlNormal">@color/black</item>
+		
+		<item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 	
 	<style name="App.TabLayoutTheme" parent="Widget.Material3.TabLayout">

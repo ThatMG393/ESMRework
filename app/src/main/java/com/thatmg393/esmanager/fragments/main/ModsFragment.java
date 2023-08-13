@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ModsFragment extends ListFragment {
-	private final String modInfoJson = "info.json";
+public class ModsFragment extends ListFragment<ModPropertiesModel> {
+	public static final String modInfoJson = "info.json";
 	
 	private RecyclerView modsRecyclerView;
 	private RelativeLayout modsLoadingLayout;
@@ -44,33 +44,18 @@ public class ModsFragment extends ListFragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+		setDataType(ModPropertiesModel.class);
 		return inflater.inflate(R.layout.fragment_main_mod, parent, false);
-	}
-	
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		init();
-		if (savedInstanceState != null) {
-			List<ModPropertiesModel> cachedData = RPCSocketClient.GSON.fromJson(savedInstanceState.getString("modsList_data"), new TypeToken<List<ModPropertiesModel>>() {}.getType());
-			if (cachedData.size() > 0) {
-				modsRecyclerAdapter.updateData(cachedData);
-				updateViewStates(ReaderState.DONE);
-			} else {
-				refreshOrPopulateRecyclerView();
-			}
-		} else {
-			refreshOrPopulateRecyclerView();
-		}
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 		super.onSaveInstanceState(savedInstanceState);
-		savedInstanceState.putString("modsList_data", RPCSocketClient.GSON.toJson(modsRecyclerAdapter.getDataList()));
+		savedInstanceState.putString(LIST_DATA_KEY, GSON.toJson(modsRecyclerAdapter.getDataList()));
 	}
 	
-	public void init() {
+	@Override
+	public void initViews() {
 		modsRecyclerAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
 		
 		SwipeRefreshLayout modsRefreshLayout = requireView().findViewById(R.id.fragment_mod_refresh_layout);
@@ -110,7 +95,7 @@ public class ModsFragment extends ListFragment {
 							DocumentFileCompat jsonFile = DocumentFileCompat.fromSingleUri(requireContext(), Uri.parse(folder.getUri().toString() + "%2F" + modInfoJson));
 							if (jsonFile.exists() && jsonFile.isFile()) {
 								try (InputStream jsonIS = requireContext().getContentResolver().openInputStream(jsonFile.getUri())) {
-									JsonObject j = RPCSocketClient.GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
+									JsonObject j = GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
 							
 									String modName = j.get("name").getAsString();
 									String modDesc = j.get("description").getAsString();

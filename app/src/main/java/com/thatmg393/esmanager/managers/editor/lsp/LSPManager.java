@@ -20,7 +20,7 @@ public class LSPManager {
 		return INSTANCE;
 	}
 	
-	private HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<String, LanguageServerModel>();
+	private HashMap<String, LanguageServerModel> languageServerRegistry = new HashMap<>();
 	
 	private LSPManager() {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'LSPManager#getInstance()'!");

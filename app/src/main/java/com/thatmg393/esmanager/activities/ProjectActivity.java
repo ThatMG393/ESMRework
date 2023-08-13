@@ -98,16 +98,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			}
 		);
 		
-		editorFileTreeViewFragment.addTreeNodeListener((path) -> {
-			int fragIdx = editorTabAdapter.getIndexOfFragment(path);
-			if (fragIdx == -1) {
-				editorTabAdapter.newTab(path);
-			} else {
-				if ((editorTabLayout.getSelectedTabPosition() - 1) != fragIdx) {
-					Objects.requireNonNull(editorTabLayout.getTabAt(fragIdx)).select();
-				}
-			}
-			
+		editorFileTreeViewFragment.addOnFileClickListener((path) -> {
+			editorTabAdapter.newTab(path);
 			if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) editorDrawerLayout.closeDrawer(GravityCompat.END);
 		});
 		
