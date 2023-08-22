@@ -5,6 +5,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
+import android.widget.LinearLayout;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -36,6 +37,10 @@ public class MainActivity extends BaseActivity {
 		GlobalConstants.getInstance().initConstants();
 		
 		setContentView(R.layout.activity_main);
+		
+		LinearLayout buttonContainer = findViewById(R.id.main_fragment_button_container);
+		buttonContainer.setTranslationY(getResources().getDimension(com.intuit.sdp.R.dimen._6sdp));
+		buttonContainer.bringToFront();
 		
 		mainToolbar = findViewById(R.id.main_toolbar);
 		setSupportActionBar(mainToolbar);

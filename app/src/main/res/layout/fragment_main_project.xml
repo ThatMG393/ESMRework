@@ -17,7 +17,8 @@
             android:id="@+id/fragment_project_recycler_view" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
+	
+	<!--
     <com.google.android.material.button.MaterialButton
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
@@ -25,7 +26,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
         android:textAllCaps="false"
-        android:id="@+id/fragment_project_new_project" />
+        android:id="@+id/fragment_project_new_project" /> -->
 
     <include
         android:layout_height="match_parent"

@@ -1,8 +1,5 @@
 package com.thatmg393.esmanager.activities;
 
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES;
-
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,10 +26,9 @@ import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 
+import com.thatmg393.esmanager.utils.compat.IntentCompat;
 import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
 import io.github.rosemoe.sora.widget.SymbolInputView;
-
-import java.util.Objects;
 
 public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 	private DrawerLayout editorDrawerLayout;
@@ -48,15 +44,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public void init(Bundle savedInstanceState) {
 		super.init(savedInstanceState);
 		
-		ActivityUtils.getInstance().registerActivity(this);
-		
-		ProjectModel pm = null;
-		if (SDK_INT >= VERSION_CODES.TIRAMISU) {
-			pm = (ProjectModel) getIntent().getSerializableExtra("projectInfo", ProjectModel.class);
-		} else {
-			pm = (ProjectModel) getIntent().getSerializableExtra("projectInfo");
-		}
-		ProjectManager.getInstance().setCurrentProject(pm);
+		ProjectManager.getInstance().setCurrentProject((ProjectModel) IntentCompat.getSerializableExtra(getIntent(), "projectInfo", ProjectModel.class));
 		LSPManager.getInstance().registerLangServers();
 		
 		setContentView(R.layout.activity_project);
@@ -124,7 +112,6 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	public void onTabSelected(TabLayout.Tab tab) {
 		editorViewPager.setCurrentItem(tab.getPosition());
-		editorSymbolInput.bindEditor(editorTabAdapter.getFragmentList().get(tab.getPosition()).getEditor());
 	}
 	
 	@Override
@@ -134,6 +121,14 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		
 		getMenuInflater().inflate(R.menu.project_action_menu_noeditor, menu);
 		return true;
+	}
+	
+	@Override
+	public void invalidateOptionsMenu() {
+		super.invalidateOptionsMenu();
+		
+		TabEditorFragment frag = EditorManager.getInstance().getFocusedTabEditor();
+		if (frag != null) editorSymbolInput.bindEditor(frag.getEditor());
 	}
 	
 	@Override
@@ -178,6 +173,13 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		ActivityUtils.getInstance().registerActivity(this);
+		if (editorFileTreeViewFragment != null) editorFileTreeViewFragment.onResume();
 	}
 	
 	@Override

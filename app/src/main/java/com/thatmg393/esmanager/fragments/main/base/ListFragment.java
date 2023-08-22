@@ -13,11 +13,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.thatmg393.esmanager.adapters.base.IBaseRecyclerAdapter;
-import com.thatmg393.esmanager.managers.rpc.impl.RPCSocketClient;
 import com.thatmg393.esmanager.utils.ThreadPlus;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /** ListFragment
  *
@@ -62,7 +60,7 @@ public class ListFragment<D> extends Fragment {
 	 *
 	 * @param type the class of the type, you get the class by doing {TheClass.class} or {TheClass.getClass()}
 	 */
-	public void setDataType(Class<D> type) {
+	public final void setDataType(Class<D> type) {
 		this.dataType = TypeToken.getParameterized(ArrayList.class, type);
 	}
 	

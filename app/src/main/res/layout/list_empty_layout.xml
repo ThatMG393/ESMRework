@@ -6,8 +6,8 @@
     android:layout_width="match_parent">
 
     <com.google.android.material.imageview.ShapeableImageView
-        android:layout_height="@dimen/_48sdp"
-        android:layout_width="@dimen/_48sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:layout_width="@dimen/_32sdp"
         android:layout_centerInParent="true"
         android:src="@drawable/ic_danger_outline"
         android:id="@+id/list_empty_icon" />
@@ -16,10 +16,9 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_centerInParent="true"
-        android:textColor="@color/colorPrimary"
-        android:textSize="@dimen/_16ssp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         android:layout_below="@id/list_empty_icon"
-        android:layout_marginTop="@dimen/_16sdp"
+        android:layout_marginTop="@dimen/_12sdp"
         android:id="@+id/list_empty_desc" />
 
 </RelativeLayout>

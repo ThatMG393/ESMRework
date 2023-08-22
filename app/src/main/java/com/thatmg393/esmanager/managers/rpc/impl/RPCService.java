@@ -97,38 +97,29 @@ public class RPCService extends Service {
 		getNotificationManager().notify(NOTIFICATION_ID, notificationBuilder.build());
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void startRPC() {
 		if (SharedPreference.getInstance().getString("lol69420") != null) {
 			websocketThread.start();
 			return;
 		}
 		
-		View layout = LayoutInflater.from(getApplicationContext()).inflate(R.layout.rpc_login_dialog, null, false);
+		View layout = LayoutInflater.from(ActivityUtils.getInstance().getRegisteredActivity()).inflate(R.layout.rpc_login_dialog, null, false);
 		AlertDialog loginDialog = new MaterialAlertDialogBuilder(ActivityUtils.getInstance().getRegisteredActivity())
 										.setView( layout )
-										.setNegativeButton("Later", new DialogInterface.OnClickListener() {
-											@Override
-											public void onClick(DialogInterface dialog, int idk) {
-												dialog.dismiss();
-												DRPCManager.getInstance().stopDiscordRPC();
-											}
+										.setNegativeButton("Later", (dialog, which) -> {
+											dialog.dismiss();
+											DRPCManager.getInstance().stopDiscordRPC();
 										})
-										.setOnCancelListener(new DialogInterface.OnCancelListener() {
-											@Override
-											public void onCancel(DialogInterface dialog) {
-												DRPCManager.getInstance().stopDiscordRPC();
-											}
-										}).create();
+										.setOnCancelListener((dialog) -> DRPCManager.getInstance().stopDiscordRPC())
+										.create();
 										
 		AdvancedWebView webLoginView = layout.findViewById(R.id.rcp_webview);
 		webLoginView.setListener(ActivityUtils.getInstance().getRegisteredActivity(), new AdvancedWebView.Listener() {
 			@Override
 			public void onPageStarted(String url, Bitmap favicon) {
 				if (url.endsWith("/app")) {
-					SharedPreference.getInstance().putString("lol69420", extractToken());
-					
 					loginDialog.dismiss();
+					SharedPreference.getInstance().putString("lol69420", extractToken());
 					websocketThread.start();
 				}
 			}
@@ -192,6 +183,7 @@ public class RPCService extends Service {
 			
 			return line.substring(0, line.indexOf("\""));
 		} catch (Throwable e) {
+			e.printStackTrace();
 			return null;
 		}
 	}

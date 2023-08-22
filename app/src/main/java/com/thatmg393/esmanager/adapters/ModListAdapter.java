@@ -1,7 +1,6 @@
 package com.thatmg393.esmanager.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
 import android.text.Spanned;
 import android.view.LayoutInflater;
@@ -12,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.core.text.HtmlCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.internal.LinkedTreeMap;
 import com.squareup.picasso.Picasso;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.adapters.base.IBaseRecyclerAdapter;
@@ -22,7 +20,6 @@ import com.thatmg393.esmanager.utils.BitmapUtils;
 import com.thatmg393.esmanager.viewholders.mod.ModViewHolder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implements IBaseRecyclerAdapter<ModPropertiesModel> {
 	private final Context context;
@@ -44,7 +41,7 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implemen
 	}
 	
 	@Override
-	public void updateData(List<ModPropertiesModel> data) {
+	public void updateData(ArrayList<ModPropertiesModel> data) {
 		if (data != null && data.size() > 0) {
 			this.data.clear();
 			this.data.addAll(data);
@@ -61,10 +58,12 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implemen
 		}
 	}
 	
+	@Override
 	public ArrayList<ModPropertiesModel> getDataList() {
-		return data;
+		return this.data;
 	}
 	
+	@Override
 	public void setItemClickListener(IOnRecyclerItemClickListener listener) {
 		this.itemClickListener = listener;
 	}
@@ -84,28 +83,13 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implemen
 	
 	@Override
 	public void onBindViewHolder(@NonNull ModViewHolder viewHolder, int position) {
-		String modName;
-		String modDesc;
-		String modVersion;
-		String modAuthor;
-		String modPreview;
-		/*
-		if (data.get(position) instanceof LinkedTreeMap) {
-			LinkedTreeMap<Object, Object> modProp = (LinkedTreeMap) data.get(position);
-			
-			modName = modProp.get("").toString();
-			modDesc = modProp.get("").toString();
-			modVersion = modProp.get("").toString();
-			modAuthor = modProp.get("").toString();
-			modPreview = modProp.get("").toString();
-		} */
 		ModPropertiesModel modProp = (ModPropertiesModel) data.get(position);
 			
-		modName = modProp.getModName();
-		modDesc = modProp.getModDescription();
-		modVersion = modProp.getModVersion();
-		modAuthor = modProp.getModAuthor();
-		modPreview = modProp.getModPreview();
+		String modName = modProp.getModName();
+		String modDesc = modProp.getModDescription();
+		String modVersion = modProp.getModVersion();
+		String modAuthor = modProp.getModAuthor();
+		String modPreview = modProp.getModPreview();
 		
 		if (modName != null) viewHolder.nameTextView.setText(applyFancyTexts(modName));
 		else viewHolder.nameTextView.setText("Unknown");
@@ -129,7 +113,6 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implemen
 		} else {
 			Picasso.get()
 				.load(R.drawable.ic_info)
-				.placeholder(R.drawable.ic_import)
 				.resize(BitmapUtils.DEFAULT_RESIZE_KEEPASPECT[0], BitmapUtils.DEFAULT_RESIZE_KEEPASPECT[1])
 				.into(viewHolder.previewView);
 		}

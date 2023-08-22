@@ -29,21 +29,26 @@ import com.thatmg393.esmanager.viewholders.tree.FolderViewHolder;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class FileTreeViewFragment extends Fragment {
-	private File parentPath;
+	private String parentPath;
 	
 	private HorizontalScrollView recyclerScrollView;
 	private RecyclerView recyclerView;
 	private TreeViewAdapter treeAdapter;
 	
-	private ArrayList<TreeNode> nodes = new ArrayList<>();
-	
+	private TreeNode rootNode;
+	private TreeNode lastNodeThatGotClick;
 	private boolean isRefreshing;
 	
 	public FileTreeViewFragment() {
-		this.parentPath = new File(ProjectManager.getInstance().getCurrentProject().projectPath);
+		this.parentPath = ProjectManager.getInstance().getCurrentProject().projectPath;
 	}
 	
 	@Override
@@ -66,45 +71,47 @@ public class FileTreeViewFragment extends Fragment {
 	
 	public synchronized void refreshOrPopulateTreeView() {
 		if (isRefreshing) return;
-		
-		if (nodes.size() > 0) {
-			nodes.clear();
-			treeAdapter.updateTreeNodes(nodes);
-				
-			isRefreshing = false;
-			refreshOrPopulateTreeView();
-			return;
-		}
-		
 		isRefreshing = true;
 		
-		TreeNode tmpNode = traverseFileSystem(parentPath);
-		nodes.add(tmpNode);
-		treeAdapter.updateTreeNodes(nodes);
+		ArrayList<TreeNode> tmpNodes = new ArrayList<>();
+		tmpNodes.add(rootNode);
+		
+		treeAdapter.clearTreeNodes();
+		treeAdapter.updateTreeNodes(tmpNodes);
+		
+		rootNode.getChildren().clear();
+		listTopLevelOfDirectory(rootNode);
 		
 		isRefreshing = false;
+		treeAdapter.expandNode(rootNode);
+		
+		// if (lastNodeThatGotClick != null) treeAdapter.expandNodeBranch(lastNodeThatGotClick);
 	}
 	
-	private TreeNode traverseFileSystem(File directory) {
-		if (!directory.exists()) {
-			return new TreeNode(getString(R.string.file_drawer_no_files), R.layout.project_folder_tree_view);
-		} else {
-			if (directory.isDirectory()) {
-				TreeNode directoryNode = new TreeNode(directory.getAbsolutePath(), R.layout.project_folder_tree_view);
-			
-				File[] files = directory.listFiles();
-				if (files != null) {
-					for (int i = 0; i < files.length; i++) {
-						// FIXME: Make async
-						directoryNode.addChild(traverseFileSystem(files[i]));
+	private void listTopLevelOfDirectory(TreeNode rootDir) {
+		String rootPath = (String) rootDir.getValue();
+		if (Files.exists(Paths.get(rootPath))) {
+			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(rootPath), entry -> Files.isDirectory(entry) || Files.isRegularFile(entry))) {
+				try (DirectoryStream<Path> dirStream2 = Files.newDirectoryStream(Paths.get(rootPath), entry -> Files.isDirectory(entry) || Files.isRegularFile(entry))) {
+					if (!dirStream2.iterator().hasNext()) {
+						rootDir.addChild(new TreeNode(getString(R.string.file_drawer_no_files), R.layout.project_folder_tree_view));
+					} else {
+						for (Path path : dirStream) {
+							if (Files.isDirectory(path)) {
+								rootDir.addChild(new TreeNode(path.toRealPath().toString(), R.layout.project_folder_tree_view));
+							} else {
+								rootDir.addChild(new TreeNode(path.toRealPath().toString(), R.layout.project_file_tree_view));
+							}
+						}
 					}
-					return directoryNode;
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				return directoryNode;
-			} else {
-				TreeNode fileNode = new TreeNode(directory.getAbsolutePath(), R.layout.project_file_tree_view);
-				return fileNode;
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+		} else {
+			rootDir.addChild(new TreeNode(getString(R.string.file_drawer_no_files), R.layout.project_folder_tree_view));
 		}
 	}
 	
@@ -116,12 +123,22 @@ public class FileTreeViewFragment extends Fragment {
 		
 		treeAdapter = new TreeViewAdapter(treeFactory);
 		treeAdapter.setTreeNodeClickListener((node, treeView) -> {
+			if (validateNodeValue((String) node.getValue())) return;
+			lastNodeThatGotClick = node;
+			
 			if (node.getLayoutId() == R.layout.project_file_tree_view) {
 				dispatchOnFileClick((String) node.getValue());
+			} else {
+				if (node.getChildren().size() == 0) {
+					listTopLevelOfDirectory(node);
+					treeAdapter.expandNode(node);
+				} else {
+					node.getChildren().clear();
+				}
 			}
 		});
 		treeAdapter.setTreeNodeLongClickListener((node, treeView) -> {
-			if (nodes.size() > 0 && node.getValue() == getString(R.string.file_drawer_no_files)) return false;
+			if (validateNodeValue((String) node.getValue())) return false;
 			
 			// FIXME: Refactor or something
 			if (node.getLayoutId() == R.layout.project_file_tree_view) {
@@ -137,15 +154,15 @@ public class FileTreeViewFragment extends Fragment {
 								getString(R.string.file_drawer_popup_rename),
 								name,
 								new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.dismiss()),
-								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
+								new Pair<>(getString(R.string.file_drawer_popup_rename), (dialog, which) -> {
 									File target = new File((String) node.getValue());
 									String newNameOfTarget = name.getText().toString();
 									
-									if (FileUtils.moveTo(target, requireContext(), new File(target.getParent(), newNameOfTarget)) == null) {
-										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
-									} else {
+									if (target.renameTo(new File(target.getParent(), newNameOfTarget))) {
 										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
+									} else {
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									}
 								})
 							).show();
@@ -155,12 +172,12 @@ public class FileTreeViewFragment extends Fragment {
 								getString(R.string.file_drawer_popup_delete),
 								getString(R.string.file_drawer_popup_delete_confirmation),
 								new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.dismiss()),
-								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
-									if (!FileUtils.forceDelete(new File((String) node.getValue()))) {
-										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
-									} else {
+								new Pair<>(getString(R.string.file_drawer_popup_delete), (dialog, which) -> {
+									if (FileUtils.forceDelete(new File((String) node.getValue()))) {
 										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
+									} else {
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									}
 								})
 							).show();
@@ -183,11 +200,11 @@ public class FileTreeViewFragment extends Fragment {
 								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
 									File newFile = new File((String) node.getValue(), name.getText().toString());
 									
-									if (!FileUtils.createNewFileIfPossible(newFile)) {
-										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
-									} else {
+									if (FileUtils.createNewFileIfPossible(newFile)) {
 										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
+									} else {
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									}
 								})
 							).show();
@@ -201,11 +218,11 @@ public class FileTreeViewFragment extends Fragment {
 								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
 									File file = new File((String) node.getValue(), name.getText().toString());
 									
-									if (FileUtils.makeFolder(new File((String) node.getValue()), requireContext(), name.getText().toString(), CreateMode.SKIP_IF_EXISTS) == null) {
-										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
-									} else {
+									if (FileUtils.makeFolder(new File((String) node.getValue()), requireContext(), name.getText().toString(), CreateMode.SKIP_IF_EXISTS) != null) {
 										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
+									} else {
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									}
 								})
 							).show();
@@ -218,15 +235,15 @@ public class FileTreeViewFragment extends Fragment {
 								getString(R.string.file_drawer_popup_rename),
 								name,
 								new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.dismiss()),
-								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
+								new Pair<>(getString(R.string.file_drawer_popup_rename), (dialog, which) -> {
 									File target = new File((String) node.getValue());
 									String newNameOfTarget = name.getText().toString();
 									
-									if (FileUtils.moveTo(target, requireContext(), new File(target.getParent(), newNameOfTarget)) == null) {
-										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
-									} else {
+									if (target.renameTo(new File(target.getParent(), newNameOfTarget))) {
 										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
+									} else {
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									}
 								})
 							).show();
@@ -236,12 +253,12 @@ public class FileTreeViewFragment extends Fragment {
 								getString(R.string.file_drawer_popup_delete),
 								getString(R.string.file_drawer_popup_delete_confirmation),
 								new Pair<>(getString(R.string.file_drawer_popup_cancel), (dialog, which) -> dialog.dismiss()),
-								new Pair<>(getString(R.string.file_drawer_popup_create), (dialog, which) -> {
-									if (!FileUtils.forceDelete(new File((String) node.getValue()))) {
-										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
-									} else {
+								new Pair<>(getString(R.string.file_drawer_popup_delete), (dialog, which) -> {
+									if (FileUtils.forceDelete(new File((String) node.getValue()))) {
 										ActivityUtils.getInstance().showToast(getString(R.string.toast_success), Toast.LENGTH_SHORT);
 										refreshOrPopulateTreeView();
+									} else {
+										ActivityUtils.getInstance().showToast(getString(R.string.toast_failed), Toast.LENGTH_SHORT);
 									}
 								})
 							).show();
@@ -275,6 +292,12 @@ public class FileTreeViewFragment extends Fragment {
 		);
 		recyclerScrollView.setPadding(8, 8, 8, 8);
 		recyclerScrollView.addView(recyclerView);
+		
+		if (rootNode == null) rootNode = new TreeNode(parentPath, R.layout.project_folder_tree_view);
+	}
+	
+	private boolean validateNodeValue(String value) {
+		return value.equals(getString(R.string.file_drawer_no_files));
 	}
 	
 	private ArrayList<OnFileClick> fileClickListeners = new ArrayList<>();

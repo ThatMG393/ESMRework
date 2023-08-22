@@ -154,6 +154,7 @@ public class RPCSocketClient extends WebSocketClient {
 	}
 	
 	private void _close() {
+		if (!isConnected) return;
 		LOG.d("Closing RPCSocketClient");
 		
 		isConnected = false;

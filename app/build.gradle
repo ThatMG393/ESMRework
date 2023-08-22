@@ -16,6 +16,12 @@ android {
     }
 
     buildTypes {
+		debug {
+			minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			signingConfig signingConfigs.debug
+		}
+	
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -30,7 +36,7 @@ android {
 }
 
 dependencies {
-	def LSP_VERSION = "0.21.0"
+	def LSP_VERSION = '0.21.0'
 	
 	implementation 'androidx.appcompat:appcompat:1.7.0-alpha02'
 	implementation 'androidx.core:core-splashscreen:1.0.1'
@@ -38,11 +44,12 @@ dependencies {
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 	
 	// UI
-	implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01"
+	implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01'
 	implementation 'androidx.viewpager2:viewpager2:1.1.0-beta02'
 	implementation 'com.google.android.material:material:1.9.0'
 	implementation 'com.github.delight-im:Android-AdvancedWebView:v3.2.1'
 	implementation 'com.github.cachapa:ExpandableLayout:2.9.2'
+	implementation 'com.github.haroldadmin:WhatTheStack:1.0.0-alpha04'
 	implementation 'com.intuit.sdp:sdp-android:1.1.0'
 	implementation 'com.intuit.ssp:ssp-android:1.1.0'
 	implementation 'io.github.amrdeveloper:treeview:1.1.4'

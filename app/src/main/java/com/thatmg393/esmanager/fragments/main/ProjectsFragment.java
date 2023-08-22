@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -59,6 +61,13 @@ public class ProjectsFragment extends ListFragment<ModPropertiesModel> {
 	}
 	
 	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		LinearLayout buttonContainer = requireActivity().findViewById(R.id.main_fragment_button_container);
+		buttonContainer.removeAllViews();
+	}
+	
+	@Override
 	public void initViews() {
 		projectsRecyclerAdapter = new ModListAdapter(requireContext(), new ArrayList<ModPropertiesModel>());
 		projectsRecyclerAdapter.setItemClickListener((v, pos) -> {
@@ -101,10 +110,15 @@ public class ProjectsFragment extends ListFragment<ModPropertiesModel> {
 		projectsRecyclerView.setAdapter(projectsRecyclerAdapter);
 		projectsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 		
+		LinearLayout buttonContainer = requireActivity().findViewById(R.id.main_fragment_button_container);
 		NewProjectDialogFragment newProjectDialog = new NewProjectDialogFragment();
-		MaterialButton projectNewButton = requireView().findViewById(R.id.fragment_project_new_project);
-		projectNewButton.setTranslationY(getResources().getDimension(com.intuit.sdp.R.dimen._7sdp));
+		
+		MaterialButton projectNewButton = new MaterialButton(requireActivity());
+		projectNewButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_save, 0, 0, 0);
+		projectNewButton.setText("New Project");
+		projectNewButton.setAllCaps(false);
 		projectNewButton.setOnClickListener((v) -> newProjectDialog.show(getParentFragmentManager()));
+		buttonContainer.addView(projectNewButton);
 		
 		projectsLoadingLayout = requireView().findViewById(R.id.fragment_project_loading_container);
 		projectsEmptyLayout = requireView().findViewById(R.id.fragment_project_empty_container);
@@ -141,7 +155,7 @@ public class ProjectsFragment extends ListFragment<ModPropertiesModel> {
 									String projectPreview = new File(folder.getAbsolutePath(), j.get("preview").getAsString()).getAbsolutePath();
 									String projectPath = folder.getAbsolutePath();
 							
-									projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(projectName, projectDesc, projectAuthor, projectVersion, DocumentFileCompat.fromFile(requireContext(), new File(projectPreview)).getUri().toString(), projectPath)));
+									projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(projectName, projectDesc, projectVersion, projectAuthor, DocumentFileCompat.fromFile(requireContext(), new File(projectPreview)).getUri().toString(), projectPath)));
 								} catch (IOException | JsonSyntaxException e) {
 									projectsRecyclerView.post(() -> projectsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getAbsolutePath())));
 								}

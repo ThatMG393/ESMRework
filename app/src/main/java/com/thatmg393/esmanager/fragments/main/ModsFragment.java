@@ -104,7 +104,7 @@ public class ModsFragment extends ListFragment<ModPropertiesModel> {
 									String modPreview = folder.getUri().toString() + "%2F" + j.get("preview").getAsString().replace("/", "%2F");
 									String modPath = folder.getUri().toString();
 									
-					 		 	  modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(modName, modDesc, modAuthor, modVersion, modPreview, modPath)));
+					 		 	  modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(modName, modDesc, modVersion, modAuthor, modPreview, modPath)));
 								} catch (IOException | JsonSyntaxException e) {
 									modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(folder.getName(), null, null, null, null, folder.getUri().toString())));
 								}

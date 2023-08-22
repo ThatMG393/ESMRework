@@ -9,7 +9,7 @@
 	<string name="toast_failed">Failed!</string>
 	
 	<!-- File Drawer -->
-	<string name="file_drawer_no_files">Folder does not exist</string>
+	<string name="file_drawer_no_files">Folder is empty</string>
 	<string name="file_drawer_popup_new_file">New file</string>
     <string name="file_drawer_popup_new_folder">New folder</string>
 	<string name="file_drawer_popup_rename">Rename</string>
