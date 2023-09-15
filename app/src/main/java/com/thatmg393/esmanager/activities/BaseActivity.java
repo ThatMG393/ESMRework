@@ -1,31 +1,26 @@
 package com.thatmg393.esmanager.activities;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 
+import android.util.Log;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BaseActivity extends AppCompatActivity {
-	private boolean isRecreating;
+	private boolean hasBeenInitialized;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected final void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if (!isRecreating) {
-			init(savedInstanceState);
-			isRecreating = false;
+		
+		if (!hasBeenInitialized) {
+			onInit(savedInstanceState);
+			hasBeenInitialized = true;
 		}
 	}
 	
-	@Override
-	public Object onRetainCustomNonConfigurationInstance() { 
-		isRecreating = true;
-		
-		return super.onRetainCustomNonConfigurationInstance();
-	}
-	
-	// Always override this for a lot of initiaizing stuff
 	@CallSuper
-	public void init(@Nullable Bundle savedInstanceState) { }
+	public void onInit(@Nullable Bundle savedInstanceState) { }
 }

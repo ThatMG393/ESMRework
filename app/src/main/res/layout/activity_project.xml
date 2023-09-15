@@ -7,7 +7,7 @@
      android:layout_width="match_parent"
      android:id="@+id/project_drawer_layout"
      tools:context=".ProjectActivity">
-
+	
     <RelativeLayout
          android:layout_height="match_parent"
          android:layout_width="match_parent">

@@ -14,7 +14,7 @@ import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.fragments.main.HomeFragment;
 import com.thatmg393.esmanager.fragments.main.ModsFragment;
 import com.thatmg393.esmanager.fragments.main.ProjectsFragment;
-import com.thatmg393.esmanager.fragments.main.SettingsFragment;
+import com.thatmg393.esmanager.fragments.main.SettingsFragmentActivity;
 import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
@@ -28,53 +28,46 @@ public class MainActivity extends BaseActivity {
 	private BottomNavigationView mainBottomNav;
 	
 	@Override
-	public void init(Bundle savedInstanceState) {
-		super.init(savedInstanceState);
+	public void onInit(Bundle savedInstanceState) {
+		super.onInit(savedInstanceState);
 		
-		ActivityUtils.getInstance().registerActivity(this);
-		StorageUtils.initStorageHelper();
-		PermissionUtils.askForUsageStatsPermission(getApplicationContext());
-		GlobalConstants.getInstance().initConstants();
+		if (savedInstanceState == null) {
+			ActivityUtils.getInstance().registerActivity(this);
+			StorageUtils.initStorageHelper();
+			PermissionUtils.askForUsageStatsPermission(getApplicationContext());
+			GlobalConstants.getInstance().initConstants();
+			
+			setContentView(R.layout.activity_main);
+			
+			LinearLayout buttonContainer = findViewById(R.id.main_fragment_button_container);
+			buttonContainer.setTranslationY(getResources().getDimension(com.intuit.sdp.R.dimen._8sdp));
+			buttonContainer.bringToFront();
 		
-		setContentView(R.layout.activity_main);
+			mainToolbar = findViewById(R.id.main_toolbar);
+			setSupportActionBar(mainToolbar);
 		
-		LinearLayout buttonContainer = findViewById(R.id.main_fragment_button_container);
-		buttonContainer.setTranslationY(getResources().getDimension(com.intuit.sdp.R.dimen._6sdp));
-		buttonContainer.bringToFront();
-		
-		mainToolbar = findViewById(R.id.main_toolbar);
-		setSupportActionBar(mainToolbar);
-		
-		mainBottomNav = findViewById(R.id.main_bottom_nav);
-		mainBottomNav.setOnItemSelectedListener((menuItem) -> {
-			if (menuItem.getItemId() == R.id.main_bottom_mods && mainBottomNav.getSelectedItemId() != R.id.main_bottom_mods) {
-				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ModsFragment()).commit();
-				return true;
-			} else if (menuItem.getItemId() == R.id.main_bottom_projects && mainBottomNav.getSelectedItemId() != R.id.main_bottom_projects) {
-				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ProjectsFragment(), ProjectsFragment.TAG).commit();
-				return true;
-			} else if (menuItem.getItemId() == R.id.main_bottom_home && mainBottomNav.getSelectedItemId() != R.id.main_bottom_home) {
-				getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new HomeFragment()).commit();
-				return true;
-			}
-			return false;
-		});
-		
-		if (savedInstanceState != null) mainBottomNav.setSelectedItemId(savedInstanceState.getInt("bottomNav_selectedItem"));
-		else mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
+			mainBottomNav = findViewById(R.id.main_bottom_nav);
+			mainBottomNav.setOnItemSelectedListener((menuItem) -> {
+				if (menuItem.getItemId() == R.id.main_bottom_mods && mainBottomNav.getSelectedItemId() != R.id.main_bottom_mods) {
+					getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ModsFragment()).commit();
+					return true;
+				} else if (menuItem.getItemId() == R.id.main_bottom_projects && mainBottomNav.getSelectedItemId() != R.id.main_bottom_projects) {
+					getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new ProjectsFragment(), ProjectsFragment.TAG).commit();
+					return true;
+				} else if (menuItem.getItemId() == R.id.main_bottom_home && mainBottomNav.getSelectedItemId() != R.id.main_bottom_home) {
+					getSupportFragmentManager().beginTransaction().replace(R.id.main_fragment_container, new HomeFragment()).commit();
+					return true;
+				}
+				return false;
+			});
+			
+			mainBottomNav.setSelectedItemId(R.id.main_bottom_home);
+		} else {
+			mainBottomNav.setSelectedItemId(savedInstanceState.getInt("bottomNav_selectedItem"));
+		}
 		
 		// Shared preference stuff
 		if (SharedPreference.getInstance().getBool("main_rpc_active")) DRPCManager.getInstance().startDiscordRPC();
-	}
-	
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		
-		LSPManager.getInstance().stopLSPForAllLanguage();
-		DRPCManager.getInstance().stopDiscordRPC();
-		
-		ActivityUtils.dispose();
 	}
 	
 	@Override
@@ -92,7 +85,7 @@ public class MainActivity extends BaseActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.main_action_settings) {
-			SettingsFragment.start(getApplicationContext());
+			SettingsFragmentActivity.start(getApplicationContext());
 			return true;
 		}
 		return false;
@@ -102,5 +95,17 @@ public class MainActivity extends BaseActivity {
 	protected void onResume() {
 		super.onResume();
 		ActivityUtils.getInstance().registerActivity(this);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		if (isFinishing()) {
+			LSPManager.getInstance().stopLSPForAllLanguage();
+			DRPCManager.getInstance().stopDiscordRPC();
+		
+			ActivityUtils.dispose();
+		}
 	}
 }

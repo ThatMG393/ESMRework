@@ -41,8 +41,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	private SymbolInputView editorSymbolInput;
 	
 	@Override
-	public void init(Bundle savedInstanceState) {
-		super.init(savedInstanceState);
+	public void onInit(Bundle savedInstanceState) {
+		super.onInit(savedInstanceState);
 		
 		ProjectManager.getInstance().setCurrentProject((ProjectModel) IntentCompat.getSerializableExtra(getIntent(), "projectInfo", ProjectModel.class));
 		LSPManager.getInstance().registerLangServers();

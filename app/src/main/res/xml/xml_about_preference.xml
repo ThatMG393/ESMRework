@@ -5,15 +5,9 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
-    <androidx.preference.SwitchPreference
-        android:key="main_rpc_active"
-        app:iconSpaceReserved="false"
-        android:title="Discord Rich Presence"
-		android:summary="Use RPC to show everyone you are playing Evertech" />
-	
-	<androidx.preference.Preference
-        android:key="main_about"
-        android:title="About"
+    <androidx.preference.Preference
+        android:key="about_dev"
+        android:title="Developer"
         app:iconSpaceReserved="false" />
 
 </androidx.preference.PreferenceScreen>
