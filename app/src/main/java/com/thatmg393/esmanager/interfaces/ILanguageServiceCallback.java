@@ -1,15 +1,15 @@
 package com.thatmg393.esmanager.interfaces;
 
-import com.thatmg393.esmanager.utils.Logger;
+import com.thatmg393.esmanager.utils.logging.Logger;
 
 public interface ILanguageServiceCallback {
-	public static final Logger LOG = new Logger("ESM/LanguageServiceCallbackImpl");
+	public static final Logger LOG = new Logger("ESM/ILanguageServiceCallback");
 
 	public default void onReady() {
-		LOG.i("Language service started!");
+		LOG.i("A language service has been started!");
 	}
 	
 	public default void onShutdown() {
-		LOG.e("Language service SHUTDOWN!");
+		LOG.e("A language service is shutting down");
 	}
 }

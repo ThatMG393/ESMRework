@@ -16,7 +16,7 @@ import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.adapters.base.IBaseRecyclerAdapter;
 import com.thatmg393.esmanager.interfaces.IOnRecyclerItemClickListener;
 import com.thatmg393.esmanager.models.ModPropertiesModel;
-import com.thatmg393.esmanager.utils.BitmapUtils;
+import com.thatmg393.esmanager.utils.io.BitmapUtils;
 import com.thatmg393.esmanager.viewholders.mod.ModViewHolder;
 
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public class ModListAdapter extends RecyclerView.Adapter<ModViewHolder> implemen
 	
 	@Override
 	public void onBindViewHolder(@NonNull ModViewHolder viewHolder, int position) {
-		ModPropertiesModel modProp = (ModPropertiesModel) data.get(position);
+		ModPropertiesModel modProp = data.get(position);
 			
 		String modName = modProp.getModName();
 		String modDesc = modProp.getModDescription();

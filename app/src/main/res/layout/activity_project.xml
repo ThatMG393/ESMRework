@@ -88,6 +88,8 @@
         <FrameLayout
              android:layout_height="match_parent"
              android:layout_width="match_parent"
+			android:paddingLeft="@dimen/_4sdp"
+			android:paddingRight="@dimen/_4sdp"
              android:id="@+id/project_file_drawer_fragment">
 
         </FrameLayout>

@@ -4,6 +4,8 @@ import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 
+import android.widget.Toast;
+import androidx.collection.ArrayMap;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -14,14 +16,18 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
-
+import com.thatmg393.esmanager.fragments.project.base.BaseTabFragment;
+import com.thatmg393.esmanager.fragments.project.base.PathedTabFragment;
+import com.thatmg393.esmanager.fragments.project.editor.TabPictureFragment;
+import com.thatmg393.esmanager.interfaces.IOnTabUpdateListener;
+import com.thatmg393.esmanager.models.TabModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import org.apache.commons.io.FilenameUtils;
 
 import java.util.ArrayList;
+import org.apache.commons.io.FilenameUtils;
 
 public class TabEditorAdapter extends FragmentStateAdapter {
-	public ArrayList<TabEditorFragment> fragments = new ArrayList<>();
+	private ArrayList<TabModel> fragments = new ArrayList<>();
 	
 	private final RelativeLayout noEditorContainer;
 	private final TabLayout tabLayout;
@@ -42,78 +48,89 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 		updateViewsIfNeeded();
 	}
 	
-	public void newTab(String path) {
-		if (getItemCount() <= 0) newTabInternal(path);
+	public void newTab(String path, TabType type) {
+		if (getItemCount() <= 0) newTabInternal(path, type);
 		else {
-			TabEditorFragment fragmentInTab = null;
-			for (TabEditorFragment fragment : fragments) {
-				if (fragment.getCurrentFilePath() == path) {
-					fragmentInTab = fragment;
-					break;
+			PathedTabFragment fragmentInTab = null;
+			for (TabModel model : fragments) {
+				if (model.fragment.getCurrentFilePath() == path) {
+					fragmentInTab = model.fragment;
 				}
 			}
 			
 			if (fragmentInTab != null) {
 				TabLayout.Tab fragmentTab = fragmentInTab.getCurrentTab();
-				if (fragmentTab.getPosition() != tabLayout.getSelectedTabPosition()) {
-					fragmentTab.select();
+				
+				if (fragmentTab != null) {
+					if (fragmentTab.getPosition() != tabLayout.getSelectedTabPosition()) fragmentTab.select();
 				}
-			} else newTabInternal(path);
+			} else newTabInternal(path, type);
 		}
 	}
 	
 	public void removeTab(int position) {
-		TabEditorFragment fragment = fragments.get(position);
-		if (fragment.isFileModified()) {
-			ActivityUtils.getInstance().createAlertDialog(
-				"Unsaved file",
-				"Would you like to save: " + fragment.getCurrentFilePath() + "?",
-				new Pair<>("No", (dialog, which) -> {
-					dialog.dismiss();
-					removeTabInternal(position);
-				}),
-				new Pair<>("Yes", (dialog, which) -> {
-					dialog.dismiss();
-					fragment.save();
-					removeTabInternal(position);
-				})
-			).show();
+		PathedTabFragment fragment = fragments.get(position).fragment;
+		
+		if (fragment instanceof TabEditorFragment) {
+			TabEditorFragment fragmentCasted = (TabEditorFragment) fragment;
+			if (fragmentCasted.getEditorState() == TabEditorFragment.EditorState.MODIFIED) {
+				ActivityUtils.getInstance().createAlertDialog(
+					"Unsaved file",
+					"Would you like to save: " + fragmentCasted.getCurrentFilePath() + "?",
+					new Pair<>("No", (dialog, which) -> {
+						dialog.dismiss();
+						removeTabInternal(position);
+					}),
+					new Pair<>("Yes", (dialog, which) -> {
+						dialog.dismiss();
+						fragmentCasted.save();
+						removeTabInternal(position);
+					})
+				).show();
+			} else {
+				removeTabInternal(position);
+			}
 		} else {
 			removeTabInternal(position);
 		}
 	}
 	
-	private void newTabInternal(String path) {
-		TabEditorFragment fragment = new TabEditorFragment(path);
+	private void newTabInternal(String path, TabType type) {
+		PathedTabFragment fragment = null;
 		
-		fragments.add(fragment);
-		notifyItemInserted(fragments.size());
+		switch (type.getType()) {
+			case 0:
+				fragment = new TabEditorFragment(path);
+				break;
+			case 1:
+				fragment = new TabPictureFragment(path);
+				break;
+		}
 		
 		TabLayout.Tab tab = tabLayout.newTab();
 		tab.setText(FilenameUtils.getName(path));
+		
+		fragments.add(new TabModel(
+			tab, fragment
+		));
 		tabLayout.addTab(tab);
+		
+		notifyItemInserted(fragments.size());
+		fragment.setCurrentTabObject(tab);
 		
 		if (tab.getPosition() != tabLayout.getSelectedTabPosition()) {
 			tab.select();
 		}
-		
-		fragment.setCurrentTabObject(tab);
 		
 		dispatchOnNewTab(tab, fragment);
 		updateViewsIfNeeded();
 	}
 	
 	private void removeTabInternal(int position) {
-		tabLayout.removeTabAt(position);
 		fragments.remove(position);
+		tabLayout.removeTabAt(position);
 		notifyItemRemoved(position);
-		
-		// Bug is when removing a tab at pos 0, the viewpager doesnt update properly
-		// and desyncing our tabs, fragments, and viewpager.
-		// Only happens on pos 0 and getItemCount() > 0
-		if (position == 0 && getItemCount() > 0) viewPager.setAdapter(this);
-		// Also happens on pos 0 and getItemCount() == 0
-		else if (position == 0 && getItemCount() == 0) viewPager.setAdapter(this);
+		notifyItemRangeChanged(position, getItemCount());
 		
 		dispatchOnRemoveTab(position);
 		updateViewsIfNeeded();
@@ -143,33 +160,61 @@ public class TabEditorAdapter extends FragmentStateAdapter {
 	public int getItemCount() {
 		return fragments.size();
 	}
-
+	
 	@Override
-	public Fragment createFragment(int position) {
-		return fragments.get(position);
+	public long getItemId(int position) {
+		return fragments.get(position).itemId;
 	}
 	
-	public ArrayList<TabEditorFragment> getFragmentList() {
+	@Override
+	public boolean containsItem(long itemId) {
+		boolean found = false;
+		for (TabModel model : fragments) {
+			if (model.itemId == itemId) {
+				found = true;
+				break;
+			}
+		}
+		
+		return found;
+	}
+	
+	@Override
+	public Fragment createFragment(int position) {
+		return fragments.get(position).fragment;
+	}
+	
+	public ArrayList<TabModel> getFragmentList() {
 		return this.fragments;
 	}
 	
-	private final ArrayList<OnTabUpdateListener> tabUpdateListener = new ArrayList<>();
-	public void addOnTabUpdateListener(OnTabUpdateListener listener) {
+	private final ArrayList<IOnTabUpdateListener> tabUpdateListener = new ArrayList<>();
+	public void addOnTabUpdateListener(IOnTabUpdateListener listener) {
 		tabUpdateListener.add(listener);
 	}
-	public void removeOnTabUpdateListener(OnTabUpdateListener listener) {
+	public void removeOnTabUpdateListener(IOnTabUpdateListener listener) {
 		tabUpdateListener.remove(listener);
 	}
 	
-	private void dispatchOnNewTab(TabLayout.Tab tab, TabEditorFragment fragment) {
+	private void dispatchOnNewTab(TabLayout.Tab tab, BaseTabFragment fragment) {
 		tabUpdateListener.forEach((listener) -> listener.onNewTab(tab, fragment));
 	}
 	private void dispatchOnRemoveTab(int position) {
 		tabUpdateListener.forEach((listener) -> listener.onRemoveTab(position));
 	}
 	
-	public static interface OnTabUpdateListener {
-		public default void onNewTab(TabLayout.Tab tab, TabEditorFragment fragment) { }
-		public default void onRemoveTab(int position) { }
+	public enum TabType {
+		EDITOR(0),
+		PICTURE(1);
+		
+		private final int type;
+		
+		private TabType(int type) {
+			this.type = type;
+		}
+		
+		public final int getType() {
+			return this.type;
+		}
 	}
 }

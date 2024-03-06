@@ -20,8 +20,8 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.squareup.picasso.Picasso;
 import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.BitmapUtils;
-import com.thatmg393.esmanager.utils.StorageUtils;
+import com.thatmg393.esmanager.utils.io.BitmapUtils;
+import com.thatmg393.esmanager.utils.io.StorageUtils;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 

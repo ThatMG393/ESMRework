@@ -9,12 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.thatmg393.esmanager.interfaces.ILanguageServiceCallback;
-import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.LSPUtils;
-import com.thatmg393.esmanager.utils.Logger;
+import com.thatmg393.esmanager.utils.logging.Logger;
+import com.thatmg393.esmanager.utils.sora.LSPUtils;
 
 import io.github.rosemoe.sora.lsp.client.connection.SocketStreamConnectionProvider;
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider;
@@ -44,8 +43,7 @@ public class LanguageServerModel implements ServiceConnection {
 		this.serverPort = serverPort;
 		this.serverWrapper = LSPUtils.createNewServerWrapper(
 			serverName,
-			new SocketStreamConnectionProvider(() -> serverPort),
-			ProjectManager.getInstance().getCurrentProject().projectPath
+			new SocketStreamConnectionProvider(serverPort,  null)
 		);
 	}
 	
@@ -56,8 +54,7 @@ public class LanguageServerModel implements ServiceConnection {
 		this.serverName = serverName;
 		this.serverWrapper = LSPUtils.createNewServerWrapper(
 			serverName,
-			serverConnectionProvider,
-			ProjectManager.getInstance().getCurrentProject().projectPath
+			serverConnectionProvider
 		);
 	}
 	

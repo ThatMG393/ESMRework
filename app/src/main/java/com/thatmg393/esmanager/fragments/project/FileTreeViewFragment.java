@@ -26,6 +26,7 @@ import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.viewholders.tree.FileViewHolder;
 import com.thatmg393.esmanager.viewholders.tree.FolderViewHolder;
 
+import com.thatmg393.esmanager.viewholders.tree.NoFileViewHolder;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -85,48 +86,48 @@ public class FileTreeViewFragment extends Fragment {
 		isRefreshing = false;
 		treeAdapter.expandNode(rootNode);
 		
-		// if (lastNodeThatGotClick != null) treeAdapter.expandNodeBranch(lastNodeThatGotClick);
+		if (lastNodeThatGotClick != null) treeAdapter.expandNodeToLevel(lastNodeThatGotClick, 0);
 	}
 	
 	private void listTopLevelOfDirectory(TreeNode rootDir) {
 		String rootPath = (String) rootDir.getValue();
 		if (Files.exists(Paths.get(rootPath))) {
-			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(rootPath), entry -> Files.isDirectory(entry) || Files.isRegularFile(entry))) {
-				try (DirectoryStream<Path> dirStream2 = Files.newDirectoryStream(Paths.get(rootPath), entry -> Files.isDirectory(entry) || Files.isRegularFile(entry))) {
-					if (!dirStream2.iterator().hasNext()) {
-						rootDir.addChild(new TreeNode(getString(R.string.file_drawer_no_files), R.layout.project_folder_tree_view));
-					} else {
-						for (Path path : dirStream) {
-							if (Files.isDirectory(path)) {
-								rootDir.addChild(new TreeNode(path.toRealPath().toString(), R.layout.project_folder_tree_view));
-							} else {
-								rootDir.addChild(new TreeNode(path.toRealPath().toString(), R.layout.project_file_tree_view));
-							}
+			try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(Paths.get(rootPath), entry -> Files.isDirectory(entry) || Files.isRegularFile(entry));
+				DirectoryStream<Path> dirStream2 = Files.newDirectoryStream(Paths.get(rootPath), entry -> Files.isDirectory(entry) || Files.isRegularFile(entry))) {
+				if (!dirStream2.iterator().hasNext()) {
+					rootDir.addChild(new TreeNode("nofile", R.layout.project_nofile_tree_view));
+				} else {
+					for (Path path : dirStream) {
+						if (Files.isDirectory(path)) {
+							rootDir.addChild(new TreeNode(path.toRealPath().toString(), R.layout.project_folder_tree_view));
+						} else {
+							rootDir.addChild(new TreeNode(path.toRealPath().toString(), R.layout.project_file_tree_view));
 						}
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		} else {
-			rootDir.addChild(new TreeNode(getString(R.string.file_drawer_no_files), R.layout.project_folder_tree_view));
+			rootDir.addChild(new TreeNode("nofile", R.layout.project_nofile_tree_view));
 		}
 	}
 	
 	private void init() {
 		TreeViewHolderFactory treeFactory = (view, layout) -> {
-			if (layout == R.layout.project_folder_tree_view) return new FolderViewHolder(view);
-			return new FileViewHolder(view);
+			if (layout == R.layout.project_file_tree_view)
+				return new FileViewHolder(view);
+			if (layout == R.layout.project_folder_tree_view)
+				return new FolderViewHolder(view);
+			return new NoFileViewHolder(view);
 		};
 		
 		treeAdapter = new TreeViewAdapter(treeFactory);
 		treeAdapter.setTreeNodeClickListener((node, treeView) -> {
-			if (validateNodeValue((String) node.getValue())) return;
-			lastNodeThatGotClick = node;
+			if (!validateNodeValue((String) node.getValue())) return;
 			
 			if (node.getLayoutId() == R.layout.project_file_tree_view) {
+				lastNodeThatGotClick = node;
 				dispatchOnFileClick((String) node.getValue());
 			} else {
 				if (node.getChildren().size() == 0) {
@@ -135,10 +136,12 @@ public class FileTreeViewFragment extends Fragment {
 				} else {
 					node.getChildren().clear();
 				}
+				lastNodeThatGotClick = node;
 			}
 		});
 		treeAdapter.setTreeNodeLongClickListener((node, treeView) -> {
-			if (validateNodeValue((String) node.getValue())) return false;
+			if (!validateNodeValue((String) node.getValue())) return false;
+			lastNodeThatGotClick = node;
 			
 			// FIXME: Refactor or something
 			if (node.getLayoutId() == R.layout.project_file_tree_view) {
@@ -297,7 +300,7 @@ public class FileTreeViewFragment extends Fragment {
 	}
 	
 	private boolean validateNodeValue(String value) {
-		return value.equals(getString(R.string.file_drawer_no_files));
+		return !value.equals(getString(R.string.file_drawer_no_files));
 	}
 	
 	private ArrayList<OnFileClick> fileClickListeners = new ArrayList<>();

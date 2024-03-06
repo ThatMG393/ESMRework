@@ -4,11 +4,14 @@ import androidx.annotation.Nullable;
 
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 import com.thatmg393.esmanager.managers.editor.lsp.lua.LuaLSPService;
+import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.models.LanguageServerModel;
 import com.thatmg393.esmanager.models.ProjectModel;
-import com.thatmg393.esmanager.utils.Logger;
-import com.thatmg393.esmanager.utils.NetworkUtils;
+import com.thatmg393.esmanager.utils.logging.Logger;
+import com.thatmg393.esmanager.utils.io.NetworkUtils;
 
+import io.github.rosemoe.sora.lsp.editor.LspEditor;
+import io.github.rosemoe.sora.lsp.editor.LspProject;
 import java.util.HashMap;
 
 public class LSPManager {
@@ -56,8 +59,9 @@ public class LSPManager {
 		return languageServerRegistry.get(language);
 	}
 	
-	public void registerNewLSPServer(String language, LanguageServerModel lspModel) {
+	public void registerNewLSPServer(LspProject project, String language, LanguageServerModel lspModel) {
 		languageServerRegistry.put(language, lspModel);
+		project.addServerDefinition(lspModel.getServerDefinition());
 	}
 	
 	public void registerLangServers() {
@@ -68,7 +72,10 @@ public class LSPManager {
 		);
 		*/
 		
-		registerNewLSPServer("lua",
+		LspProject project = ProjectManager.getInstance().getCurrentLspProject();
+		
+		registerNewLSPServer(
+			project, "lua",
 			new LanguageServerModel(
 				"lua",
 				LuaLSPService.class,

@@ -17,3 +17,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "ESManager"
 include ':app'
+include ':tree-sitter'
+include ':sora-editor-treesitter'

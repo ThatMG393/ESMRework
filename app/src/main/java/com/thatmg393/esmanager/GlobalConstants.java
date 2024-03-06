@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.os.Environment;
 
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.StorageUtils;
+import com.thatmg393.esmanager.utils.io.StorageUtils;
 
 public final class GlobalConstants {
 	private static volatile GlobalConstants INSTANCE;

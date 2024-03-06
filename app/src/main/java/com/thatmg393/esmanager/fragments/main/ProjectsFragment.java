@@ -28,7 +28,7 @@ import com.thatmg393.esmanager.managers.rpc.impl.RPCSocketClient;
 import com.thatmg393.esmanager.models.ModPropertiesModel;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.FileUtils;
+import com.thatmg393.esmanager.utils.io.FileUtils;
 
 import org.apache.commons.io.IOUtils;
 

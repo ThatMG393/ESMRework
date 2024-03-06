@@ -5,14 +5,11 @@ import android.util.ArrayMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.thatmg393.esmanager.GlobalConstants;
-import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.models.DiscordProfileModel;
-import com.thatmg393.esmanager.utils.FileUtils;
-import com.thatmg393.esmanager.utils.Logger;
+import com.thatmg393.esmanager.utils.logging.Logger;
 import com.thatmg393.esmanager.utils.SharedPreference;
+import com.thatmg393.esmanager.utils.threading.ThreadPlus;
 
-import com.thatmg393.esmanager.utils.ThreadPlus;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -33,15 +30,14 @@ public class RPCSocketClient extends WebSocketClient {
 	
 	public volatile DiscordProfileModel discordProfile;
 	
-	public boolean isConnecting;
-	public boolean isConnected;
+	public ConnectionState connectionState;
 
 	public RPCSocketClient(RPCService serviceInstance) throws URISyntaxException {
 		super(new URI("wss://gateway.discord.gg/?encoding=json&v=10"));
 		
 		this.serviceInstance = serviceInstance;
 		this.heartbeatThread = new ThreadPlus(() -> {
-			if (isConnected) {
+			if (connectionState == ConnectionState.CONNECTED) {
 				try {
 					if (heartbeatInterval < 10000) throw new RuntimeException("Invalid Heartbeat Interval!");
 					Thread.sleep(heartbeatInterval);
@@ -111,8 +107,7 @@ public class RPCSocketClient extends WebSocketClient {
 				serviceInstance.updateNotificationTitle("Connected to " + discordProfile.getFullUsername());
 				serviceInstance.callbackOnConnected();
 				
-				isConnecting = false;
-				isConnected = true;
+				connectionState = ConnectionState.CONNECTED;
 				break;
 			case "SESSIONS_REPLACE": // Status change like, dnd -> idle
 				String currentStatus = (String) ((Map) ((List) dataMap.get("d")).get(0)).get("status");
@@ -123,6 +118,8 @@ public class RPCSocketClient extends WebSocketClient {
 					serviceInstance.updateNotificationContent("Changed status to " + currentStatus);
 				}
 				break;
+			default:
+			    serviceInstance.updateNotificationContent("Unknown state recieved -> " + state);
 		}
 	}
 
@@ -144,20 +141,21 @@ public class RPCSocketClient extends WebSocketClient {
 	
 	@Override
 	public boolean isOpen() {
-		return super.isOpen() && (isConnected || isConnecting);
+		return super.isOpen() && connectionState == ConnectionState.CONNECTED;
 	}
 	
 	@Override
 	public boolean connectBlocking() throws InterruptedException {
-		isConnecting = true;
+		connectionState = ConnectionState.CONNECTING;
 		return super.connectBlocking();
 	}
 	
 	private void _close() {
-		if (!isConnected) return;
+		if (connectionState == ConnectionState.DISCONNECTED
+		|| connectionState == ConnectionState.CONNECTING) return;
 		LOG.d("Closing RPCSocketClient");
 		
-		isConnected = false;
+		connectionState = ConnectionState.DISCONNECTED;
 		heartbeatThread.kill();
 		serviceInstance.callbackShutdown();
 	}
@@ -245,5 +243,11 @@ public class RPCSocketClient extends WebSocketClient {
 		}
 		
 		return link;
+	}
+	
+	public enum ConnectionState {
+		DISCONNECTED,
+		CONNECTING,
+		CONNECTED
 	}
 }

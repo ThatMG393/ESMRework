@@ -1,0 +1,30 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+	namespace "com.thatmg393.treesitter"
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 33
+        versionCode 1
+        versionName "v1.0"
+    }
+    
+    compileOptions {
+		sourceCompatibility JavaVersion.VERSION_11
+		targetCompatibility JavaVersion.VERSION_11
+	}
+}
+
+dependencies {
+	// implementation 'androidx.appcompat:appcompat:1.7.0-alpha02'
+	
+	implementation platform('io.github.Rosemoe.sora-editor:bom:0.23.4-f620608-SNAPSHOT')
+	implementation 'io.github.Rosemoe.sora-editor:editor'
+	implementation project(path: ':sora-editor-treesitter')
+	
+	implementation 'com.itsaky.androidide.treesitter:android-tree-sitter:4.1.0'
+}

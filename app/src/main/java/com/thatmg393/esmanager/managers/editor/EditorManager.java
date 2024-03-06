@@ -1,6 +1,7 @@
 package com.thatmg393.esmanager.managers.editor;
 
-import com.thatmg393.esmanager.utils.Logger;
+import com.thatmg393.esmanager.fragments.project.base.PathedTabFragment;
+import com.thatmg393.esmanager.utils.logging.Logger;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
 
 public class EditorManager {
@@ -16,13 +17,13 @@ public class EditorManager {
 		if (INSTANCE != null) throw new RuntimeException("Please use 'EditorManager#getInstance()'!");
 	}
 	
-	private TabEditorFragment focusedTabEditor = null;
+	private PathedTabFragment focusedTabEditor = null;
 		
-	public void setFocusedTabEditor(TabEditorFragment editor) {
+	public void setFocusedTabEditor(PathedTabFragment editor) {
 		this.focusedTabEditor = editor;
 	}
 		
-	public TabEditorFragment getFocusedTabEditor() {
+	public PathedTabFragment getFocusedTabEditor() {
 		return this.focusedTabEditor;
 	}
 }

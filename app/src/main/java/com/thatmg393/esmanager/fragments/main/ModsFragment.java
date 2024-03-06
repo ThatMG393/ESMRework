@@ -97,12 +97,12 @@ public class ModsFragment extends ListFragment<ModPropertiesModel> {
 								try (InputStream jsonIS = requireContext().getContentResolver().openInputStream(jsonFile.getUri())) {
 									JsonObject j = GSON.fromJson(IOUtils.toString(jsonIS, StandardCharsets.UTF_8), JsonObject.class);
 							
+									String modPath = folder.getUri().toString();
 									String modName = j.get("name").getAsString();
 									String modDesc = j.get("description").getAsString();
 									String modAuthor = j.get("author").getAsString();
 									String modVersion = j.get("version").getAsString();
-									String modPreview = folder.getUri().toString() + "%2F" + j.get("preview").getAsString().replace("/", "%2F");
-									String modPath = folder.getUri().toString();
+									String modPreview = modPath + "%2F" + j.get("preview").getAsString().replace("/", "%2F");
 									
 					 		 	  modsRecyclerView.post(() -> modsRecyclerAdapter.addData(new ModPropertiesModel(modName, modDesc, modVersion, modAuthor, modPreview, modPath)));
 								} catch (IOException | JsonSyntaxException e) {

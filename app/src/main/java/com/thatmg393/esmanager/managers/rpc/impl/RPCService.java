@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Binder;
@@ -21,7 +20,7 @@ import com.thatmg393.esmanager.interfaces.IRPCListener;
 import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.SharedPreference;
-import com.thatmg393.esmanager.utils.ThreadPlus;
+import com.thatmg393.esmanager.utils.threading.ThreadPlus;
 
 import im.delight.android.webview.AdvancedWebView;
 
@@ -66,19 +65,19 @@ public class RPCService extends Service {
 		super.onCreate();
 		ActivityUtils.getInstance().createNotificationChannel(CHANNEL_ID, "Discord Rich Presence Service", NotificationManager.IMPORTANCE_DEFAULT);
 		
-		try {
-			if (rpcWebsocketClient == null) rpcWebsocketClient = new RPCSocketClient(this);
-		} catch (URISyntaxException ignore) { }
-		
+		this.websocketThread = null;
 		this.websocketThread = new ThreadPlus(() -> {
 			try {
+				if (rpcWebsocketClient != null) rpcWebsocketClient.close(0);
+			    rpcWebsocketClient = new RPCSocketClient(RPCService.this);
+				
 				if (!rpcWebsocketClient.isOpen()) rpcWebsocketClient.connectBlocking();
-			} catch (InterruptedException ignore) { }
+			} catch (InterruptedException | URISyntaxException ignore) { }
 		}) {
 			@Override
 			public void stop() {
 				super.stop();
-				rpcWebsocketClient.close();
+				if (rpcWebsocketClient != null) rpcWebsocketClient.close();
 			}
 		};
 		

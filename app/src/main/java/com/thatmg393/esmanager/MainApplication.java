@@ -6,9 +6,12 @@ import android.os.StrictMode;
 import android.util.Log;
 
 import com.thatmg393.esmanager.managers.editor.language.LanguageManager;
-import com.thatmg393.esmanager.utils.EditorUtils;
+import com.thatmg393.esmanager.managers.editor.themes.ThemeManager;
+import com.thatmg393.esmanager.utils.sora.EditorUtils;
 
-import com.thatmg393.esmanager.utils.FileUtils;
+import com.thatmg393.esmanager.utils.logging.ErrorHandler;
+import com.thatmg393.esmanager.utils.logging.Logger;
+import com.thatmg393.esmanager.utils.io.FileUtils;
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry;
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver;
@@ -17,26 +20,38 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.concurrent.CompletableFuture;
 
 public class MainApplication extends Application {
+	private static final Logger LOG = new Logger("ESM/MainApplication");
 	private Thread.UncaughtExceptionHandler thrUEH;
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		FileProviderRegistry.getInstance().addFileProvider(
-			new AssetsFileResolver(getAssets())
-		);
+		LOG.d("Application launched!");
 		
-		try {
-			GrammarRegistry.getInstance().loadGrammars("tm/languages/languages.json");
-			EditorUtils.loadTMThemes();
-			LanguageManager.getInstance().registerLanguages();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		setUEH();
+		CompletableFuture.runAsync(() -> {
+		    try {
+			    LOG.d("Loading early editor resources in another thread");
+			    FileProviderRegistry.getInstance().addFileProvider(
+					new AssetsFileResolver(getAssets())
+				);
+			    
+			    GrammarRegistry.getInstance().loadGrammars("tm/languages/languages.json");
+			    
+			    ThemeManager.getInstance().registerThemes();
+			    
+			    LanguageManager.getInstance().registerTreeSitterLanguages(getAssets());
+			    LanguageManager.getInstance().registerTextMateLanguages();
+			    
+			    LOG.d("Done loading!");
+		    } catch (Exception e) {
+			    e.printStackTrace();
+			    LOG.d("Error occurred!");
+			    LOG.e(e.toString());
+		    }
+		});
 	}
 	
 	@Override
@@ -45,10 +60,9 @@ public class MainApplication extends Application {
 		unsetUEH();
 	}
 	
-	
 	private final void setUEH() {
 		if (thrUEH != null) {
-			Log.w("BaseActivity", "Attempt to initialize 'Thread.UncaughtExceptionHandler' even though it's already initialized!");
+			LOG.w("Attempt to initialize 'Thread.UncaughtExceptionHandler' even though it's already initialized!");
 			return;
 		}
 		
@@ -56,8 +70,8 @@ public class MainApplication extends Application {
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread curThr, Throwable ex) {
-				Log.e("BaseActivity", curThr + " made an exception! " + fullStacktrace(ex));
-				FileUtils.appendToFile(GlobalConstants.getInstance().getESMRootFolder() + "/crash.txt", fullStacktrace(ex));
+				LOG.e(curThr + " made an exception! " + fullStacktrace(ex));
+				ErrorHandler.writeError(ex);
 				
 				android.os.Process.killProcess(android.os.Process.myPid());
 					
@@ -77,7 +91,7 @@ public class MainApplication extends Application {
 	
 	public void unsetUEH() {
 		if (thrUEH == null) {
-			Log.w("BaseActivity", "Attempt to unset 'Thread.UncaughtExceptionHandler' even though it's already unset!");
+			LOG.w("Attempt to unset 'Thread.UncaughtExceptionHandler' even though it's already unset!");
 			return;
 		}
 		

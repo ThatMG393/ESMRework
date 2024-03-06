@@ -20,15 +20,18 @@ import com.thatmg393.esmanager.R;
 import com.thatmg393.esmanager.adapters.TabEditorAdapter;
 import com.thatmg393.esmanager.fragments.project.FileTreeViewFragment;
 import com.thatmg393.esmanager.fragments.project.TabEditorFragment;
+import com.thatmg393.esmanager.fragments.project.base.BaseTabFragment;
+import com.thatmg393.esmanager.fragments.project.base.PathedTabFragment;
+import com.thatmg393.esmanager.interfaces.IOnTabUpdateListener;
 import com.thatmg393.esmanager.managers.editor.EditorManager;
 import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.editor.project.ProjectManager;
 import com.thatmg393.esmanager.models.ProjectModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-
 import com.thatmg393.esmanager.utils.compat.IntentCompat;
-import io.github.rosemoe.sora.lsp.editor.LspEditorManager;
+
 import io.github.rosemoe.sora.widget.SymbolInputView;
+import org.apache.commons.io.FilenameUtils;
 
 public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 	private DrawerLayout editorDrawerLayout;
@@ -66,10 +69,10 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		editorTabLayout = findViewById(R.id.project_editors_tab);
 		editorTabLayout.addOnTabSelectedListener(this);
 		editorTabAdapter = new TabEditorAdapter(getLifecycle(), getSupportFragmentManager(), findViewById(android.R.id.content));
-		editorTabAdapter.addOnTabUpdateListener(new TabEditorAdapter.OnTabUpdateListener() {
+		editorTabAdapter.addOnTabUpdateListener(new IOnTabUpdateListener() {
 			@Override
 			public void onRemoveTab(int position) {
-				invalidateOptionsMenu();
+				supportInvalidateOptionsMenu();
 			}
 		});
 		
@@ -87,7 +90,18 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 		);
 		
 		editorFileTreeViewFragment.addOnFileClickListener((path) -> {
-			editorTabAdapter.newTab(path);
+			String pathExt = FilenameUtils.getExtension(path);
+			
+			switch (pathExt) {
+				case "png":
+				case "jpg":
+				case "gif":
+					editorTabAdapter.newTab(path, TabEditorAdapter.TabType.PICTURE);
+					break;
+				default:
+					editorTabAdapter.newTab(path, TabEditorAdapter.TabType.EDITOR);
+			}
+			
 			if (editorDrawerLayout.isDrawerOpen(GravityCompat.END)) editorDrawerLayout.closeDrawer(GravityCompat.END);
 		});
 		
@@ -127,8 +141,8 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	public void invalidateOptionsMenu() {
 		super.invalidateOptionsMenu();
 		
-		TabEditorFragment frag = EditorManager.getInstance().getFocusedTabEditor();
-		if (frag != null) editorSymbolInput.bindEditor(frag.getEditor());
+		PathedTabFragment frag = EditorManager.getInstance().getFocusedTabEditor();
+		if (frag != null && frag instanceof TabEditorFragment) editorSymbolInput.bindEditor(((TabEditorFragment)frag).getEditor());
 	}
 	
 	@Override
@@ -150,22 +164,28 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 	@Override
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		if (menuItem.getItemId() == R.id.project_action_editor_save) {
-			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
-			if (editorFragment != null) editorFragment.save();
+			BaseTabFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
+			if (editorFragment != null) {
+				if (editorFragment instanceof TabEditorFragment) {
+					((TabEditorFragment) editorFragment).save();
+				}
+			}
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_save_all) {
-			editorTabAdapter.getFragmentList().forEach((fragment) -> fragment.save());
+			editorTabAdapter.getFragmentList().forEach((model) -> {
+				if (model.fragment instanceof TabEditorFragment) ((TabEditorFragment) model.fragment).save();
+			});
 			ActivityUtils.getInstance().showToast("All files saved!", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_import_obj) {
 			ActivityUtils.getInstance().showToast("Function not implemented", Toast.LENGTH_SHORT);
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_undo) {
-			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
+			TabEditorFragment editorFragment = (TabEditorFragment) EditorManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canUndo()) editorFragment.getEditor().undo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_editor_redo) {
-			TabEditorFragment editorFragment = EditorManager.getInstance().getFocusedTabEditor();
+			TabEditorFragment editorFragment =  (TabEditorFragment) EditorManager.getInstance().getFocusedTabEditor();
 			if (editorFragment != null & editorFragment.getEditor().canRedo()) editorFragment.getEditor().redo();
 			return true;
 		} else if (menuItem.getItemId() == R.id.project_action_drawer_file_open) {
@@ -214,7 +234,7 @@ public class ProjectActivity extends BaseActivity implements TabLayout.OnTabSele
 				.remove(editorFileTreeViewFragment)
 				.commit();
 			
-			LspEditorManager.getOrCreateEditorManager(ProjectManager.getInstance().getCurrentProject().projectPath).closeAllEditor();
+			ProjectManager.getInstance().getCurrentLspProject().closeAllEditors();
 			LSPManager.getInstance().stopLSPForAllLanguage();
 		} catch (RuntimeException ignore) { }
 	}

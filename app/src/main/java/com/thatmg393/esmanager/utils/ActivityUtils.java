@@ -1,8 +1,5 @@
 package com.thatmg393.esmanager.utils;
 
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -32,7 +29,10 @@ import androidx.core.os.HandlerCompat;
 import androidx.core.util.Pair;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import com.thatmg393.esmanager.interfaces.IUIThreadTask;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 public class ActivityUtils {
 	private static volatile ActivityUtils INSTANCE;
@@ -75,6 +75,10 @@ public class ActivityUtils {
 	
 	public void runOnUIThread(Runnable toBeRun) {
 		mainThread.post(toBeRun);
+	}
+	
+	public void runOnUIThread(IUIThreadTask toBeRun) {
+		mainThread.post(() -> toBeRun.run(getRegisteredActivity().getApplicationContext()));
 	}
 	
 	public void createNotificationChannel(

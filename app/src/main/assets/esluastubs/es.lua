@@ -38,4 +38,4 @@ function es.Quaternion.Euler(x, y, z) end
 function es.Quaternion.LookRotation(v3f) end
 function es.Quaternion.LookRotation(v3f, v3u) end
 function es.Quaternion.ToEulerAngles(quaternion) end
-function es.Quaternion.FromToRotation(v3from, v3to) end
+function es.Quaternion.FromToRotation(v3f, v3t) end

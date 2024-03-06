@@ -1,6 +1,5 @@
 package com.thatmg393.esmanager.utils;
 
-import android.net.Uri;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES;
 
@@ -13,12 +12,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.provider.Settings;
-
 import android.util.ArrayMap;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
+
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
+
+import com.thatmg393.esmanager.utils.logging.Logger;
 
 public class PermissionUtils {
 	private static final Logger LOG = new Logger("ESM/Permissiontils");
@@ -71,57 +70,68 @@ public class PermissionUtils {
 		}
 	}
 	
-	public static boolean checkDrawOverlayPermission(Context context) {
-		return Settings.canDrawOverlays(context);
-	}
-	
-	public static void requestDrawOverlayPermission(Context context, PermissionResult pmr) {
-		if (!checkDrawOverlayPermission(context)) {
-			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
-			
-			ActivityUtils.getInstance().registerForActivityResult(new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					if (checkDrawOverlayPermission(context)) {
-						pmr.onReturn(Status.GRANTED);
-					} else {
-						pmr.onReturn(Status.DENIED);
-					}
-				}
-			}).launch(intent);
-		} else {
-			pmr.onReturn(Status.GRANTED);
-		}
-	}
-	
-	public static boolean checkForPermission(Activity activity, String permission, int requestCode) {
-		if (permission == null) return false;
-		if (permission == Manifest.permission.WRITE_EXTERNAL_STORAGE ||
-			SDK_INT >= VERSION_CODES.R) { return false; }
+	public static void checkForPermission(Context context, String permission, PermissionAskListener listener) {
+		if (permission == null) return;
+		if (permission == Manifest.permission.WRITE_EXTERNAL_STORAGE && SDK_INT >= VERSION_CODES.R) listener.onPermissionGranted();
 				
-		if (activity.getApplicationContext().checkSelfPermission(permission) ==
-			PackageManager.PERMISSION_GRANTED) {
-			ActivityCompat.requestPermissions(activity, new String[] { permission }, requestCode);
-			return true;
+		if (shoudAskForPermission(context, permission)) {
+			if (((Activity) context).shouldShowRequestPermissionRationale(permission)) {
+				listener.onPermissionPreviouslyDenied();
+			} else {
+				if (isFirstTimeAskingForPermission(permission)) {
+					ActivityCompat.requestPermissions((Activity) context, new String[] { permission }, 69);
+					SharedPreference.getInstance().putBool(permission, true);
+				} else {
+					listener.onPermissionNeverAskAgain();
+				}
+			}
+		} else {
+			listener.onPermissionGranted();
 		}
-		
-		return false;
 	}
 	
-	public static ArrayMap<String, Boolean> checkForPermissions(Activity activity, String[] permissions, int requestCode) {
+	public static ArrayMap<String, Status> checkForPermissions(Activity activity, String[] permissions, int requestCode) {
 		if (permissions == null) return null;
 
-		ArrayMap<String, Boolean> isPermissionAllowed = new ArrayMap<>();
+		ArrayMap<String, Status> isPermissionAllowed = new ArrayMap<>();
+		
 		if (permissions.length > 1) {
 			for (int idx = 0; idx < permissions.length; idx++) {
-				isPermissionAllowed.put(permissions[idx], checkForPermission(activity, permissions[idx], requestCode));
+				final int i = idx;
+				checkForPermission(activity, permissions[idx], new PermissionAskListener() {
+					@Override
+					public void onPermissionPreviouslyDenied() {
+						isPermissionAllowed.put(permissions[i], Status.DENIED);
+					}
+					
+					@Override	
+					public void onPermissionNeverAskAgain() {
+						isPermissionAllowed.put(permissions[i], Status.CANNOT_ASK);
+					}
+						
+					@Override
+					public void onPermissionGranted() {
+						isPermissionAllowed.put(permissions[i], Status.GRANTED);
+					}
+				});
 			}
 		}
 		
 		return isPermissionAllowed;
 	}
 	
-	public static interface PermissionResult {
-		public void onReturn(Status returnValue);
+	public static boolean shoudAskForPermission(Context context, String permission) {
+		int permissionResult = ActivityCompat.checkSelfPermission(context, permission);
+		return permissionResult != PackageManager.PERMISSION_GRANTED;
+	}
+	
+	public static boolean isFirstTimeAskingForPermission(String permission) {
+		return SharedPreference.getInstance().getBoolFallback(permission, true);
+	}
+	
+	public static interface PermissionAskListener {
+		public default void onPermissionGranted() { }
+		public default void onPermissionPreviouslyDenied() { }
+		public default void onPermissionNeverAskAgain() { }
 	}
 }

@@ -10,7 +10,7 @@ import com.thatmg393.esmanager.interfaces.IRPCListener;
 import com.thatmg393.esmanager.managers.rpc.impl.RPCService;
 import com.thatmg393.esmanager.models.DiscordProfileModel;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.Logger;
+import com.thatmg393.esmanager.utils.logging.Logger;
 
 public class DRPCManager implements ServiceConnection {
 	private static final Logger LOG = new Logger("ESM/DRPCManager");

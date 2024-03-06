@@ -5,14 +5,15 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceDataStore;
-import java.util.Set;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 
 import com.thatmg393.esmanager.GlobalConstants;
+import com.thatmg393.esmanager.utils.logging.Logger;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Set;
 
 public class SharedPreference {
 	private static final Logger LOG = new Logger("ESM/SharedPreference");

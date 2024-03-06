@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.thatmg393.esmanager.adapters.base.IBaseRecyclerAdapter;
-import com.thatmg393.esmanager.utils.ThreadPlus;
+import com.thatmg393.esmanager.utils.threading.ThreadPlus;
 
 import java.util.ArrayList;
 

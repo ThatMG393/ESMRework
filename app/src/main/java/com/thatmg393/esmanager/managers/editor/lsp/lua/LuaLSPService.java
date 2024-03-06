@@ -12,8 +12,8 @@ import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPBinder;
 import com.thatmg393.esmanager.managers.editor.lsp.base.BaseLSPService;
 import com.thatmg393.esmanager.utils.ActivityUtils;
-import com.thatmg393.esmanager.utils.Logger;
-import com.thatmg393.esmanager.utils.ThreadPlus;
+import com.thatmg393.esmanager.utils.logging.Logger;
+import com.thatmg393.esmanager.utils.threading.ThreadPlus;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 
@@ -27,7 +27,6 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class LuaLSPService extends BaseLSPService {
 	private final Logger LOG = new Logger("ESM/LSPManager.LSPService");
@@ -35,13 +34,14 @@ public class LuaLSPService extends BaseLSPService {
 	
 	private volatile boolean isServerRunning;
 	
+// Client variables {
 	private ThreadPlus serverThread;
+	private ExecutorService jsonRPCThreadPool = Executors.newCachedThreadPool();
+	private volatile AsynchronousSocketChannel serverClientSocket;
+// }
 	
 // Server variables {
-	private ExecutorService jsonrpcThreadPool = Executors.newCachedThreadPool();
-	
 	private volatile AsynchronousServerSocketChannel serverSocket;
-	private volatile AsynchronousSocketChannel serverClientSocket;
 	
 	private volatile InputStream serverIS;
 	private volatile OutputStream serverOS;
@@ -96,6 +96,7 @@ public class LuaLSPService extends BaseLSPService {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void startServer() throws Exception {
 		callbackOnStart();
 		serverClientSocket = serverSocket.accept().get();
@@ -110,7 +111,7 @@ public class LuaLSPService extends BaseLSPService {
 					.setRemoteInterface(LuaLanguageClient.class)
 					.setInput(serverIS)
 					.setOutput(serverOS)
-					.setExecutorService(jsonrpcThreadPool)
+					.setExecutorService(jsonRPCThreadPool)
 					.create();
 				
 				luaServer.connect((LuaLanguageClient) serverLauncher.getRemoteProxy());
@@ -128,7 +129,7 @@ public class LuaLSPService extends BaseLSPService {
 			if (serverIS != null) serverIS.close();
 			if (serverOS != null) serverOS.close();
 			
-			jsonrpcThreadPool.shutdown();
+			jsonRPCThreadPool.shutdown();
 			
 			if (serverSocket != null) serverSocket.close();
 			if (serverClientSocket != null) serverClientSocket.close();
@@ -149,28 +150,16 @@ public class LuaLSPService extends BaseLSPService {
 		}
 	}
 	
-	private class LuaLSPBinder extends BaseLSPBinder {
-		@Override
-		public LuaLSPService getInstance() {
-			return LuaLSPService.this;
-		}
-	}
-	
 	@Override
 	public boolean isServerRunning() {
 		return isServerRunning && serverThread.isRunning();
 	}
 	
-	private ArrayList<ILanguageServerCallback> listeners = new ArrayList<>();
 	@Override
 	public void addServerListener(ILanguageServerCallback ilsc) {
 		listeners.add(ilsc);
 		
-		if (isServerRunning) {
-			ilsc.onStart();
-		} else {
-			ilsc.onShutdown();
-		}
+		if (isServerRunning) ilsc.onStart();
 	}
 	
 	@MainThread
@@ -181,5 +170,12 @@ public class LuaLSPService extends BaseLSPService {
 	@MainThread
 	private void callbackOnShutdown() {
 		listeners.forEach(ILanguageServerCallback::onShutdown);
+	}
+	
+	private class LuaLSPBinder extends BaseLSPBinder {
+		@Override
+		public LuaLSPService getInstance() {
+			return LuaLSPService.this;
+		}
 	}
 }

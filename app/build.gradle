@@ -4,9 +4,8 @@ plugins {
 
 android {
 	namespace "com.thatmg393.esmanager"
-    compileSdk 33
-	buildToolsVersion '33.0.1'
-
+    compileSdk 34
+	
     defaultConfig {
         applicationId "com.thatmg393.esmanager"
         minSdk 26
@@ -30,50 +29,59 @@ android {
     }
     
     compileOptions {
-		sourceCompatibility JavaVersion.VERSION_11
-		targetCompatibility JavaVersion.VERSION_11
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+		
+		coreLibraryDesugaringEnabled true
 	}
 }
 
 dependencies {
-	def LSP_VERSION = '0.21.0'
+	def LSP_VERSION = '0.21.1'
 	
+	// General
 	implementation 'androidx.appcompat:appcompat:1.7.0-alpha02'
-	implementation 'androidx.core:core-splashscreen:1.0.1'
-    implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 	
 	// UI
+	implementation 'androidx.core:core-splashscreen:1.0.1'
+    implementation 'androidx.preference:preference:1.2.1'
 	implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01'
 	implementation 'androidx.viewpager2:viewpager2:1.1.0-beta02'
-	implementation 'com.google.android.material:material:1.9.0'
+	implementation 'com.google.android.material:material:1.11.0'
 	implementation 'com.github.delight-im:Android-AdvancedWebView:v3.2.1'
 	implementation 'com.github.cachapa:ExpandableLayout:2.9.2'
+	implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
 	implementation 'com.github.haroldadmin:WhatTheStack:1.0.0-alpha04'
 	implementation 'com.intuit.sdp:sdp-android:1.1.0'
 	implementation 'com.intuit.ssp:ssp-android:1.1.0'
 	implementation 'io.github.amrdeveloper:treeview:1.1.4'
 	
 	// Code Editor
-	implementation platform('io.github.Rosemoe.sora-editor:bom:0.22.0-77372aa-SNAPSHOT')
+	implementation platform('io.github.Rosemoe.sora-editor:bom:0.23.4-f620608-SNAPSHOT')
 	implementation 'io.github.Rosemoe.sora-editor:editor'
 	implementation 'io.github.Rosemoe.sora-editor:editor-lsp'
 	implementation 'io.github.Rosemoe.sora-editor:language-textmate'
+	
+	implementation project(path: ':tree-sitter')
+	implementation project(path: ':sora-editor-treesitter')
+	
+	implementation 'com.itsaky.androidide.treesitter:android-tree-sitter:4.1.0'
 	
 	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:$LSP_VERSION"
 	implementation "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:$LSP_VERSION"
 	
 	// IO / Network
 	implementation 'com.anggrayudi:storage:1.5.5'
-	implementation 'com.lazygeniouz:dfc:1.0.7'
+	implementation 'com.lazygeniouz:dfc:1.0.8'
 	implementation 'com.squareup.picasso:picasso:2.8'
 	implementation 'commons-io:commons-io:2.11.0'
-	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+	implementation 'org.java-websocket:Java-WebSocket:1.5.4'
 	
 	// Collections
 	implementation 'org.apache.commons:commons-collections4:4.4'
 	
-	debugImplementation 'com.itsaky.androidide:logsender:2.5.1-beta-27c6ea872-SNAPSHOT'
+	coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 	// debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 	
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -84,20 +92,5 @@ task updateLibs(type: Download) {
 	src 'https://ci.appveyor.com/project/EmmyLua/emmylua-languageserver/build/artifacts'
 	dest "$rootProject.projectDir/app/libs"
 	overwrite true
-}
-
-tasks.whenTaskAdded { task ->
-	if (task.name == 'preDebugBuild') {
-		task.dependsOn updateLibs
-	}
-	
-	if (task.name == 'compileDebugJavaWithJavac') {
-		// Error Prone must be available in the annotation processor path
-		// options.annotationProcessorPath = configurations.errorprone
-		// Enable Error Prone
-		options.errorprone.enabled = true
-		// It can then be configured for the task
-		options.errorprone.disableWarningsInGeneratedCode = true
-	}
 }
 */

@@ -6,6 +6,7 @@ import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -15,12 +16,15 @@ import com.thatmg393.esmanager.fragments.main.HomeFragment;
 import com.thatmg393.esmanager.fragments.main.ModsFragment;
 import com.thatmg393.esmanager.fragments.main.ProjectsFragment;
 import com.thatmg393.esmanager.fragments.main.SettingsFragmentActivity;
+import com.thatmg393.esmanager.interfaces.IOnProcessListener;
 import com.thatmg393.esmanager.managers.editor.lsp.LSPManager;
 import com.thatmg393.esmanager.managers.rpc.DRPCManager;
 import com.thatmg393.esmanager.utils.ActivityUtils;
 import com.thatmg393.esmanager.utils.PermissionUtils;
+import com.thatmg393.esmanager.utils.ProcessListener;
 import com.thatmg393.esmanager.utils.SharedPreference;
-import com.thatmg393.esmanager.utils.StorageUtils;
+import com.thatmg393.esmanager.utils.io.AndroidFolderUtils;
+import com.thatmg393.esmanager.utils.io.StorageUtils;
 
 public class MainActivity extends BaseActivity {
 	private Toolbar mainToolbar;
@@ -67,7 +71,31 @@ public class MainActivity extends BaseActivity {
 		}
 		
 		// Shared preference stuff
-		if (SharedPreference.getInstance().getBool("main_rpc_active")) DRPCManager.getInstance().startDiscordRPC();
+		// if (SharedPreference.getInstance().getBool("main_rpc_active")) DRPCManager.getInstance().startDiscordRPC();
+		
+		ProcessListener.getInstance().startService();
+		ProcessListener.getInstance().startListening("com.facebook.katana", new IOnProcessListener() {
+			@Override
+			public void onProcessForeground() {
+				System.out.println("YESSIR");
+			}
+			
+			@Override
+			public void onProcessBackground() {
+				System.out.println("AAAAAAAAHEJEJOROR");
+			}
+		});
+		
+		try {
+		    ActivityUtils.getInstance().showToast(
+			    AndroidFolderUtils.getDataFolder(getApplicationContext()).getFolderName(),
+			    Toast.LENGTH_LONG
+		    );
+		} catch (Exception e) {
+			ActivityUtils.getInstance().showToast(
+				e.toString(), Toast.LENGTH_SHORT
+			);
+		}
 	}
 	
 	@Override
